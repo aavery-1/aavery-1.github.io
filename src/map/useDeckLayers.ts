@@ -237,7 +237,26 @@ export function useDeckLayers(
   const mapBounds = useStore((s) => s.mapBounds);
   const activeTool = useStore((s) => s.activeTool);
   const { income, boardDistricts, isochrones, populationGrowth, opportunityZones, legislative, schoolsOfHope } = useData();
-  const { features: feats, all, ctx } = useFilteredSchools();
+  const { features: filteredFeats, all, ctx } = useFilteredSchools();
+
+  // The selected school (from search, the list, or the dock) and any
+  // compare-pinned schools must always be visible on the map, even when the
+  // active filters would otherwise hide them: a search result that flies to a
+  // location with zero rendered pins looks broken, and the marker layer
+  // already colors these schools distinctly (isFocused below) whether or not
+  // this augmentation is needed. This is map-rendering-only: the shared
+  // useFilteredSchools() feed (and every count/list derived from it) is
+  // untouched, so a filtered-out searched school never inflates "N schools".
+  const feats = useMemo(() => {
+    const focusMsids = [selectedSchoolMsid, ...comparePinnedMsids].filter((m): m is string => Boolean(m));
+    if (focusMsids.length === 0) return filteredFeats;
+    const inFeats = new Set(filteredFeats.map((f) => f.properties.msid));
+    const missing = focusMsids
+      .filter((msid) => !inFeats.has(msid))
+      .map((msid) => all.find((f) => f.properties.msid === msid))
+      .filter((f): f is SchoolFeature => Boolean(f));
+    return missing.length ? [...filteredFeats, ...missing] : filteredFeats;
+  }, [filteredFeats, all, selectedSchoolMsid, comparePinnedMsids]);
 
   return useMemo(() => {
     const built: Array<{ z: number; layer: Layer }> = [];
