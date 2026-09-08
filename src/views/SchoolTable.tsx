@@ -8,6 +8,7 @@
 // matching row scrolls into view and highlights. No em dashes in this file.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   TableSortLabel, Chip, Typography, TextField, InputAdornment, Stack, Skeleton,
@@ -161,13 +162,29 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
     }
   };
 
+  // The table body is virtualized: with no filters active this list holds every
+  // school (1,100+), and rendering all of them as real DOM rows made sorting and
+  // scrolling block the main thread for multiple seconds (measured: several
+  // long tasks over 1.5s each on a full, unfiltered sort). Only the rows in and
+  // just around the visible viewport are ever mounted; the two spacer rows below
+  // keep the scrollbar and row positions correct for the rest.
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: sorted.length,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => (dense ? 44 : 56),
+    overscan: 12,
+  });
+
   // When the selection changes (often from a pin click on the map), bring the
-  // matching row into view so the two surfaces stay in sync.
-  const selectedRowRef = useRef<HTMLTableRowElement | null>(null);
+  // matching row into view so the two surfaces stay in sync. The row may not be
+  // mounted (it can be scrolled out of the virtualized window), so this scrolls
+  // by index through the virtualizer rather than calling scrollIntoView on a ref.
   useEffect(() => {
-    if (selectedMsid && selectedRowRef.current) {
-      selectedRowRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }
+    if (!selectedMsid) return;
+    const index = sorted.findIndex((r) => r.msid === selectedMsid);
+    if (index >= 0) rowVirtualizer.scrollToIndex(index, { align: "auto" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMsid]);
 
   const openSchool = (r: Row) => {
@@ -237,7 +254,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
         </Stack>
       </Box>
 
-      <TableContainer component={Paper} elevation={0} square sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>
+      <TableContainer ref={containerRef} component={Paper} elevation={0} square sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>
         <Table stickyHeader size="small" sx={{ tableLayout: "fixed", width: "100%", "& .MuiTableCell-root": { px: 1.25 } }}>
           <TableHead>
             <TableRow>
@@ -275,14 +292,21 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                   ))}
                 </TableRow>
               ))}
-            {schools != null && sorted.map((r) => {
+            {schools != null && sorted.length > 0 && rowVirtualizer.getVirtualItems().length > 0 && (
+              <TableRow aria-hidden style={{ height: rowVirtualizer.getVirtualItems()[0].start }}>
+                <TableCell colSpan={columns.length} sx={{ p: 0, border: 0 }} />
+              </TableRow>
+            )}
+            {schools != null && rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const r = sorted[virtualRow.index];
               const gs = resolveGradeStyle(r.grade);
               const selected = r.msid === selectedMsid;
               const pinned = comparePinned.includes(r.msid);
               return (
                 <TableRow
                   key={r.msid}
-                  ref={selected ? selectedRowRef : undefined}
+                  data-index={virtualRow.index}
+                  ref={(el) => rowVirtualizer.measureElement(el)}
                   hover
                   selected={selected}
                   onClick={() => openSchool(r)}
@@ -379,6 +403,11 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                 </TableRow>
               );
             })}
+            {schools != null && sorted.length > 0 && rowVirtualizer.getVirtualItems().length > 0 && (
+              <TableRow aria-hidden style={{ height: rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end }}>
+                <TableCell colSpan={columns.length} sx={{ p: 0, border: 0 }} />
+              </TableRow>
+            )}
             {schools != null && sorted.length === 0 && (
               <TableRow>
                 <TableCell colSpan={columns.length} sx={{ textAlign: "center", py: 8 }}>
