@@ -147,7 +147,7 @@ export function LeftRail({ onNavigate }: { onNavigate?: () => void } = {}) {
           display: "flex", flexDirection: "column", alignItems: "stretch", py: 1, zIndex: 1,
         }}>
           <Tooltip title={collapsed ? "Expand filters" : "Collapse filters"} placement="right">
-            <IconButton onClick={() => setCollapsed(!collapsed)} sx={{ color: SHELL_ON, alignSelf: "center", mb: 1, width: 40, height: 40 }}>
+            <IconButton onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? "Expand filters" : "Collapse filters"} sx={{ color: SHELL_ON, alignSelf: "center", mb: 1, width: 40, height: 40 }}>
               {collapsed ? <Icon.ExpandPanel size={20} /> : <Icon.CollapsePanel size={20} />}
             </IconButton>
           </Tooltip>
@@ -216,7 +216,7 @@ function PanelHeader({ inDrawer, onCollapse }: { inDrawer: boolean; onCollapse: 
         </Button>
         {!inDrawer && (
           <Tooltip title="Collapse" placement="bottom">
-            <IconButton size="small" onClick={onCollapse} sx={{ color: SHELL_DIM }}>
+            <IconButton size="small" onClick={onCollapse} aria-label="Collapse" sx={{ color: SHELL_DIM }}>
               <Icon.CollapsePanel size={18} />
             </IconButton>
           </Tooltip>
@@ -291,7 +291,7 @@ function GeographyFacet({ onNavigate }: { onNavigate?: () => void }) {
               />
             </Box>
             <Tooltip title={`Zoom to ${c}`} placement="left">
-              <IconButton size="small" onClick={() => focus(c)} sx={{ color: SHELL_DIM, ml: 0.5 }}>
+              <IconButton size="small" onClick={() => focus(c)} aria-label={`Zoom to ${c}`} sx={{ color: SHELL_DIM, ml: 0.5 }}>
                 <Icon.ZoomIn size={15} />
               </IconButton>
             </Tooltip>

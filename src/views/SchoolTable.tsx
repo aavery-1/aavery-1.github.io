@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   TableSortLabel, Chip, Typography, TextField, InputAdornment, Stack, Skeleton,
-  Select, MenuItem, IconButton, Tooltip,
+  Select, MenuItem, IconButton, Tooltip, Button,
 } from "@mui/material";
 import { Search as SearchIcon, Location as MyLocationIcon, Compare as CompareArrowsIcon } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
@@ -198,7 +198,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
       >
         <Box>
           <Typography variant={dense ? "subtitle2" : "h6"} sx={{ fontWeight: 700 }}>
-            {schools == null ? <Skeleton width={120} /> : `${sorted.length} ${sorted.length === 1 ? "school" : "schools"}`}
+            {schools == null ? <Skeleton width={120} /> : `${sorted.length.toLocaleString("en-US")} ${sorted.length === 1 ? "school" : "schools"}`}
           </Typography>
           {!dense && (
             <Stack spacing={0}>
@@ -375,12 +375,19 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                     </Box>
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
-                        No schools match the current filters
+                        {query.trim() ? `No schools match "${query.trim()}"` : "No schools match the current filters"}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Try clearing a filter or widening the county scope.
+                        {query.trim() ? "Try a different name or MSID, or clear the search." : "Try clearing a filter or widening the county scope."}
                       </Typography>
                     </Box>
+                    <Button
+                      size="small"
+                      onClick={() => (query.trim() ? setQuery("") : useStore.getState().resetAll())}
+                      sx={{ textTransform: "none", fontWeight: 600 }}
+                    >
+                      {query.trim() ? "Clear search" : "Clear all filters"}
+                    </Button>
                   </Stack>
                 </TableCell>
               </TableRow>

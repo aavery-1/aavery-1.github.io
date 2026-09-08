@@ -86,7 +86,7 @@ function MeasureControls() {
         <Detail>{measurePoints.length === 1 ? "Click another point to measure." : "Click points on the map to trace a path."}</Detail>
       )}
       actions={<>
-        <Tooltip title="Undo last point"><span><IconButton size="small" onClick={undoMeasurePoint} disabled={measurePoints.length === 0}><UndoIcon size={16} /></IconButton></span></Tooltip>
+        <Tooltip title="Undo last point"><span><IconButton size="small" onClick={undoMeasurePoint} disabled={measurePoints.length === 0} aria-label="Undo last point"><UndoIcon size={16} /></IconButton></span></Tooltip>
         <Button size="small" onClick={clearMeasure} disabled={measurePoints.length === 0} sx={{ textTransform: "none", color: SHELL_DIM, minWidth: 0 }}>Clear</Button>
         <DoneButton />
       </>}
@@ -130,7 +130,7 @@ function RadiusControls() {
           </Stack>
           {radiusCenter && analysis ? (
             <Detail mono>
-              {analysis.areaMi2.toFixed(1)} mi² · <Box component="span" sx={{ fontWeight: 700 }}>{analysis.inside.length}</Box> schools
+              {analysis.areaMi2.toFixed(1)} mi² · <Box component="span" sx={{ fontWeight: 700 }}>{analysis.inside.length.toLocaleString("en-US")}</Box> schools
               {analysis.reach ? <> · <Box component="span" sx={{ fontWeight: 700 }}>{Math.round(analysis.reach.total).toLocaleString("en-US")}</Box> <Box component="span" sx={{ color: SHELL_DIM, fontWeight: 500 }}>school-age pop</Box></> : null}
             </Detail>
           ) : (
@@ -171,7 +171,7 @@ function DrawControls() {
       title="Draw a boundary"
       detail={<Detail>{n === 0 ? "Click points on the map to outline an area." : `${n} point${n === 1 ? "" : "s"}${n < 3 ? " · need at least 3" : " · ready to finish"}`}</Detail>}
       actions={<>
-        <Tooltip title="Undo last point"><span><IconButton size="small" onClick={undoDrawPoint} disabled={n === 0}><UndoIcon size={16} /></IconButton></span></Tooltip>
+        <Tooltip title="Undo last point"><span><IconButton size="small" onClick={undoDrawPoint} disabled={n === 0} aria-label="Undo last point"><UndoIcon size={16} /></IconButton></span></Tooltip>
         <Button size="small" onClick={clearDrawnBoundary} sx={{ textTransform: "none", color: SHELL_DIM, minWidth: 0 }}>Clear</Button>
         <Button size="small" onClick={() => setTool("none")} sx={{ textTransform: "none", color: SHELL_DIM, minWidth: 0 }}>Cancel</Button>
         <Button size="small" variant="contained" disableElevation onClick={finishDraw} disabled={n < 3} sx={{ textTransform: "none", fontWeight: 600 }}>Finish</Button>
