@@ -21,7 +21,7 @@ import { useStore, utilizationBucket, MAX_COMPARE } from "../store";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
-import { ACCENT_TEXT } from "../muiTheme";
+import { ACCENT_TEXT, RADIUS } from "../muiTheme";
 import { schoolTypeLabel, titleILabel, type SchoolFeature } from "../data/types";
 
 const RED_STRONG = "#B71C1C";  // PLP
@@ -332,7 +332,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                       <Box
                         title={gs.description}
                         sx={{
-                          width: 30, height: 30, borderRadius: 1, flex: "none",
+                          width: 30, height: 30, borderRadius: RADIUS.sm, flex: "none",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 12.5, fontWeight: 800,
                           bgcolor: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor),

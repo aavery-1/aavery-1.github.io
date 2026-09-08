@@ -73,6 +73,21 @@ export const SHAPE = {
   full: 9999,
 } as const;
 
+// Shape as px STRINGS, for use in MUI `sx` where a bare number is a theme-unit
+// MULTIPLIER (borderRadius: 8 would be 8 * 12px). Reach for these at call sites:
+// borderRadius: RADIUS.sm. Tiny data-encoding swatches use RADIUS.tile to stay
+// crisp so square-vs-circle marker semantics survive.
+export const RADIUS = {
+  none: "0",
+  tile: "3px",
+  xs: "4px",
+  sm: "8px",
+  md: "12px",
+  lg: "16px",
+  xl: "28px",
+  full: "9999px",
+} as const;
+
 // ---------------------------------------------------------------------------
 // Elevation. MD3 conveys elevation primarily through the surface-container
 // tones above (a higher container = more elevated), with shadow reserved for

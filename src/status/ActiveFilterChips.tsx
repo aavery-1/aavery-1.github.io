@@ -8,7 +8,7 @@ import { Box, Chip, Paper, Typography, Stack, Divider } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useStore } from "../store";
 import { useActiveFilters } from "./useActiveFilters";
-import { TEAL, ACCENT_TEXT } from "../muiTheme";
+import { TEAL, ACCENT_TEXT, RADIUS } from "../muiTheme";
 
 export function ActiveFilterChips() {
   const filters = useActiveFilters();
@@ -26,7 +26,7 @@ export function ActiveFilterChips() {
         zIndex: 8, display: "flex", alignItems: "center", gap: 1,
         maxWidth: { xs: "calc(100% - 24px)", md: "calc(100% - 220px)" },
         overflowX: "auto", bgcolor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)",
-        borderRadius: 2, px: 1.5, py: 0.75,
+        borderRadius: RADIUS.full, px: 1.5, py: 0.75,
       }}
     >
       <Typography sx={{ fontSize: 11, fontWeight: 700, color: "text.secondary", letterSpacing: 0.16, textTransform: "none", pl: 0.25, flex: "none" }}>
@@ -60,7 +60,7 @@ export function ActiveFilterChips() {
             sx={{
               flex: "none", background: "none", border: "none", cursor: "pointer",
               color: TEAL, fontSize: 12, fontWeight: 700, textTransform: "none", letterSpacing: 0.16,
-              px: 0.75, py: 0.5, borderRadius: 1, "&:hover": { bgcolor: alpha(TEAL, 0.08) },
+              px: 0.75, py: 0.5, borderRadius: RADIUS.full, "&:hover": { bgcolor: alpha(TEAL, 0.08) },
             }}
           >
             Clear all

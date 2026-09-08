@@ -966,7 +966,7 @@ code {
   flex-direction: column;
   background: var(--card);
   border: 1px solid var(--hairline);
-  border-radius: 0;
+  border-radius: 16px;
   box-shadow: var(--shadow-card);
   overflow: hidden;
 }
@@ -997,7 +997,7 @@ code {
 .map-ctrl-solo {
   background: var(--card);
   border: 1px solid var(--hairline);
-  border-radius: 0;
+  border-radius: 16px;
   box-shadow: var(--shadow-card);
 }
 

@@ -14,7 +14,7 @@ import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
 import { useStore, type ViewMode } from "../store";
 import { panMapTo } from "../map/mapController";
-import { SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, TEAL } from "../muiTheme";
+import { SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, TEAL, RADIUS } from "../muiTheme";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import type { SchoolFeature } from "../data/types";
 
@@ -121,7 +121,7 @@ export function TopNav({
           <Box component="li" key={key} {...rest} sx={{ display: "flex", alignItems: "center", gap: 1.25, py: 1, px: 1.5 }}>
             <Box
               sx={{
-                width: 26, height: 26, borderRadius: 0, flex: "none",
+                width: 26, height: 26, borderRadius: RADIUS.sm, flex: "none",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontWeight: 800, fontSize: 12,
                 bgcolor: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor),
@@ -166,7 +166,7 @@ export function TopNav({
                   fontSize: 10, fontWeight: 600,
                   fontFamily: "var(--font-mono)",
                   color: SHELL_DIM, bgcolor: alpha(SHELL_ON, 0.06),
-                  border: `1px solid ${SHELL_HAIRLINE}`, borderRadius: 0,
+                  border: `1px solid ${SHELL_HAIRLINE}`, borderRadius: RADIUS.xs,
                 }}
               >
                 /
@@ -175,7 +175,7 @@ export function TopNav({
           }}
           sx={{
             "& .MuiOutlinedInput-root": {
-              borderRadius: 0, bgcolor: alpha(SHELL_ON, 0.04),
+              borderRadius: RADIUS.full, bgcolor: alpha(SHELL_ON, 0.04),
               transition: "background-color 120ms, box-shadow 120ms",
               "& fieldset": { borderColor: "transparent" },
               "&:hover fieldset": { borderColor: "transparent" },
@@ -209,7 +209,7 @@ export function TopNav({
         <Stack direction="row" alignItems="center" spacing={1.25} sx={{ flex: "none", mr: { xs: 0.5, md: 1 } }}>
           <Box
             sx={{
-              width: 32, height: 32, borderRadius: 0, flex: "none",
+              width: 32, height: 32, borderRadius: RADIUS.sm, flex: "none",
               background: SHELL_ON,
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: `0 2px 4px ${alpha(SHELL_ON, 0.28)}`,
@@ -253,13 +253,13 @@ export function TopNav({
           onChange={(_, v: ViewMode | null) => v && setViewMode(v)}
           sx={{
             bgcolor: alpha(SHELL_ON, 0.04),
-            borderRadius: 0,
+            borderRadius: RADIUS.full,
             p: 0.375,
             "& .MuiToggleButton-root": {
               color: SHELL_DIM, border: "none",
               px: { xs: 1, sm: 1.5 }, py: 0.375,
               textTransform: "none", fontSize: 13, fontWeight: 600, gap: 0.5,
-              borderRadius: "0 !important",
+              borderRadius: `${RADIUS.full} !important`,
               "&.Mui-selected": { bgcolor: "#FFFFFF", color: SHELL_ON, boxShadow: "0 1px 2px rgba(15,23,42,0.08)" },
               "&.Mui-selected:hover": { bgcolor: "#FFFFFF" },
               "&:hover": { bgcolor: alpha(SHELL_ON, 0.06) },

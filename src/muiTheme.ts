@@ -12,12 +12,12 @@
 
 import { createTheme } from "@mui/material/styles";
 import {
-  M3, SHAPE, ELEVATION, M3_TYPE, FONT_SANS, FONT_MONO, EASING, DURATION, STATE,
+  M3, SHAPE, RADIUS, ELEVATION, M3_TYPE, FONT_SANS, FONT_MONO, EASING, DURATION, STATE,
 } from "./md3/tokens";
 
 // Re-export the raw MD3 roles under one object for new code.
 export const md3 = M3;
-export { SHAPE, ELEVATION, EASING, DURATION, FONT_SANS, FONT_MONO };
+export { SHAPE, RADIUS, ELEVATION, EASING, DURATION, FONT_SANS, FONT_MONO };
 
 // Blend two hex colors: `over` laid on `base` at `alpha` (0..1). Used for MD3
 // state layers where the exact resulting hex is needed (e.g. a filled button's

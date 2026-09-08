@@ -34,7 +34,7 @@ import { ExportButton } from "../tools/ExportButton";
 import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated, formatCoLocationReason } from "../data/derive/filters";
 import { evaluatePlp, plpMsids } from "../data/derive/plp";
 import { distanceMiles, type LngLat } from "../geo/measure";
-import { SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, TEAL } from "../muiTheme";
+import { SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, TEAL, RADIUS } from "../muiTheme";
 import { titleILabel } from "../data/types";
 import type { LegislativeProps, Representative } from "../data/types";
 
@@ -48,7 +48,7 @@ function GradeBadge({ grade }: { grade: string }) {
   return (
     <Box
       sx={{
-        width: 40, height: 40, borderRadius: 1.5,
+        width: 40, height: 40, borderRadius: RADIUS.sm,
         display: "inline-flex", alignItems: "center", justifyContent: "center",
         fontWeight: 800, fontSize: 16,
         bgcolor: rgbaToCss(s.fill), color: rgbaToCss(s.letterColor),
@@ -477,7 +477,7 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
             <YesNo yes={plpEval.isPlp} why={plpEval.reason} />
           </Box>
         </Stack>
-        <Paper variant="outlined" sx={{ mt: 1.25, p: 1.5, borderRadius: 1.5, borderColor: sohEligible ? alpha(GREEN_MID, 0.35) : SHELL_HAIRLINE, bgcolor: sohEligible ? alpha(GREEN_MID, 0.06) : "transparent" }}>
+        <Paper variant="outlined" sx={{ mt: 1.25, p: 1.5, borderRadius: RADIUS.md, borderColor: sohEligible ? alpha(GREEN_MID, 0.35) : SHELL_HAIRLINE, bgcolor: sohEligible ? alpha(GREEN_MID, 0.06) : "transparent" }}>
           <Typography sx={{ fontSize: 12, fontWeight: 700, color: sohEligible ? GREEN_MID : SHELL_DIM }}>
             {sohEligible ? "A new School of Hope may open here" : "Not an eligible location for a new School of Hope"}
           </Typography>
@@ -510,7 +510,7 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
           <Stack direction="row" spacing={0.75} alignItems="center">
             <Typography sx={{ fontSize: 12, color: SHELL_DIM }}>Building utilization</Typography>
             {utilPct != null && (
-              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 1, bgcolor: alpha(utilColor, 0.14), color: utilColor, fontSize: 11, fontWeight: 700, lineHeight: 1.5 }}>
+              <Box sx={{ px: 0.75, py: 0.15, borderRadius: RADIUS.xs, bgcolor: alpha(utilColor, 0.14), color: utilColor, fontSize: 11, fontWeight: 700, lineHeight: 1.5 }}>
                 {util.label}
               </Box>
             )}

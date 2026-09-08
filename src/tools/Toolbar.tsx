@@ -20,7 +20,7 @@ import { pathDistanceMiles, distanceMiles, milesToMeters, type LngLat } from "..
 import { geodesicBufferMiles, areaSquareMiles } from "../geo/buffer";
 import { apportionByArea } from "../geo/intersect";
 import { ExportButton } from "./ExportButton";
-import { TEAL, SHELL_DIM, SHELL_ON, SHELL_HAIRLINE } from "../muiTheme";
+import { TEAL, SHELL_DIM, SHELL_ON, SHELL_HAIRLINE, RADIUS } from "../muiTheme";
 import type { SchoolFeature } from "../data/types";
 
 const RADII = [1, 2, 3, 5, 10];
@@ -34,13 +34,13 @@ function ToolBar({ icon, title, detail, actions }: {
     <Paper
       elevation={0}
       sx={{
-        px: 1.5, py: 0.85, borderRadius: 2.5, bgcolor: "#FFFFFF",
+        px: 1.5, py: 0.85, borderRadius: RADIUS.lg, bgcolor: "#FFFFFF",
         border: `1px solid ${alpha(TEAL, 0.45)}`, boxShadow: "var(--shadow-card)",
         display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap",
         maxWidth: "calc(100vw - 24px)", pointerEvents: "auto",
       }}
     >
-      <Box sx={{ flex: "none", display: "flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 1.5, bgcolor: alpha(TEAL, 0.12), color: TEAL }}>
+      <Box sx={{ flex: "none", display: "flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: RADIUS.sm, bgcolor: alpha(TEAL, 0.12), color: TEAL }}>
         {icon}
       </Box>
       <Box sx={{ minWidth: 0 }}>
@@ -199,7 +199,7 @@ export function Toolbar() {
       {/* Tool buttons: vertical white rounded-square stack, bottom-right, matching
           the zoom / full-screen / compass controls below it. */}
       <Box sx={{ position: "absolute", right: 16, bottom: 200, zIndex: 8, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-        <Paper elevation={0} sx={{ borderRadius: "0", overflow: "hidden", border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)" }}>
+        <Paper elevation={0} sx={{ borderRadius: RADIUS.lg, overflow: "hidden", border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)" }}>
           <ToggleButtonGroup
             orientation="vertical"
             value={activeTool === "none" ? null : activeTool}

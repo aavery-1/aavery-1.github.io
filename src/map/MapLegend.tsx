@@ -14,7 +14,7 @@ import { useStore } from "../store";
 import { layerById } from "../config/layers";
 import { GRADE_STYLES, rgbaToCss, GRADE_DOMAIN } from "./gradeEncoding";
 import { SHAPE_LEGEND, shapeSvgElement, type MarkerShape } from "./markerShapes";
-import { ACCENT, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE } from "../muiTheme";
+import { ACCENT, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, RADIUS } from "../muiTheme";
 
 const SLATE = "#334155";
 const CO_LOC_TEAL = "#0D9488"; // matches the teal co-location dot on the map
@@ -97,7 +97,7 @@ function LineSwatch({ color, dashed }: { color: string; dashed?: boolean }) {
 }
 
 function AreaSwatch({ color, border }: { color: string; border: string }) {
-  return <Box component="span" sx={{ width: 14, height: 11, borderRadius: 0.75, bgcolor: color, border: `1.5px solid ${border}`, flex: "none" }} />;
+  return <Box component="span" sx={{ width: 14, height: 11, borderRadius: RADIUS.tile, bgcolor: color, border: `1.5px solid ${border}`, flex: "none" }} />;
 }
 
 function Ramp({ stops, min, mid, max }: { stops: string[]; min: string; mid?: string; max: string }) {
@@ -134,7 +134,7 @@ export function MapLegend() {
           aria-label="Legend"
           onClick={(e) => setAnchor(e.currentTarget)}
           size="small"
-          sx={{ width: 40, height: 40, borderRadius: 0, color: open ? ACCENT : SHELL_DIM, "&:hover": { bgcolor: "#f4f5f7", color: SHELL_ON } }}
+          sx={{ width: 40, height: 40, borderRadius: RADIUS.md, color: open ? ACCENT : SHELL_DIM, "&:hover": { bgcolor: "#f4f5f7", color: SHELL_ON } }}
         >
           <ListIcon size={18} aria-hidden />
         </IconButton>
@@ -145,7 +145,7 @@ export function MapLegend() {
         onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
-        slotProps={{ paper: { role: "region", "aria-label": "Map legend", sx: { mt: 1, borderRadius: 0, border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)", width: 256, maxWidth: "calc(100vw - 16px)", maxHeight: "min(66vh, 560px)", overflowY: "auto" } } }}
+        slotProps={{ paper: { role: "region", "aria-label": "Map legend", sx: { mt: 1, borderRadius: RADIUS.md, border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)", width: 256, maxWidth: "calc(100vw - 16px)", maxHeight: "min(66vh, 560px)", overflowY: "auto" } } }}
       >
         <Box sx={{ px: 1.75, pt: 1.5, pb: 1.5 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 700, color: SHELL_ON, mb: 1.25 }}>Legend</Typography>
