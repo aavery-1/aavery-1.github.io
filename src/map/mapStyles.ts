@@ -14,17 +14,20 @@
 
 import type { BaseMapType } from "../store";
 
-// Palette (kept in step with the app shell's neutrals).
-const LAND = "#f4f3ee";        // warm paper
-const LAND_STROKE = "#e7e5dd";
+// Palette, tuned to harmonize with the MD3 surface tones (cool, slightly
+// blue-lavender neutrals from the surfaceContainer family, not the old warm
+// paper). The land sits a step darker than the app surface (#faf8ff) so the map
+// reads as its own surface; water leans into the MD3 blue family.
+const LAND = "#eef0f8";        // cool MD3 neutral land
+const LAND_STROKE = "#e2e4ef";
 const ROAD = "#ffffff";
-const ROAD_STROKE = "#e9e6df";
-const ROAD_HWY = "#efece4";
-const ROAD_HWY_STROKE = "#e2ded3";
-const WATER = "#c7d8de";       // muted blue-gray
-const PARK = "#e7ece0";        // faint green
-const ADMIN = "#d8d5cc";
-const LABEL = "#5c5b52";
+const ROAD_STROKE = "#e6e8f1";
+const ROAD_HWY = "#eceef6";
+const ROAD_HWY_STROKE = "#dfe2ee";
+const WATER = "#c4d3e8";       // muted MD3-family blue
+const PARK = "#dde8e2";        // faint cool green
+const ADMIN = "#cfd2e0";
+const LABEL = "#4a4c58";       // cool onSurfaceVariant-toned label
 const LABEL_HALO = "#ffffff";
 
 const ANALYST_BASEMAP_STYLE: google.maps.MapTypeStyle[] = [
