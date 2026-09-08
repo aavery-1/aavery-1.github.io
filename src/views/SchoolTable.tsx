@@ -286,10 +286,20 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                   hover
                   selected={selected}
                   onClick={() => openSchool(r)}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open details for ${r.name}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openSchool(r);
+                    }
+                  }}
                   sx={{
                     cursor: "pointer",
                     "&.Mui-selected": { bgcolor: alpha("#2563EB", 0.08) },
                     "&.Mui-selected:hover": { bgcolor: alpha("#2563EB", 0.14) },
+                    "&:focus-visible": { outline: `2px solid ${ACCENT_TEXT}`, outlineOffset: -2 },
                   }}
                 >
                   {/* School: grade badge + name + MSID + decision flags, one column */}

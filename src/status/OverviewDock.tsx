@@ -273,11 +273,21 @@ export function OverviewDock() {
                     <Stack
                       key={p.msid} direction="row" alignItems="center" spacing={1.5}
                       onClick={() => focus(f)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Focus ${p.name} on the map`}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          focus(f);
+                        }
+                      }}
                       sx={{
                         px: 1.5, py: 1, borderRadius: 0, cursor: "pointer",
                         bgcolor: p.msid === selectedMsid ? alpha("#1976D2", 0.1) : "transparent",
                         transition: "background-color 120ms ease",
                         "&:hover": { bgcolor: p.msid === selectedMsid ? alpha("#1976D2", 0.14) : alpha(SHELL_ON, 0.04) },
+                        "&:focus-visible": { outline: `2px solid #1976D2`, outlineOffset: -2 },
                       }}
                     >
                       <Box sx={{
