@@ -302,7 +302,14 @@ export function OverviewDock() {
                         <Typography noWrap sx={{ fontSize: 11.5, color: SHELL_DIM, lineHeight: 1.25 }}>
                           {p.county}, {schoolTypeLabel(p.type)}
                           {isPlp ? <>, <Box component="span" sx={{ color: PLP_RED, fontWeight: 700 }}>PLP</Box></> : null}
-                          {underused ? <>, <Box component="span" sx={{ color: UTIL_COLORS.under, fontWeight: 700 }}>Underused</Box></> : null}
+                          {underused ? (
+                            <>
+                              , <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.4 }}>
+                                <Box component="span" sx={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", bgcolor: UTIL_COLORS.under, flex: "none" }} />
+                                <Box component="span" sx={{ fontWeight: 700 }}>Underused</Box>
+                              </Box>
+                            </>
+                          ) : null}
                         </Typography>
                       </Box>
                       <UsageDonut enrollment={p.enrollment} capacity={p.capacity} cofte={p.cofte} surplus={p.fish_surplus} />
