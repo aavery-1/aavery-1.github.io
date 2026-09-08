@@ -1,60 +1,41 @@
 # Design and engineering conventions
 
 This is the single reference for how the Schools of Hope ("Hope Siting") tool
-looks, reads, and is built. The tool follows the **IBM Carbon Design System**
-(<https://carbondesignsystem.com>), Gray 10 theme. New and edited code follows
-it. When a rule here and a component disagree, the component is wrong.
+looks, reads, and is built. The tool follows **Material Design 3**
+(<https://m3.material.io>). New and edited code follows it. When a rule here and
+a component disagree, the component is wrong.
 
-## 1. Design tokens (Carbon, one system)
+## 1. Design tokens (Material Design 3, one system)
 
-All tokens live in [`src/muiTheme.ts`](src/muiTheme.ts) (MUI theme + exported
-constants) and [`src/theme.ts`](src/theme.ts) (CSS custom properties). Reference
-them; do not introduce ad-hoc `fontSize`, `color`, or pixel values in components.
+The MD3 tokens are the single source of visual truth. Raw tokens live in
+[`src/md3/tokens.ts`](src/md3/tokens.ts); [`src/muiTheme.ts`](src/muiTheme.ts)
+wires them into MUI (and keeps legacy constant names as aliases onto MD3 roles),
+and [`src/theme.ts`](src/theme.ts) exposes the CSS custom properties. Reference
+tokens; do not introduce ad-hoc `fontSize`, `color`, or pixel values in
+components. New code should import MD3 roles (`md3`, `RADIUS`, `SHAPE`,
+`ELEVATION`, `M3_TYPE`) from `md3/tokens` or `muiTheme`.
 
-### Type (IBM Plex)
+### Color (MD3 roles, HCT tonal palette)
 
-Typeface is **IBM Plex Sans** (UI) and **IBM Plex Mono** (numbers, MSIDs, code),
-loaded in [`index.html`](index.html). Carbon uses two working weights: Regular
-(400) and Semibold (600); headings are Semibold, never Bold. Base size 14.
+The scheme is generated from the brand-blue seed (`#0F62FE`) by Google's
+official material-color-utilities engine (`SchemeVibrant`), so it is a
+spec-correct HCT tonal palette, not hand-picked hexes. Regenerate with
+[`scripts/gen-md3-theme.mjs`](scripts/gen-md3-theme.mjs). Use MD3 role names, not
+raw hex, at call sites. Key roles:
 
-| Token | Size | Weight | Carbon role | Use |
-|---|---|---|---|---|
-| `TYPE.title` | 16 | 600 | heading-compact-02 | Panel and card titles |
-| `TYPE.body` | 14 | 400 | body-01 | Default reading size |
-| `TYPE.label` | 13 | 600 | heading-compact-01 | Control and field labels |
-| `TYPE.caption` | 12 | 400 | label-01 | Secondary detail |
-| `TYPE.micro` | 12 | 400 | label-01 | Dense map and legend labels |
+- Surfaces: `surface` canvas; `surfaceContainerLowest` (white) for chrome, cards,
+  and fields; the `surfaceContainer*` tones step up with elevation.
+- Text: `onSurface` (primary), `onSurfaceVariant` (secondary); a helper tone sits
+  between `onSurfaceVariant` and `outline`.
+- Border: `outlineVariant` (subtle / divider), `outline` (strong / field border).
+- Interactive: `primary` (`#0052dd`); `onPrimaryContainer` (`#003da9`) for
+  pressed states and text on a blue tint. `onPrimary` is text on a filled primary.
+- Status: `error` is the MD3 error role; `good` / `warning` are semantic status
+  hues MD3 does not define.
 
-12px is the type floor (Carbon's smallest). Italics only for a genuine secondary
-aside, never for emphasis.
-
-### Spacing
-
-Carbon's mini-unit is 8px = `theme.spacing(1)`; the scale is 2/4/8/12/16/24/32...
-Card inset is `CARD_PADDING` (16px, `p: 2`). Favor generous spacing: Carbon UI
-breathes. Tight, dense clusters read as garbled here, so give panels room.
-
-### Geometry
-
-Carbon is **square**: `theme.shape.borderRadius` is `0`, so every numeric `sx`
-`borderRadius` resolves to 0. Containers, buttons, fields, popovers, and the
-results sheet all have sharp corners. The only rounded shapes are Tags/chips
-(pills, matching Carbon's Tag) and true circles (avatars, status dots, donuts).
-
-### Color roles (Carbon Gray 10)
-
-Semantic, not raw hex, at call sites.
-
-- Background: `SHELL_ALT` (Gray 10, `#f4f4f4`) canvas; `SHELL_BG` (White) for
-  chrome, containers, and fields (Carbon layer-01).
-- Text: `SHELL_ON` (Gray 100, `text.primary`), `SHELL_DIM` (Gray 70,
-  `text.secondary`), `SHELL_MUTED` (Gray 60, helper).
-- Border: `SHELL_HAIRLINE` (Gray 20, `divider`); `BORDER_STRONG` (Gray 50) for
-  field underlines.
-- Interactive: `ACCENT` / `TEAL` (Carbon Blue 60, `#0f62fe`); `ACCENT_DARK`
-  (Blue 70) for hover/active and text on a blue tint (`ACCENT_TEXT`).
-- Status: `STATUS.good` (Green 50), `STATUS.warning` (Orange 40), `STATUS.error`
-  (Red 60).
+Every MD3 text/interactive role passes WCAG AA on its surface (checked; the HCT
+engine calibrates for contrast). The legacy aliases (`SHELL_*`, `ACCENT`, `TEAL`)
+still resolve, now onto MD3 roles.
 
 **Data encodings keep their meaning and are never tokenized away:** the grade
 A-F scale in [`gradeEncoding.ts`](src/map/gradeEncoding.ts) and `UTIL_COLORS`
@@ -62,25 +43,63 @@ A-F scale in [`gradeEncoding.ts`](src/map/gradeEncoding.ts) and `UTIL_COLORS`
 [`store.ts`](src/store.ts). These carry information, not chrome; reuse
 `UTIL_COLORS` everywhere utilization appears and never add a parallel palette.
 
+### Type (Roboto, MD3 type scale)
+
+Typeface is **Roboto** (UI) and **Roboto Mono** (numbers, MSIDs, code), loaded in
+[`index.html`](index.html). MD3's working weights are Regular (400) and Medium
+(500); titles and labels are Medium, headlines Regular, never Bold. The full MD3
+scale (display / headline / title / body / label) is `M3_TYPE`; the five-role
+`TYPE` set maps onto it (title -> titleMedium, body -> bodyMedium, label ->
+labelLarge, caption -> bodySmall, micro -> labelMedium). 11px is the label floor.
+
+### Shape
+
+MD3 uses a seven-step corner scale (`SHAPE`: none 0, extra-small 4, small 8,
+medium 12, large 16, extra-large 28, full). `theme.shape.borderRadius` is medium
+(12), so components round by default. At `sx` call sites a bare number is a
+theme-unit MULTIPLIER (`borderRadius: 8` renders 96px), so reach for the
+px-string tokens instead: `borderRadius: RADIUS.sm`. The language:
+
+- tiny shape-encoding swatches (legend / type dots): `RADIUS.tile` (3), to keep
+  square-vs-circle marker semantics crisp
+- grade letter tiles, chips: `RADIUS.sm` (8)
+- cards, popovers, thumbnails, map icon buttons: `RADIUS.md` (12)
+- floating tool bars, map control clusters: `RADIUS.lg` (16)
+- search field, view switcher, active-filter bar: `RADIUS.full` (pill)
+- dialogs: extra-large (28); true circles (avatars, status dots, donuts): `50%`
+
+### Spacing
+
+8px grid = `theme.spacing(1)`; the scale is 2/4/8/12/16/24/32... Card inset is
+`CARD_PADDING` (16px, `p: 2`). Favor generous spacing; give panels room.
+
 ### Elevation
 
-Carbon is flat: containers rely on their 1px border, not shadow. Shadow is
-reserved for floating overlays (menus, popovers, tooltips, the results sheet),
-via `sx={{ boxShadow: N }}` or `var(--shadow-card)`.
+MD3 conveys elevation first through the surface-container tones (a higher
+container reads as more elevated), with shadow reserved for surfaces that float
+above content (menus, popovers, tooltips, the results sheet). `ELEVATION` holds
+MD3's level 1-5 shadow tokens; MUI's shadow ramp is filled from them.
+
+### Motion and state layers
+
+`EASING` and `DURATION` are the MD3 motion tokens; `STATE` holds the state-layer
+opacities (hover 8 / focus 10 / pressed 10 / dragged 16). Interactive components
+show a state layer (the "on" role over the component) on hover/focus/press.
 
 ### Iconography
 
-One icon set: **Carbon icons** (`@carbon/icons-react`), re-exported from
-[`src/ui/icons.tsx`](src/ui/icons.tsx). Icons take a `size` prop and inherit
-`currentColor`. No MUI icons, no lucide, no emoji or Unicode glyphs as icons.
+One icon set: **Material Symbols** (MD3's icon family), via `@mui/icons-material`
+Rounded variants, re-exported from [`src/ui/icons.tsx`](src/ui/icons.tsx). Icons
+take a `size` (px) prop and inherit `currentColor`. No Carbon icons, no lucide,
+no emoji or Unicode glyphs as icons.
 
-## 2. UI copy (Carbon content, sentence case)
+## 2. UI copy (sentence case)
 
-Reference: <https://carbondesignsystem.com/guidelines/content/overview/>
+Reference: <https://m3.material.io/foundations/content-design/style-guide>
 
 - Sentence case for labels, buttons, headings, and menu items. Never Title Case,
-  and never all-caps (Carbon does not use uppercase eyebrows; use size, weight,
-  and color for emphasis instead of `textTransform: uppercase`).
+  and never all-caps (MD3 does not uppercase; use size, weight, and color for
+  emphasis instead of `textTransform: uppercase`).
 - Second person, present tense, no filler. No trailing colons on toggles.
 - Buttons and actions start with a verb ("Export", "Compare", "Open in the list").
 - For each string, ask "what does the user need to know here?" and write the

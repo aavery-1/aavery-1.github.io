@@ -686,7 +686,7 @@ function SectionHeader({ title, caption, badge }: { title: string; caption?: str
   );
 }
 
-// A Carbon-style side-nav rail item: icon over a short label, with a left accent
+// An MD3-style navigation-rail item: icon over a short label, with a left accent
 // bar and tinted surface when active.
 function RailIcon({ label, icon, onClick, active, badge }: { label: string; icon: React.ReactNode; onClick: () => void; active?: boolean; badge?: number }) {
   return (
