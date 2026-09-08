@@ -133,15 +133,17 @@ export function MapView() {
     // with ResizeObserver and nudging the camera by one pixel forces
     // bounds_changed to fire so deck re-projects. The pan is reversed
     // immediately so the visible camera does not move.
+    let ro: ResizeObserver | null = null;
+    let kickTimer: ReturnType<typeof setTimeout> | null = null;
     if (mapEl.current) {
       const kick = () => {
         google.maps.event.trigger(map, "resize");
         map.panBy(1, 0);
         map.panBy(-1, 0);
       };
-      const ro = new ResizeObserver(kick);
+      ro = new ResizeObserver(kick);
       ro.observe(mapEl.current);
-      setTimeout(kick, 500);
+      kickTimer = setTimeout(kick, 500);
     }
 
     const syncView = () => {
@@ -174,6 +176,24 @@ export function MapView() {
       else if (tool === "radius") setRadius(p);
       else if (tool === "draw") useStore.getState().addDrawPoint(p);
     });
+
+    // Tear down fully. Without this, React 18 StrictMode's dev-only double
+    // effect-invocation (mount, cleanup, mount again) leaves the first
+    // GoogleMapsOverlay's luma.gl device alive while a second one spins up,
+    // which corrupts deck's shared shader-module registry ("luma.gl: this
+    // version has already been initialized", then shader link errors on
+    // every icon/text layer). A real unmount (view switch, HMR) hits the same
+    // path, so this also fixes leaking a live overlay + WebGL context there.
+    return () => {
+      if (ro) ro.disconnect();
+      if (kickTimer !== null) clearTimeout(kickTimer);
+      google.maps.event.clearInstanceListeners(map);
+      overlay.finalize();
+      overlayRef.current = null;
+      mapRef.current = null;
+      setOverlayReady(false);
+      registerMap(null);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
