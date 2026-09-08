@@ -16,7 +16,7 @@ import {
 import { Search as SearchIcon, Location as MyLocationIcon, Compare as CompareArrowsIcon } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
-import { useStore, utilizationBucket } from "../store";
+import { useStore, utilizationBucket, MAX_COMPARE } from "../store";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
@@ -362,15 +362,18 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                         <MyLocationIcon size={16} />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={pinned ? "Remove from compare" : "Add to compare"} placement="top">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => { e.stopPropagation(); toggleComparePin(r.msid); }}
-                        aria-label={pinned ? `Remove ${r.name} from compare` : `Add ${r.name} to compare`}
-                        sx={{ color: pinned ? ACCENT_TEXT : undefined }}
-                      >
-                        <CompareArrowsIcon size={16} />
-                      </IconButton>
+                    <Tooltip title={pinned ? "Remove from compare" : comparePinned.length >= MAX_COMPARE ? `Compare holds up to ${MAX_COMPARE} sites` : "Add to compare"} placement="top">
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => { e.stopPropagation(); toggleComparePin(r.msid); }}
+                          disabled={!pinned && comparePinned.length >= MAX_COMPARE}
+                          aria-label={pinned ? `Remove ${r.name} from compare` : `Add ${r.name} to compare`}
+                          sx={{ color: pinned ? ACCENT_TEXT : undefined }}
+                        >
+                          <CompareArrowsIcon size={16} />
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   </TableCell>
                 </TableRow>
