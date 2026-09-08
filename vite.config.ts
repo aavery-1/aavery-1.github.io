@@ -22,7 +22,6 @@ export default defineConfig({
           if (!id.includes("node_modules")) return undefined;
           if (id.includes("@deck.gl") || id.includes("@luma.gl") || id.includes("@math.gl") || id.includes("@loaders.gl")) return "vendor-deckgl";
           if (id.includes("@mui") || id.includes("@emotion")) return "vendor-mui";
-          if (id.includes("@carbon")) return "vendor-carbon";
           if (id.includes("/react/") || id.includes("/react-dom/") || id.includes("/scheduler/")) return "vendor-react";
           return "vendor";
         },

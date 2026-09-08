@@ -13,7 +13,7 @@ import {
   Box, Paper, ToggleButton, ToggleButtonGroup, Typography, IconButton, Divider, Tooltip, Stack, Button, Chip,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { Ruler as StraightenIcon, CenterCircle as RadioButtonUncheckedIcon, Draw as GestureIcon, Undo as UndoIcon } from "@carbon/icons-react";
+import { Ruler as StraightenIcon, CenterCircle as RadioButtonUncheckedIcon, Draw as GestureIcon, Undo as UndoIcon } from "../ui/icons";
 import { useStore, type ActiveTool } from "../store";
 import { useData } from "../data/DataContext";
 import { pathDistanceMiles, distanceMiles, milesToMeters, type LngLat } from "../geo/measure";

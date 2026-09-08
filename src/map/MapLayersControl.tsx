@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import { Box, IconButton, Popover, FormControlLabel, Switch, Typography, Divider, Tooltip } from "@mui/material";
-import { Map as MapIcon, Satellite as SatelliteAltIcon, Mountain as TerrainIcon } from "@carbon/icons-react";
+import { Map as MapIcon, Satellite as SatelliteAltIcon, Mountain as TerrainIcon } from "../ui/icons";
 import { useStore, type BaseMapType, type MapOverlays } from "../store";
 import { ACCENT, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, RADIUS } from "../muiTheme";
 

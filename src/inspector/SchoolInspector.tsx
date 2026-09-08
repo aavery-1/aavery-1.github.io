@@ -21,7 +21,7 @@ import {
   ListItem, LinearProgress, Tooltip,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { Close as CloseIcon, Compare as CompareArrowsIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon } from "@carbon/icons-react";
+import { Close as CloseIcon, Compare as CompareArrowsIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon } from "../ui/icons";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE, utilizationStyle, isUnderutilizedFacility } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";

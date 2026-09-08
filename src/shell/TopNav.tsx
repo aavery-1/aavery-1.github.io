@@ -9,7 +9,7 @@ import {
   ToggleButtonGroup, ToggleButton, IconButton, Menu, MenuItem, ListItemIcon,
   ListItemText, Divider, Autocomplete, TextField, Stack, Popover, useMediaQuery, useTheme,
 } from "@mui/material";
-import { Education as HubIcon, Search as SearchIcon, Map as MapIcon, List as ViewListIcon, Compare as CompareIcon, Information as InfoOutlinedIcon, Help as HelpOutlineIcon, Keyboard as KeyboardIcon, Menu as MenuIcon } from "@carbon/icons-react";
+import { Education as HubIcon, Search as SearchIcon, Map as MapIcon, List as ViewListIcon, Compare as CompareIcon, Information as InfoOutlinedIcon, Help as HelpOutlineIcon, Keyboard as KeyboardIcon, Menu as MenuIcon } from "../ui/icons";
 import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
 import { useStore, type ViewMode } from "../store";

@@ -26,7 +26,7 @@ import {
   TableRow, TableCell, TableContainer,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { Close as CloseIcon, Compare as CompareIcon, Add as AddIcon } from "@carbon/icons-react";
+import { Close as CloseIcon, Compare as CompareIcon, Add as AddIcon } from "../ui/icons";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE } from "../store";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";

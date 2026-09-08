@@ -14,7 +14,7 @@ import {
   TableSortLabel, Chip, Typography, TextField, InputAdornment, Stack, Skeleton,
   Select, MenuItem, IconButton, Tooltip, Button,
 } from "@mui/material";
-import { Search as SearchIcon, Location as MyLocationIcon, Compare as CompareArrowsIcon } from "@carbon/icons-react";
+import { Search as SearchIcon, Location as MyLocationIcon, Compare as CompareArrowsIcon } from "../ui/icons";
 import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
 import { useStore, utilizationBucket, MAX_COMPARE } from "../store";

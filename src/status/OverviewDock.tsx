@@ -16,7 +16,7 @@ import { useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Paper, Typography, Stack, Collapse, Button, TextField, InputAdornment, useMediaQuery, useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { ChevronDown, ChevronUp, ArrowRight as ArrowForwardIcon, Search as SearchIcon, Close as CloseIcon } from "@carbon/icons-react";
+import { ChevronDown, ChevronUp, ArrowRight as ArrowForwardIcon, Search as SearchIcon, Close as CloseIcon } from "../ui/icons";
 import { useStore, utilizationStyle, isUnderutilizedFacility, UTIL_COLORS } from "../store";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";

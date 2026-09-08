@@ -4,7 +4,7 @@
 // never in this tool.
 
 import { Button } from "@mui/material";
-import { Download as DownloadIcon } from "@carbon/icons-react";
+import { Download as DownloadIcon } from "../ui/icons";
 import { toCsv, downloadCsv, stamp } from "../data/csv";
 
 export function ExportButton({

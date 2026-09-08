@@ -27,7 +27,6 @@
     "data:soh": "node scripts/build-schools-of-hope.mjs"
   },
   "dependencies": {
-    "@carbon/icons-react": "^11.87.0",
     "@deck.gl/core": "^9.0.38",
     "@deck.gl/google-maps": "^9.0.38",
     "@deck.gl/layers": "^9.0.38",
@@ -37,7 +36,6 @@
     "@mui/material": "^6.5.0",
     "@tanstack/react-virtual": "^3.14.11",
     "@turf/turf": "^7.1.0",
-    "lucide-react": "^0.462.0",
     "rbush": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

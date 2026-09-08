@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { Box, Typography, Tooltip, IconButton, Popover } from "@mui/material";
-import { List as ListIcon } from "@carbon/icons-react";
+import { List as ListIcon } from "../ui/icons";
 import { useStore } from "../store";
 import { layerById } from "../config/layers";
 import { GRADE_STYLES, rgbaToCss, GRADE_DOMAIN } from "./gradeEncoding";
