@@ -86,9 +86,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return;
     }
     setEntries((e) => ({ ...e, [id]: { status: "loading", result: null } }));
-    adapter().then((result) => {
-      setEntries((e) => ({ ...e, [id]: { status: result.ok ? "ok" : "error", result } }));
-    });
+    adapter()
+      .then((result) => {
+        setEntries((e) => ({ ...e, [id]: { status: result.ok ? "ok" : "error", result } }));
+      })
+      .catch((err: unknown) => {
+        // Every adapter is expected to catch its own failures and resolve to
+        // ok:false (see loadValidated in base.ts), so this should never fire.
+        // It exists so a future adapter that skips that helper (e.g. wiring a
+        // real endpoint per PROJECT_NOTES.md) fails as a visible error chip
+        // with a retry, not a layer stuck on "loading" forever.
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(message);
+        setEntries((e) => ({
+          ...e,
+          [id]: { status: "error", result: { ok: false, data: null, error: message, source: "unknown", vintage: "unknown" } },
+        }));
+      });
   }, []);
 
   const retry = useCallback((id: string) => load(id), [load]);
