@@ -16,12 +16,12 @@ import { useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Paper, Typography, Stack, Collapse, Button, TextField, InputAdornment, useMediaQuery, useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { ChevronDown, ChevronUp, ArrowRight as ArrowForwardIcon, Search as SearchIcon, Close as CloseIcon } from "../ui/icons";
+import { ChevronDown, ChevronUp, ArrowRight as ArrowForwardIcon, Search as SearchIcon, Close as CloseIcon } from "@carbon/icons-react";
 import { useStore, utilizationStyle, isUnderutilizedFacility, UTIL_COLORS } from "../store";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { schoolTypeLabel } from "../data/types";
-import { SHELL_ON, SHELL_DIM, SHELL_MUTED, SHELL_HAIRLINE, TEAL, RADIUS } from "../muiTheme";
+import { SHELL_ON, SHELL_DIM, SHELL_MUTED, SHELL_HAIRLINE, TEAL } from "../muiTheme";
 import type { SchoolFeature } from "../data/types";
 
 const SLATE = "#334155";
@@ -311,7 +311,7 @@ export function OverviewDock() {
                       }}
                     >
                       <Box sx={{
-                        width: 24, height: 24, borderRadius: RADIUS.sm, flex: "none",
+                        width: 24, height: 24, borderRadius: 0, flex: "none",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 10.5, fontWeight: 800,
                         bgcolor: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor),
@@ -369,7 +369,7 @@ function FilterStat({ label, value, color, active, onClick, title }: { label: st
       sx={{
         appearance: "none", font: "inherit", cursor: "pointer", whiteSpace: "nowrap",
         display: "flex", alignItems: "center", gap: 0.75, width: "100%",
-        px: 1, py: 0.6, borderRadius: RADIUS.sm,
+        px: 1, py: 0.6, borderRadius: 1,
         border: `1px solid ${active ? alpha(color, 0.5) : SHELL_HAIRLINE}`,
         bgcolor: active ? alpha(color, 0.12) : "transparent",
         "&:hover": { bgcolor: active ? alpha(color, 0.18) : alpha(SHELL_ON, 0.04) },

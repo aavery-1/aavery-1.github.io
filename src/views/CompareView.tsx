@@ -26,13 +26,13 @@ import {
   TableRow, TableCell, TableContainer,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { Close as CloseIcon, Compare as CompareIcon, Add as AddIcon } from "../ui/icons";
+import { Close as CloseIcon, Compare as CompareIcon, Add as AddIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE } from "../store";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { ExportButton } from "../tools/ExportButton";
-import { SHELL_ON, SHELL_DIM, SHELL_BG, SHELL_HAIRLINE, TEAL, ACCENT_TEXT, RADIUS } from "../muiTheme";
+import { SHELL_ON, SHELL_DIM, SHELL_BG, SHELL_HAIRLINE, TEAL, ACCENT_TEXT } from "../muiTheme";
 import { buildCompareSections } from "./compareModel";
 import type { SchoolFeature } from "../data/types";
 
@@ -300,7 +300,7 @@ function SiteHeaderCell({ school, minWidth, isSoh, isPlp, onOpen, onRemove }: {
         <Box
           title={gs.description}
           sx={{
-            width: 30, height: 30, borderRadius: RADIUS.sm, flex: "none",
+            width: 30, height: 30, borderRadius: 1, flex: "none",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontWeight: 800, fontSize: 14,
             bgcolor: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor),
@@ -348,7 +348,7 @@ function CompareEmptyState({ pinned, addable, onAdd, onRemove }: {
     <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", p: 3, bgcolor: "background.default", overflow: "auto" }}>
       <Paper variant="outlined" sx={{ maxWidth: 560, width: "100%", p: { xs: 3, sm: 4 }, borderColor: SHELL_HAIRLINE }}>
         <Stack spacing={2.5} alignItems="center" textAlign="center">
-          <Box sx={{ width: 52, height: 52, borderRadius: RADIUS.md, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: alpha(TEAL, 0.1) }}>
+          <Box sx={{ width: 52, height: 52, borderRadius: 1, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: alpha(TEAL, 0.1) }}>
             <CompareIcon size={26} style={{ color: TEAL }} />
           </Box>
           <Box>

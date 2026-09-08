@@ -132,7 +132,7 @@ code {
   background: transparent;
   color: var(--text-secondary);
   padding: 4px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 .icon-btn:hover {
   background: #f0f0ef;
@@ -172,7 +172,7 @@ code {
 .chip-swatch {
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: 0;
 }
 .toggle {
   width: 30px;
@@ -253,7 +253,7 @@ code {
   font-size: 11px;
   color: var(--text-tertiary);
   border: 1px solid var(--hairline);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0 5px;
 }
 .search-notfound {
@@ -272,7 +272,7 @@ code {
   font-family: inherit;
   font-size: 12px;
   border: 1px solid var(--hairline);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 5px 8px;
   background: var(--card);
 }
@@ -348,7 +348,7 @@ code {
 .scale-bar {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--hairline);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 5px 8px;
   pointer-events: auto;
   box-shadow: var(--shadow-card);
@@ -374,7 +374,7 @@ code {
 .coord-readout {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--hairline);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 4px 8px;
   font-size: 11px;
   display: flex;
@@ -741,7 +741,7 @@ code {
 .grade-pill {
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: 0;
   border: 1.5px solid;
   display: inline-flex;
   align-items: center;
@@ -818,7 +818,7 @@ code {
   font-size: 12px;
   padding: 8px;
   background: #fafaf9;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 /* Toolbar */
@@ -941,7 +941,7 @@ code {
   background: #fef2f2;
   color: #b91c1c;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 12px;
   white-space: pre-wrap;
   margin: 10px 0;
@@ -966,7 +966,7 @@ code {
   flex-direction: column;
   background: var(--card);
   border: 1px solid var(--hairline);
-  border-radius: 16px;
+  border-radius: 0;
   box-shadow: var(--shadow-card);
   overflow: hidden;
 }
@@ -997,7 +997,7 @@ code {
 .map-ctrl-solo {
   background: var(--card);
   border: 1px solid var(--hairline);
-  border-radius: 16px;
+  border-radius: 0;
   box-shadow: var(--shadow-card);
 }
 
@@ -1095,7 +1095,7 @@ code {
   max-width: 240px;
   background: var(--card);
   border: 1px solid var(--hairline);
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: var(--shadow-card);
   padding: 8px 10px;
   pointer-events: none;
@@ -1108,7 +1108,7 @@ code {
 .pin-tooltip-grade {
   width: 20px;
   height: 20px;
-  border-radius: 4px;
+  border-radius: 0;
   border: 1.5px solid;
   display: inline-flex;
   align-items: center;
@@ -1131,7 +1131,7 @@ code {
   font-weight: 600;
   margin-top: 4px;
   padding: 3px 6px;
-  border-radius: 4px;
+  border-radius: 0;
   display: inline-block;
 }
 /* Material palette: Deep Orange 700 over, Blue 700 under, Green 700 target,

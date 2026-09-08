@@ -7,9 +7,9 @@
 
 import { useState } from "react";
 import { Box, IconButton, Popover, FormControlLabel, Switch, Typography, Divider, Tooltip } from "@mui/material";
-import { Map as MapIcon, Satellite as SatelliteAltIcon, Mountain as TerrainIcon } from "../ui/icons";
+import { Map as MapIcon, Satellite as SatelliteAltIcon, Mountain as TerrainIcon } from "@carbon/icons-react";
 import { useStore, type BaseMapType, type MapOverlays } from "../store";
-import { ACCENT, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, RADIUS } from "../muiTheme";
+import { ACCENT, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE } from "../muiTheme";
 
 const OVERLAYS: Array<{ key: keyof MapOverlays; label: string }> = [
   { key: "traffic", label: "Traffic" },
@@ -37,7 +37,7 @@ export function MapLayersControl() {
           aria-label="Base map and view"
           onClick={(e) => setAnchor(e.currentTarget)}
           size="small"
-          sx={{ width: 40, height: 40, borderRadius: RADIUS.md, color: anchor ? ACCENT : SHELL_DIM, "&:hover": { bgcolor: "#f4f5f7", color: SHELL_ON } }}
+          sx={{ width: 40, height: 40, borderRadius: 0, color: anchor ? ACCENT : SHELL_DIM, "&:hover": { bgcolor: "#f4f5f7", color: SHELL_ON } }}
         >
           <MapIcon size={18} />
         </IconButton>
@@ -48,7 +48,7 @@ export function MapLayersControl() {
         onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
-        slotProps={{ paper: { sx: { mt: 1, borderRadius: RADIUS.md, border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)", overflow: "hidden" } } }}
+        slotProps={{ paper: { sx: { mt: 1, borderRadius: 0, border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)", overflow: "hidden" } } }}
       >
         <Box sx={{ p: 2, width: 268 }}>
           <Typography sx={{ fontSize: 14, fontWeight: 700, color: SHELL_ON, mb: 1.5 }}>Base map</Typography>
@@ -69,7 +69,7 @@ export function MapLayersControl() {
                 >
                   <Box
                     sx={{
-                      height: 52, borderRadius: RADIUS.md, background: v.bg,
+                      height: 52, borderRadius: 2, background: v.bg,
                       border: `2px solid ${selected ? ACCENT : "transparent"}`,
                       outline: selected ? "none" : `1px solid ${SHELL_HAIRLINE}`,
                       display: "flex", alignItems: "center", justifyContent: "center",

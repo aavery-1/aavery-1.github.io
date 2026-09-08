@@ -26,7 +26,7 @@ import { COUNTY_BBOX } from "../geo/countyBounds";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss, type Grade } from "../map/gradeEncoding";
 import { mapLayersByGroup, type MapLayerDef, type MapLayerGroup } from "../config/mapLayers";
-import { TEAL, ACCENT, ACCENT_TEXT, SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, RADIUS } from "../muiTheme";
+import { TEAL, ACCENT, ACCENT_TEXT, SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE } from "../muiTheme";
 import { Icon } from "../ui/icons";
 import { useData } from "../data/DataContext";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
@@ -299,7 +299,7 @@ function GeographyFacet({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </Stack>
       {countySelection.size === 0 && (
-        <Typography sx={{ fontSize: 12, color: "#B71C1C", bgcolor: alpha("#D32F2F", 0.06), border: `1px solid ${alpha("#D32F2F", 0.25)}`, borderRadius: RADIUS.sm, px: 1, py: 0.75, mt: 1, lineHeight: 1.5 }}>
+        <Typography sx={{ fontSize: 12, color: "#B71C1C", bgcolor: alpha("#D32F2F", 0.06), border: `1px solid ${alpha("#D32F2F", 0.25)}`, borderRadius: 1, px: 1, py: 0.75, mt: 1, lineHeight: 1.5 }}>
           No counties selected, so the map is empty. Pick at least one county.
         </Typography>
       )}
@@ -575,8 +575,8 @@ function MapLayersSection() {
 function Swatch({ def }: { def: MapLayerDef }) {
   const { kind, color } = def.swatch;
   if (kind === "dot") return <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: color, flex: "none" }} />;
-  if (kind === "outline") return <Box sx={{ width: 12, height: 12, borderRadius: RADIUS.tile, border: `2px solid ${color}`, flex: "none" }} />;
-  return <Box sx={{ width: 12, height: 12, borderRadius: RADIUS.tile, bgcolor: alpha(color, 0.85), flex: "none" }} />;
+  if (kind === "outline") return <Box sx={{ width: 12, height: 12, borderRadius: 0.5, border: `2px solid ${color}`, flex: "none" }} />;
+  return <Box sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: alpha(color, 0.85), flex: "none" }} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -596,7 +596,7 @@ function CheckboxRow({ label, checked, count, onToggle, swatch }: {
       sx={{
         appearance: "none", font: "inherit", textAlign: "left", width: "100%", border: "none",
         bgcolor: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 0.25,
-        px: 0.25, py: 0.15, borderRadius: RADIUS.sm, color: SHELL_ON,
+        px: 0.25, py: 0.15, borderRadius: 1, color: SHELL_ON,
         "&:hover": { bgcolor: alpha(SHELL_ON, 0.04) },
         "&:focus-visible": { outline: `2px solid ${TEAL}`, outlineOffset: -2 },
       }}
@@ -623,7 +623,7 @@ function GradeSwatch({ grade }: { grade: Grade }) {
   const st = resolveGradeStyle(grade);
   return (
     <Box sx={{
-      width: 20, height: 20, borderRadius: RADIUS.sm, flex: "none",
+      width: 20, height: 20, borderRadius: 0.5, flex: "none",
       display: "flex", alignItems: "center", justifyContent: "center",
       fontSize: 11, fontWeight: 800,
       bgcolor: rgbaToCss(st.fill), color: rgbaToCss(st.letterColor),
@@ -686,7 +686,7 @@ function SectionHeader({ title, caption, badge }: { title: string; caption?: str
   );
 }
 
-// An MD3-style navigation-rail item: icon over a short label, with a left accent
+// A Carbon-style side-nav rail item: icon over a short label, with a left accent
 // bar and tinted surface when active.
 function RailIcon({ label, icon, onClick, active, badge }: { label: string; icon: React.ReactNode; onClick: () => void; active?: boolean; badge?: number }) {
   return (

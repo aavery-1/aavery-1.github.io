@@ -1,39 +1,40 @@
-// Design tokens as CSS custom properties: Material Design 3 (https://m3.material.io).
-// The MD3 roles live in src/md3/tokens.ts; this file exposes the ones plain CSS
-// and inline styles reference, under the same variable names as before so
-// styles.css keeps working. No em dashes anywhere in this file (prose style rule).
+// Design tokens: the IBM Carbon Design System, Gray 10 theme. The single source
+// of visual truth. Color, type, spacing, geometry, and elevation all follow
+// Carbon. See https://carbondesignsystem.com. No em dashes anywhere in this file,
+// per the prose style rule.
 
-import { M3, SHAPE, ELEVATION, FONT_SANS, FONT_MONO } from "./md3/tokens";
-
-// The map's DATA encodings (grade A-F scale, utilization tiers, layer ramps)
-// carry information, not chrome, so they keep their meaning and are NOT remapped
-// to UI roles. The income ramp and layer outlines below are map styling.
+// Values are Carbon color tokens (Gray 10 theme). The map's DATA encodings
+// (grade A-F scale, utilization teal/amber/red, layer ramps) keep their meaning
+// and are re-expressed in Carbon's data-visualization palette rather than the UI
+// gray/blue tokens, since they carry information, not chrome.
 export const theme = {
   color: {
-    bg: M3.surface,                     // page background (MD3 surface)
-    card: M3.surfaceContainerLowest,    // containers, fields (white)
-    hairline: M3.outlineVariant,        // subtle border / divider
-    textPrimary: M3.onSurface,
-    textSecondary: M3.onSurfaceVariant,
-    textTertiary: "#5b5e6d",            // helper tone, AA on white
-    focus: M3.primary,                  // interactive / focus
-    // Map overlay encodings, unchanged (sequential blues + categorical outlines).
-    incomeRamp: ["#edf5ff", "#a6c8ff", "#4589ff", "#0f62fe", "#002d9c"],
-    boardOutline: "#8a3ffc",
-    legislativeOutline: "#6929c4",
-    opportunityFill: "#fddc69",
-    opportunityOutline: "#d2a106",
-    driveTimeOutline: "#009d9a",
+    bg: "#f4f4f4",          // Gray 10, page background
+    card: "#ffffff",        // White, layer-01 (containers, fields)
+    hairline: "#e0e0e0",    // Gray 20, border-subtle
+    textPrimary: "#161616", // Gray 100, text-primary
+    textSecondary: "#525252", // Gray 70, text-secondary
+    textTertiary: "#6f6f6f", // Gray 60, text-helper
+    focus: "#0f62fe",        // Blue 60, interactive / focus
+    // Map overlay encodings, in Carbon's categorical/sequential data-viz palette.
+    incomeRamp: ["#edf5ff", "#a6c8ff", "#4589ff", "#0f62fe", "#002d9c"], // Carbon Blue sequential
+    boardOutline: "#8a3ffc",       // Carbon Purple 60
+    legislativeOutline: "#6929c4", // Carbon Purple 70
+    opportunityFill: "#fddc69",    // Carbon Yellow 20 tint
+    opportunityOutline: "#d2a106", // Carbon Yellow 50
+    driveTimeOutline: "#009d9a",   // Carbon Teal 50
   },
   font: {
-    sans: FONT_SANS,
-    mono: FONT_MONO,
+    sans: '"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    mono: '"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace',
   },
-  // MD3 shape: cards are medium (12), chips small (8), controls extra-small (4).
-  radius: { card: SHAPE.medium, chip: SHAPE.small, control: SHAPE.extraSmall },
+  // Carbon geometry is square: containers, buttons, and fields have no radius.
+  // Only Tags (chips) round to a pill, matching Carbon's Tag component.
+  radius: { card: 0, chip: 999, control: 0 },
   shadow: {
-    // MD3 elevation level 2, for a card that floats above the map.
-    card: ELEVATION[2],
+    // Carbon elevation is flat: containers rely on borders, and only floating
+    // overlays (menus, popovers, the results sheet) carry a shadow.
+    card: "0 2px 6px rgba(0,0,0,0.2)",
   },
   z: {
     map: 0,
