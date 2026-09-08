@@ -1,0 +1,233 @@
+// Composition root. Responsive three-column layout:
+//   - Desktop/tablet: TopNav + LeftRail + main + inspector as columns
+//   - Mobile (< md): LeftRail becomes a temporary MUI Drawer opened from the
+//     app-bar menu button; the inspector becomes a bottom sheet.
+
+import { Box, CircularProgress, Drawer, useMediaQuery, useTheme } from "@mui/material";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { MapErrorBoundary } from "./map/MapErrorBoundary";
+import { Toolbar } from "./tools/Toolbar";
+
+// The three views and the attribution sheet load on demand. The app shell (nav,
+// rail, filters) paints immediately while the heavy map renderer (deck.gl) and
+// the analytical views stream in behind a lightweight fallback, and a deploy that
+// only touches one view re-downloads only that chunk.
+const MapView = lazy(() => import("./map/MapView").then((m) => ({ default: m.MapView })));
+const SchoolListView = lazy(() => import("./views/SchoolListView").then((m) => ({ default: m.SchoolListView })));
+const CompareView = lazy(() => import("./views/CompareView").then((m) => ({ default: m.CompareView })));
+const AttributionStrip = lazy(() => import("./topbar/AttributionStrip").then((m) => ({ default: m.AttributionStrip })));
+import { TopNav } from "./shell/TopNav";
+import { LeftRail } from "./shell/LeftRail";
+import { RightColumn } from "./shell/RightColumn";
+import { OverviewDock } from "./status/OverviewDock";
+import { ActiveFilterChips } from "./status/ActiveFilterChips";
+import { MapLegend } from "./map/MapLegend";
+import { MapLayersControl } from "./map/MapLayersControl";
+import { useMapPersistence } from "./map/useMapPersistence";
+import { useStore } from "./store";
+
+// Shown in a view's place while its code chunk downloads. Deliberately quiet: a
+// centered spinner on the app's own surface, so a lazy view never flashes a
+// blank or a layout jump.
+function ViewFallback() {
+  return (
+    <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default" }}>
+      <CircularProgress size={28} thickness={4} />
+    </Box>
+  );
+}
+
+export default function App() {
+  useMapPersistence();
+  const theme = useTheme();
+  // The full-bleed dashboard layout (thin rail overlay + bottom dock + right
+  // inspector column) applies from the "sm" breakpoint up; below that we fall
+  // back to the drawer/bottom-sheet mobile layout.
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const viewMode = useStore((s) => s.viewMode);
+  const selectSchool = useStore((s) => s.selectSchool);
+  const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
+  const panelCollapsed = useStore((s) => s.panelCollapsed);
+  const setPanelCollapsed = useStore((s) => s.setPanelCollapsed);
+  const [attributionOpen, setAttributionOpen] = useState(false);
+  const [mobileRailOpen, setMobileRailOpen] = useState(false);
+
+  // Escape: exit an active map tool first, then close the inspector, then the
+  // expanded filter panel. One key, unwinding the most transient state first.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const s = useStore.getState();
+      if (s.activeTool !== "none") s.setTool("none");
+      else if (s.selectedSchoolMsid) selectSchool(null);
+      else if (!s.panelCollapsed) s.setPanelCollapsed(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectSchool]);
+
+  // The map surface plus every overlay that anchors to it. The OverviewDock along
+  // the bottom is a compact "schools in view" browser (glance and fly-to); it
+  // hands off to the full List table for sorting, searching, comparing and export.
+  const mapBlock = (
+    <>
+      <MapErrorBoundary>
+        <Suspense fallback={<ViewFallback />}>
+          <MapView />
+        </Suspense>
+      </MapErrorBoundary>
+      <ActiveFilterChips />
+      {/* Top-right control cluster: legend + base map as two icon buttons in one
+          shared card (a hairline between them), mirroring the bottom-right zoom
+          group so the map's chrome reads as one consistent system. */}
+      <div className="map-topright">
+        <div className="map-controls-group">
+          <MapLegend />
+          <span className="map-ctrl-sep" aria-hidden />
+          <MapLayersControl />
+        </div>
+      </div>
+      <Toolbar />
+      <OverviewDock />
+      {attributionOpen && (
+        <Suspense fallback={null}>
+          <AttributionStrip open onClose={() => setAttributionOpen(false)} />
+        </Suspense>
+      )}
+    </>
+  );
+
+  let mainSurface;
+  if (viewMode === "list") {
+    mainSurface = (
+      <Box sx={{ flex: 1, position: "relative", minWidth: 0 }}>
+        <Suspense fallback={<ViewFallback />}>
+          <SchoolListView />
+        </Suspense>
+      </Box>
+    );
+  } else if (viewMode === "compare") {
+    mainSurface = (
+      <Box sx={{ flex: 1, position: "relative", minWidth: 0 }}>
+        <Suspense fallback={<ViewFallback />}>
+          <CompareView />
+        </Suspense>
+      </Box>
+    );
+  } else {
+    mainSurface = (
+      <Box sx={{ flex: 1, position: "relative", minWidth: 0 }}>
+        {mapBlock}
+      </Box>
+    );
+  }
+
+  // overflow: clip (not hidden) so the shell is not a scroll container at all: a
+  // programmatic scrollIntoView (from the list, say) can never drag the whole app
+  // sideways when a child like the app bar overflows at a narrow width.
+  return (
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "clip" }}>
+      <TopNav
+        onOpenAttribution={() => setAttributionOpen(true)}
+        onOpenMobileRail={() => setMobileRailOpen(true)}
+      />
+      <Box sx={{ flex: 1, display: "flex", minHeight: 0, position: "relative", pl: { sm: "64px" } }}>
+        {/* Desktop rail: a thin icon rail that OVERLAYS the map when expanded
+            (rather than pushing it), matching the full-bleed dashboard layout.
+            The 56px left padding above reserves room for the collapsed rail.
+            A transparent scrim closes the expanded panel on any outside click
+            (race-free, unlike ClickAwayListener wrapping the toggle). */}
+        {!isMobile && !panelCollapsed && (
+          <Box onClick={() => setPanelCollapsed(true)} sx={{ position: "absolute", inset: 0, zIndex: 15 }} />
+        )}
+        {!isMobile && (
+          <Box sx={{ position: "absolute", top: 0, left: 0, height: "100%", zIndex: 20, display: "flex", boxShadow: panelCollapsed ? "none" : "8px 0 24px rgba(15,23,42,0.10)" }}>
+            <LeftRail />
+          </Box>
+        )}
+
+        {/* Mobile rail: temporary drawer */}
+        {isMobile && (
+          <Drawer
+            anchor="left"
+            open={mobileRailOpen}
+            onClose={() => setMobileRailOpen(false)}
+            ModalProps={{ keepMounted: true }}
+            slotProps={{ paper: { sx: { width: 320 } } }}
+          >
+            <LeftRail onNavigate={() => setMobileRailOpen(false)} />
+          </Drawer>
+        )}
+
+        {mainSurface}
+
+        {/* Desktop inspector: a floating overlay, never a flex sibling (a
+            fixed-width column pushed the main surface and compressed the list and
+            compare matrix into an illegible sliver). It floats above the content
+            at full height with a shadow, so every view keeps its full width
+            underneath.
+
+            The scrim is context-aware, which is how we thread the needle. Over
+            the List and Compare views the background is a static grid you have
+            stepped away from to read one detail, so a dimming scrim focuses the
+            panel and a click on it closes the inspector. Over the Map the
+            background is live spatial context you want to keep seeing and
+            clicking, so there is no scrim: the map stays bright and fully
+            interactive (pan, and click another pin to swap the inspector), and
+            the panel reads as a companion card, like a Google Maps place card.
+            The selected school is fly-to centered, so it sits clear of the
+            right-edge panel. Close from the map is the X button or Escape. */}
+        {!isMobile && selectedSchoolMsid && (
+          <>
+            {viewMode !== "map" && (
+              <Box
+                className="inspector-scrim"
+                onClick={() => selectSchool(null)}
+                sx={{
+                  position: "absolute", inset: 0, zIndex: 30,
+                  bgcolor: "rgba(15,23,42,0.32)",
+                  animation: "scrimFade 180ms ease-out",
+                }}
+              />
+            )}
+            {viewMode === "map" ? (
+              // Map: a lighter companion card, inset from the edges so the map
+              // stays visible around it and reads as the primary surface.
+              <Box
+                sx={{
+                  position: "absolute", top: 12, right: 12, bottom: 12, zIndex: 31,
+                  maxWidth: "calc(100% - 24px)",
+                  boxShadow: "0 8px 28px rgba(15,23,42,0.18)",
+                }}
+              >
+                <RightColumn compact />
+              </Box>
+            ) : (
+              // List / Compare: the full-height detail column over the scrim.
+              <Box
+                sx={{
+                  position: "absolute", top: 0, right: 0, height: "100%", zIndex: 31,
+                  boxShadow: "-10px 0 30px rgba(15,23,42,0.20)",
+                }}
+              >
+                <RightColumn />
+              </Box>
+            )}
+          </>
+        )}
+
+        {/* Mobile inspector: bottom sheet, only when a school is selected */}
+        {isMobile && (
+          <Drawer
+            anchor="bottom"
+            open={Boolean(selectedSchoolMsid)}
+            onClose={() => selectSchool(null)}
+            slotProps={{ paper: { sx: { height: "80vh", borderTopLeftRadius: 20, borderTopRightRadius: 20 } } }}
+          >
+            <RightColumn />
+          </Drawer>
+        )}
+      </Box>
+    </Box>
+  );
+}

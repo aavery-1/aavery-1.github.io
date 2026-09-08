@@ -1,0 +1,5569 @@
+{
+  "vintage": "FISH data reported as satisfactory, May 2026",
+  "source": "Florida Inventory of School Houses (FISH), FL DOE Office of Educational Facilities",
+  "source_note": "FacilityData sheet; 'Capacity' is the utilization-adjusted permanent capacity used for the Facility Utilization Rate.",
+  "join_note": "Keyed by school MSID. Matched to school points by unique normalized name within district (FISH facility numbers are not the NCES MSID); ambiguous names skipped.",
+  "unit": "students (permanent capacity)",
+  "schools": {
+    "06-0011": {
+      "capacity": 695,
+      "satisfactory_stations": 695,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DEERFIELD BEACH ELEMENTARY",
+      "fish_msid": "06-0001",
+      "match": "disambiguated"
+    },
+    "06-0021": {
+      "capacity": 1206,
+      "satisfactory_stations": 1340,
+      "use_desc": "MIDDLE",
+      "fish_name": "POMPANO BEACH MIDDLE",
+      "fish_msid": "06-0002",
+      "match": "disambiguated"
+    },
+    "06-0031": {
+      "capacity": 840,
+      "satisfactory_stations": 840,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OAKLAND PARK ELEMENTARY",
+      "fish_msid": "06-0003",
+      "match": "exact"
+    },
+    "06-0041": {
+      "capacity": 608,
+      "satisfactory_stations": 608,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH SIDE ELEMENTARY",
+      "fish_msid": "06-0004",
+      "match": "exact"
+    },
+    "06-2052": {
+      "capacity": 1289,
+      "satisfactory_stations": 1433,
+      "use_desc": "MIDDLE",
+      "fish_name": "WESTPINE MIDDLE",
+      "fish_msid": "06-0132",
+      "match": "exact"
+    },
+    "06-2881": {
+      "capacity": 915,
+      "satisfactory_stations": 915,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WELLEBY ELEMENTARY",
+      "fish_msid": "06-0165",
+      "match": "exact"
+    },
+    "06-0101": {
+      "capacity": 623,
+      "satisfactory_stations": 623,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DANIA ELEMENTARY",
+      "fish_msid": "06-0005",
+      "match": "exact"
+    },
+    "06-0111": {
+      "capacity": 768,
+      "satisfactory_stations": 768,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HOLLYWOOD HILLS ELEMENTARY",
+      "fish_msid": "06-0006",
+      "match": "disambiguated"
+    },
+    "06-0151": {
+      "capacity": 633,
+      "satisfactory_stations": 633,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RIVERLAND ELEMENTARY",
+      "fish_msid": "06-0009",
+      "match": "exact"
+    },
+    "06-0161": {
+      "capacity": 633,
+      "satisfactory_stations": 633,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WEST HOLLYWOOD ELEMENTARY",
+      "fish_msid": "06-0010",
+      "match": "exact"
+    },
+    "06-0171": {
+      "capacity": 2297,
+      "satisfactory_stations": 2418,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "SOUTH BROWARD SENIOR HIGH",
+      "fish_msid": "06-0011",
+      "match": "exact"
+    },
+    "06-3191": {
+      "capacity": 1087,
+      "satisfactory_stations": 1087,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EMBASSY CREEK ELEMENTARY",
+      "fish_msid": "06-0184",
+      "match": "exact"
+    },
+    "06-0191": {
+      "capacity": 615,
+      "satisfactory_stations": 615,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WILTON MANORS ELEMENTARY",
+      "fish_msid": "06-0014",
+      "match": "exact"
+    },
+    "06-0201": {
+      "capacity": 542,
+      "satisfactory_stations": 542,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BENNETT ELEMENTARY",
+      "fish_msid": "06-0015",
+      "match": "exact"
+    },
+    "06-0211": {
+      "capacity": 2324,
+      "satisfactory_stations": 2447,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "STRANAHAN SENIOR HIGH",
+      "fish_msid": "06-0016",
+      "match": "exact"
+    },
+    "06-0221": {
+      "capacity": 802,
+      "satisfactory_stations": 802,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CROISSANT PARK ELEMENTARY",
+      "fish_msid": "06-0017",
+      "match": "exact"
+    },
+    "06-0231": {
+      "capacity": 812,
+      "satisfactory_stations": 812,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COLBERT ELEMENTARY",
+      "fish_msid": "06-0018",
+      "match": "exact"
+    },
+    "06-0241": {
+      "capacity": 2468,
+      "satisfactory_stations": 2598,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MCARTHUR SENIOR HIGH",
+      "fish_msid": "06-0019",
+      "match": "exact"
+    },
+    "06-0251": {
+      "capacity": 1283,
+      "satisfactory_stations": 1426,
+      "use_desc": "MIDDLE",
+      "fish_name": "SUNRISE MIDDLE",
+      "fish_msid": "06-0020",
+      "match": "exact"
+    },
+    "06-0271": {
+      "capacity": 777,
+      "satisfactory_stations": 777,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DILLARD ELEMENTARY",
+      "fish_msid": "06-0021",
+      "match": "exact"
+    },
+    "06-0321": {
+      "capacity": 987,
+      "satisfactory_stations": 987,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WALKER ELEMENTARY",
+      "fish_msid": "06-0023",
+      "match": "exact"
+    },
+    "06-0331": {
+      "capacity": 371,
+      "satisfactory_stations": 371,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COLLINS ELEMENTARY",
+      "fish_msid": "06-0024",
+      "match": "exact"
+    },
+    "06-0341": {
+      "capacity": 748,
+      "satisfactory_stations": 748,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MARY M BETHUNE ELEMENTARY",
+      "fish_msid": "06-0025",
+      "match": "exact"
+    },
+    "06-0343": {
+      "capacity": 1242,
+      "satisfactory_stations": 1381,
+      "use_desc": "MIDDLE",
+      "fish_name": "ATTUCKS MIDDLE",
+      "fish_msid": "06-0026",
+      "match": "exact"
+    },
+    "06-0361": {
+      "capacity": 2736,
+      "satisfactory_stations": 2881,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "BLANCHE ELY SENIOR HIGH",
+      "fish_msid": "06-0027",
+      "match": "exact"
+    },
+    "06-0371": {
+      "capacity": 2575,
+      "satisfactory_stations": 2862,
+      "use_desc": "COMBINATION",
+      "fish_name": "DILLARD 6-12",
+      "fish_msid": "06-0028",
+      "match": "exact"
+    },
+    "06-0391": {
+      "capacity": 751,
+      "satisfactory_stations": 751,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DEERFIELD PARK ELEMENTARY",
+      "fish_msid": "06-0029",
+      "match": "exact"
+    },
+    "06-0403": {
+      "capacity": 1748,
+      "satisfactory_stations": 1840,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "HALLANDALE SENIOR HIGH",
+      "fish_msid": "06-0030",
+      "match": "exact"
+    },
+    "06-0461": {
+      "capacity": 605,
+      "satisfactory_stations": 605,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OAKRIDGE ELEMENTARY",
+      "fish_msid": "06-0036",
+      "match": "exact"
+    },
+    "06-0471": {
+      "capacity": 1080,
+      "satisfactory_stations": 1200,
+      "use_desc": "MIDDLE",
+      "fish_name": "OLSEN MIDDLE",
+      "fish_msid": "06-0037",
+      "match": "exact"
+    },
+    "06-0481": {
+      "capacity": 1318,
+      "satisfactory_stations": 1465,
+      "use_desc": "MIDDLE",
+      "fish_name": "MCNICOL MIDDLE",
+      "fish_msid": "06-0038",
+      "match": "exact"
+    },
+    "06-0491": {
+      "capacity": 480,
+      "satisfactory_stations": 480,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HARBORDALE ELEMENTARY",
+      "fish_msid": "06-0039",
+      "match": "exact"
+    },
+    "06-0511": {
+      "capacity": 814,
+      "satisfactory_stations": 814,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WATKINS ELEMENTARY",
+      "fish_msid": "06-0041",
+      "match": "exact"
+    },
+    "06-0521": {
+      "capacity": 903,
+      "satisfactory_stations": 903,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH ANDREWS GARDENS ELEMENTARY",
+      "fish_msid": "06-0042",
+      "match": "exact"
+    },
+    "06-0531": {
+      "capacity": 929,
+      "satisfactory_stations": 929,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MIRAMAR ELEMENTARY",
+      "fish_msid": "06-0043",
+      "match": "disambiguated"
+    },
+    "06-0551": {
+      "capacity": 806,
+      "satisfactory_stations": 896,
+      "use_desc": "MIDDLE",
+      "fish_name": "PLANTATION MIDDLE",
+      "fish_msid": "06-0044",
+      "match": "disambiguated"
+    },
+    "06-0561": {
+      "capacity": 921,
+      "satisfactory_stations": 921,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORCREST ELEMENTARY",
+      "fish_msid": "06-0045",
+      "match": "exact"
+    },
+    "06-0571": {
+      "capacity": 1240,
+      "satisfactory_stations": 1240,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TEDDER ELEMENTARY",
+      "fish_msid": "06-0046",
+      "match": "exact"
+    },
+    "06-0581": {
+      "capacity": 1782,
+      "satisfactory_stations": 1980,
+      "use_desc": "MIDDLE",
+      "fish_name": "MARGATE MIDDLE",
+      "fish_msid": "06-0047",
+      "match": "disambiguated"
+    },
+    "06-3221": {
+      "capacity": 631,
+      "satisfactory_stations": 631,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHARLES DREW ELEMENTARY",
+      "fish_msid": "06-0185",
+      "match": "exact"
+    },
+    "06-0601": {
+      "capacity": 959,
+      "satisfactory_stations": 959,
+      "use_desc": "ALTERNATIVE EDUCATION",
+      "fish_name": "SEAGULL SCHOOL",
+      "fish_msid": "06-0049",
+      "match": "exact"
+    },
+    "06-0611": {
+      "capacity": 480,
+      "satisfactory_stations": 480,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNLAND PARK ACADEMY",
+      "fish_msid": "06-0050",
+      "match": "exact"
+    },
+    "06-0621": {
+      "capacity": 659,
+      "satisfactory_stations": 659,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LARKDALE ELEMENTARY",
+      "fish_msid": "06-0051",
+      "match": "exact"
+    },
+    "06-0631": {
+      "capacity": 817,
+      "satisfactory_stations": 817,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WESTWOOD HEIGHTS ELEMENTARY",
+      "fish_msid": "06-0052",
+      "match": "exact"
+    },
+    "06-0641": {
+      "capacity": 572,
+      "satisfactory_stations": 572,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BAYVIEW ELEMENTARY",
+      "fish_msid": "06-0053",
+      "match": "exact"
+    },
+    "06-3311": {
+      "capacity": 911,
+      "satisfactory_stations": 911,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALM COVE ELEMENTARY",
+      "fish_msid": "06-0187",
+      "match": "exact"
+    },
+    "06-3401": {
+      "capacity": 1166,
+      "satisfactory_stations": 1166,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SAWGRASS ELEMENTARY",
+      "fish_msid": "06-0189",
+      "match": "exact"
+    },
+    "06-0691": {
+      "capacity": 767,
+      "satisfactory_stations": 767,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "STIRLING ELEMENTARY",
+      "fish_msid": "06-0056",
+      "match": "exact"
+    },
+    "06-0701": {
+      "capacity": 2214,
+      "satisfactory_stations": 2043,
+      "use_desc": "COMBINATION",
+      "fish_name": "PARKWAY MIDDLE",
+      "fish_msid": "06-0057",
+      "match": "exact"
+    },
+    "06-0711": {
+      "capacity": 830,
+      "satisfactory_stations": 830,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ORANGE-BROOK ELEMENTARY",
+      "fish_msid": "06-0058",
+      "match": "exact"
+    },
+    "06-0721": {
+      "capacity": 692,
+      "satisfactory_stations": 692,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DRIFTWOOD ELEMENTARY",
+      "fish_msid": "06-0059",
+      "match": "disambiguated"
+    },
+    "06-0731": {
+      "capacity": 932,
+      "satisfactory_stations": 932,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TROPICAL ELEMENTARY",
+      "fish_msid": "06-0060",
+      "match": "exact"
+    },
+    "06-0751": {
+      "capacity": 615,
+      "satisfactory_stations": 615,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "POMPANO BEACH ELEMENTARY",
+      "fish_msid": "06-0061",
+      "match": "disambiguated"
+    },
+    "06-0761": {
+      "capacity": 791,
+      "satisfactory_stations": 791,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MEADOWBROOK ELEMENTARY",
+      "fish_msid": "06-0062",
+      "match": "exact"
+    },
+    "06-0811": {
+      "capacity": 984,
+      "satisfactory_stations": 984,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BROADVIEW ELEMENTARY",
+      "fish_msid": "06-0063",
+      "match": "exact"
+    },
+    "06-0831": {
+      "capacity": 772,
+      "satisfactory_stations": 772,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE FOREST ELEMENTARY",
+      "fish_msid": "06-0064",
+      "match": "exact"
+    },
+    "06-0841": {
+      "capacity": 677,
+      "satisfactory_stations": 677,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MCNAB ELEMENTARY",
+      "fish_msid": "06-0065",
+      "match": "exact"
+    },
+    "06-0851": {
+      "capacity": 814,
+      "satisfactory_stations": 814,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FLORANADA ELEMENTARY",
+      "fish_msid": "06-0066",
+      "match": "exact"
+    },
+    "06-0861": {
+      "capacity": 1714,
+      "satisfactory_stations": 1905,
+      "use_desc": "MIDDLE",
+      "fish_name": "DRIFTWOOD MIDDLE",
+      "fish_msid": "06-0067",
+      "match": "disambiguated"
+    },
+    "06-0871": {
+      "capacity": 325,
+      "satisfactory_stations": 325,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "BRIGHT HORIZONS",
+      "fish_msid": "06-0068",
+      "match": "exact"
+    },
+    "06-0881": {
+      "capacity": 1395,
+      "satisfactory_stations": 1551,
+      "use_desc": "MIDDLE",
+      "fish_name": "NEW RIVER MIDDLE",
+      "fish_msid": "06-0069",
+      "match": "exact"
+    },
+    "06-0891": {
+      "capacity": 697,
+      "satisfactory_stations": 697,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SANDERS PARK ELEMENTARY",
+      "fish_msid": "06-0070",
+      "match": "exact"
+    },
+    "06-0901": {
+      "capacity": 705,
+      "satisfactory_stations": 705,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CRESTHAVEN ELEMENTARY",
+      "fish_msid": "06-0071",
+      "match": "exact"
+    },
+    "06-0911": {
+      "capacity": 1421,
+      "satisfactory_stations": 1579,
+      "use_desc": "MIDDLE",
+      "fish_name": "DEERFIELD BEACH MIDDLE",
+      "fish_msid": "06-0072",
+      "match": "disambiguated"
+    },
+    "06-0921": {
+      "capacity": 743,
+      "satisfactory_stations": 743,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "STEPHEN FOSTER ELEMENTARY",
+      "fish_msid": "06-0073",
+      "match": "exact"
+    },
+    "06-0931": {
+      "capacity": 845,
+      "satisfactory_stations": 845,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PETERS ELEMENTARY",
+      "fish_msid": "06-0074",
+      "match": "exact"
+    },
+    "06-0941": {
+      "capacity": 814,
+      "satisfactory_stations": 814,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PLANTATION ELEMENTARY",
+      "fish_msid": "06-0075",
+      "match": "disambiguated"
+    },
+    "06-0951": {
+      "capacity": 2033,
+      "satisfactory_stations": 2140,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "FORT LAUDERDALE SENIOR HIGH",
+      "fish_msid": "06-0076",
+      "match": "exact"
+    },
+    "06-0971": {
+      "capacity": 812,
+      "satisfactory_stations": 812,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BOULEVARD HEIGHTS ELEMENTARY",
+      "fish_msid": "06-0077",
+      "match": "exact"
+    },
+    "06-0991": {
+      "capacity": 285,
+      "satisfactory_stations": 285,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "WINGATE OAKS CENTER",
+      "fish_msid": "06-0078",
+      "match": "exact"
+    },
+    "06-1021": {
+      "capacity": 313,
+      "satisfactory_stations": 313,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "THE QUEST CENTER",
+      "fish_msid": "06-0080",
+      "match": "exact"
+    },
+    "06-1071": {
+      "capacity": 1152,
+      "satisfactory_stations": 1281,
+      "use_desc": "MIDDLE",
+      "fish_name": "WILLIAM DANDY  MIDDLE",
+      "fish_msid": "06-0082",
+      "match": "exact"
+    },
+    "06-1091": {
+      "capacity": 655,
+      "satisfactory_stations": 655,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LLOYD ESTATES ELEMENTARY",
+      "fish_msid": "06-0083",
+      "match": "exact"
+    },
+    "06-1131": {
+      "capacity": 711,
+      "satisfactory_stations": 711,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALMVIEW ELEMENTARY",
+      "fish_msid": "06-0084",
+      "match": "exact"
+    },
+    "06-1151": {
+      "capacity": 2909,
+      "satisfactory_stations": 3063,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CORAL SPRINGS SENIOR HIGH",
+      "fish_msid": "06-0085",
+      "match": "disambiguated"
+    },
+    "06-1161": {
+      "capacity": 1205,
+      "satisfactory_stations": 1116,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MARGATE ELEMENTARY",
+      "fish_msid": "06-0086",
+      "match": "disambiguated"
+    },
+    "06-1171": {
+      "capacity": 803,
+      "satisfactory_stations": 749,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNSHINE ELEMENTARY",
+      "fish_msid": "06-0087",
+      "match": "exact"
+    },
+    "06-1191": {
+      "capacity": 713,
+      "satisfactory_stations": 713,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH FORK ELEMENTARY",
+      "fish_msid": "06-0088",
+      "match": "exact"
+    },
+    "06-1211": {
+      "capacity": 701,
+      "satisfactory_stations": 701,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COOPER CITY ELEMENTARY",
+      "fish_msid": "06-0089",
+      "match": "disambiguated"
+    },
+    "06-1221": {
+      "capacity": 687,
+      "satisfactory_stations": 687,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PEMBROKE PINES ELEMENTARY",
+      "fish_msid": "06-0090",
+      "match": "exact"
+    },
+    "06-1241": {
+      "capacity": 2062,
+      "satisfactory_stations": 2171,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "NORTHEAST SENIOR HIGH",
+      "fish_msid": "06-0091",
+      "match": "exact"
+    },
+    "06-1251": {
+      "capacity": 579,
+      "satisfactory_stations": 579,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PLANTATION PARK ELEMENTARY",
+      "fish_msid": "06-0092",
+      "match": "exact"
+    },
+    "06-1271": {
+      "capacity": 777,
+      "satisfactory_stations": 777,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NOVA DWIGHT D EISENHOWER ELEMENTARY",
+      "fish_msid": "06-0093",
+      "match": "exact"
+    },
+    "06-1281": {
+      "capacity": 2459,
+      "satisfactory_stations": 2589,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "NOVA SENIOR HIGH",
+      "fish_msid": "06-0094",
+      "match": "disambiguated"
+    },
+    "06-1282": {
+      "capacity": 787,
+      "satisfactory_stations": 787,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NOVA BLANCHE FORMAN ELEMENTARY",
+      "fish_msid": "06-0095",
+      "match": "exact"
+    },
+    "06-1311": {
+      "capacity": 1327,
+      "satisfactory_stations": 1475,
+      "use_desc": "MIDDLE",
+      "fish_name": "NOVA MIDDLE",
+      "fish_msid": "06-0098",
+      "match": "disambiguated"
+    },
+    "06-1321": {
+      "capacity": 810,
+      "satisfactory_stations": 810,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SHERIDAN PARK ELEMENTARY",
+      "fish_msid": "06-0099",
+      "match": "exact"
+    },
+    "06-1381": {
+      "capacity": 872,
+      "satisfactory_stations": 872,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAUDERHILL-PAUL TURNER ELEMENTARY",
+      "fish_msid": "06-0100",
+      "match": "exact"
+    },
+    "06-1391": {
+      "capacity": 1035,
+      "satisfactory_stations": 1151,
+      "use_desc": "COMBINATION",
+      "fish_name": "LAUDERHILL 6-12",
+      "fish_msid": "06-0101",
+      "match": "exact"
+    },
+    "06-1421": {
+      "capacity": 2700,
+      "satisfactory_stations": 2843,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "COCONUT CREEK SENIOR HIGH",
+      "fish_msid": "06-0111",
+      "match": "exact"
+    },
+    "06-1451": {
+      "capacity": 2516,
+      "satisfactory_stations": 2649,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "PLANTATION SENIOR HIGH",
+      "fish_msid": "06-0103",
+      "match": "disambiguated"
+    },
+    "06-1461": {
+      "capacity": 731,
+      "satisfactory_stations": 731,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CASTLE HILL ELEMENTARY",
+      "fish_msid": "06-0104",
+      "match": "exact"
+    },
+    "06-1611": {
+      "capacity": 701,
+      "satisfactory_stations": 701,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR. MARTIN LUTHER KING, JR. ELEMENTARY",
+      "fish_msid": "06-0105",
+      "match": "fuzzy"
+    },
+    "06-1621": {
+      "capacity": 870,
+      "satisfactory_stations": 870,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VILLAGE ELEMENTARY",
+      "fish_msid": "06-0106",
+      "match": "exact"
+    },
+    "06-1631": {
+      "capacity": 857,
+      "satisfactory_stations": 953,
+      "use_desc": "COMBINATION",
+      "fish_name": "ANNABEL C PERRY PK-8",
+      "fish_msid": "06-0107",
+      "match": "exact"
+    },
+    "06-1641": {
+      "capacity": 970,
+      "satisfactory_stations": 970,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FAIRWAY ELEMENTARY",
+      "fish_msid": "06-0108",
+      "match": "exact"
+    },
+    "06-1661": {
+      "capacity": 2195,
+      "satisfactory_stations": 2311,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "HOLLYWOOD HILLS SENIOR HIGH",
+      "fish_msid": "06-0109",
+      "match": "disambiguated"
+    },
+    "06-1671": {
+      "capacity": 845,
+      "satisfactory_stations": 845,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROBERT C MARKHAM ELEMENTARY",
+      "fish_msid": "06-0110",
+      "match": "exact"
+    },
+    "06-1681": {
+      "capacity": 2700,
+      "satisfactory_stations": 2843,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "COCONUT CREEK SENIOR HIGH",
+      "fish_msid": "06-0111",
+      "match": "exact"
+    },
+    "06-1701": {
+      "capacity": 1225,
+      "satisfactory_stations": 1362,
+      "use_desc": "MIDDLE",
+      "fish_name": "LAUDERDALE LAKES MIDDLE",
+      "fish_msid": "06-0112",
+      "match": "exact"
+    },
+    "06-1711": {
+      "capacity": 2565,
+      "satisfactory_stations": 2700,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "DEERFIELD BEACH SENIOR HIGH",
+      "fish_msid": "06-0113",
+      "match": "disambiguated"
+    },
+    "06-1741": {
+      "capacity": 2852,
+      "satisfactory_stations": 3003,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "BOYD H ANDERSON SENIOR HIGH",
+      "fish_msid": "06-0114",
+      "match": "exact"
+    },
+    "06-1751": {
+      "capacity": 2552,
+      "satisfactory_stations": 2687,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIRAMAR SENIOR HIGH",
+      "fish_msid": "06-0115",
+      "match": "disambiguated"
+    },
+    "06-1761": {
+      "capacity": 593,
+      "satisfactory_stations": 593,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HOLLYWOOD PARK ELEMENTARY",
+      "fish_msid": "06-0117",
+      "match": "exact"
+    },
+    "06-1781": {
+      "capacity": 891,
+      "satisfactory_stations": 891,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CYPRESS ELEMENTARY",
+      "fish_msid": "06-0118",
+      "match": "exact"
+    },
+    "06-1791": {
+      "capacity": 1459,
+      "satisfactory_stations": 1622,
+      "use_desc": "MIDDLE",
+      "fish_name": "APOLLO MIDDLE",
+      "fish_msid": "06-0119",
+      "match": "exact"
+    },
+    "06-1811": {
+      "capacity": 607,
+      "satisfactory_stations": 607,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SHERIDAN HILLS ELEMENTARY",
+      "fish_msid": "06-0120",
+      "match": "exact"
+    },
+    "06-1831": {
+      "capacity": 733,
+      "satisfactory_stations": 733,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ORIOLE ELEMENTARY",
+      "fish_msid": "06-0121",
+      "match": "exact"
+    },
+    "06-1841": {
+      "capacity": 773,
+      "satisfactory_stations": 773,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MIRROR LAKE ELEMENTARY",
+      "fish_msid": "06-0122",
+      "match": "exact"
+    },
+    "06-1851": {
+      "capacity": 892,
+      "satisfactory_stations": 892,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROYAL PALM ELEMENTARY",
+      "fish_msid": "06-0123",
+      "match": "exact"
+    },
+    "06-1871": {
+      "capacity": 1466,
+      "satisfactory_stations": 1629,
+      "use_desc": "MIDDLE",
+      "fish_name": "CRYSTAL LAKE MIDDLE",
+      "fish_msid": "06-0124",
+      "match": "exact"
+    },
+    "06-1891": {
+      "capacity": 1296,
+      "satisfactory_stations": 1440,
+      "use_desc": "MIDDLE",
+      "fish_name": "SEMINOLE MIDDLE",
+      "fish_msid": "06-0126",
+      "match": "exact"
+    },
+    "06-1901": {
+      "capacity": 2618,
+      "satisfactory_stations": 2756,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "PIPER SENIOR HIGH",
+      "fish_msid": "06-0127",
+      "match": "exact"
+    },
+    "06-1931": {
+      "capacity": 2286,
+      "satisfactory_stations": 2407,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "COOPER CITY SENIOR HIGH",
+      "fish_msid": "06-0128",
+      "match": "disambiguated"
+    },
+    "06-1951": {
+      "capacity": 546,
+      "satisfactory_stations": 546,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PARK RIDGE ELEMENTARY",
+      "fish_msid": "06-0129",
+      "match": "exact"
+    },
+    "06-1971": {
+      "capacity": 841,
+      "satisfactory_stations": 841,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "JAMES S HUNT ELEMENTARY",
+      "fish_msid": "06-0130",
+      "match": "exact"
+    },
+    "06-2071": {
+      "capacity": 710,
+      "satisfactory_stations": 710,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PASADENA LAKES ELEMENTARY",
+      "fish_msid": "06-0133",
+      "match": "exact"
+    },
+    "06-2231": {
+      "capacity": 853,
+      "satisfactory_stations": 948,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH LAUDERDALE ELEMENTARY",
+      "fish_msid": "06-0138",
+      "match": "exact"
+    },
+    "06-2351": {
+      "capacity": 2661,
+      "satisfactory_stations": 2802,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "SOUTH PLANTATION SENIOR HIGH",
+      "fish_msid": "06-0139",
+      "match": "exact"
+    },
+    "06-2511": {
+      "capacity": 925,
+      "satisfactory_stations": 925,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ATLANTIC WEST ELEMENTARY",
+      "fish_msid": "06-0140",
+      "match": "exact"
+    },
+    "06-2531": {
+      "capacity": 699,
+      "satisfactory_stations": 699,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HORIZON ELEMENTARY",
+      "fish_msid": "06-0141",
+      "match": "exact"
+    },
+    "06-2541": {
+      "capacity": 667,
+      "satisfactory_stations": 667,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FLAMINGO ELEMENTARY",
+      "fish_msid": "06-0142",
+      "match": "exact"
+    },
+    "06-2551": {
+      "capacity": 943,
+      "satisfactory_stations": 943,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CORAL SPRINGS ELEMENTARY",
+      "fish_msid": "06-0143",
+      "match": "disambiguated"
+    },
+    "06-2561": {
+      "capacity": 1904,
+      "satisfactory_stations": 2116,
+      "use_desc": "MIDDLE",
+      "fish_name": "CORAL SPRINGS MIDDLE",
+      "fish_msid": "06-0144",
+      "match": "disambiguated"
+    },
+    "06-2571": {
+      "capacity": 1541,
+      "satisfactory_stations": 1713,
+      "use_desc": "MIDDLE",
+      "fish_name": "PIONEER MIDDLE",
+      "fish_msid": "06-0145",
+      "match": "exact"
+    },
+    "06-2611": {
+      "capacity": 1233,
+      "satisfactory_stations": 1371,
+      "use_desc": "MIDDLE",
+      "fish_name": "BAIR MIDDLE",
+      "fish_msid": "06-0146",
+      "match": "exact"
+    },
+    "06-2621": {
+      "capacity": 1290,
+      "satisfactory_stations": 1290,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TAMARAC ELEMENTARY",
+      "fish_msid": "06-0147",
+      "match": "exact"
+    },
+    "06-2631": {
+      "capacity": 795,
+      "satisfactory_stations": 795,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FOREST HILLS ELEMENTARY",
+      "fish_msid": "06-0148",
+      "match": "exact"
+    },
+    "06-2661": {
+      "capacity": 697,
+      "satisfactory_stations": 697,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PEMBROKE LAKES ELEMENTARY",
+      "fish_msid": "06-0150",
+      "match": "exact"
+    },
+    "06-2671": {
+      "capacity": 781,
+      "satisfactory_stations": 781,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NOB HILL ELEMENTARY",
+      "fish_msid": "06-0151",
+      "match": "exact"
+    },
+    "06-2681": {
+      "capacity": 1060,
+      "satisfactory_stations": 1060,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WESTCHESTER ELEMENTARY",
+      "fish_msid": "06-0152",
+      "match": "exact"
+    },
+    "06-2691": {
+      "capacity": 831,
+      "satisfactory_stations": 831,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MORROW ELEMENTARY",
+      "fish_msid": "06-0153",
+      "match": "exact"
+    },
+    "06-2711": {
+      "capacity": 1315,
+      "satisfactory_stations": 1462,
+      "use_desc": "MIDDLE",
+      "fish_name": "RAMBLEWOOD MIDDLE",
+      "fish_msid": "06-0154",
+      "match": "disambiguated"
+    },
+    "06-2721": {
+      "capacity": 985,
+      "satisfactory_stations": 985,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RAMBLEWOOD ELEMENTARY",
+      "fish_msid": "06-0155",
+      "match": "disambiguated"
+    },
+    "06-2891": {
+      "capacity": 1138,
+      "satisfactory_stations": 1138,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RIVERGLADES ELEMENTARY",
+      "fish_msid": "06-0166",
+      "match": "exact"
+    },
+    "06-3222": {
+      "capacity": 180,
+      "satisfactory_stations": 180,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "CROSS CREEK SCHOOL",
+      "fish_msid": "06-0186",
+      "match": "exact"
+    },
+    "06-2001": {
+      "capacity": 765,
+      "satisfactory_stations": 765,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BANYAN ELEMENTARY",
+      "fish_msid": "06-0131",
+      "match": "exact"
+    },
+    "06-2801": {
+      "capacity": 741,
+      "satisfactory_stations": 741,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DAVIE ELEMENTARY",
+      "fish_msid": "06-0159",
+      "match": "exact"
+    },
+    "06-2851": {
+      "capacity": 651,
+      "satisfactory_stations": 651,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GRIFFIN ELEMENTARY",
+      "fish_msid": "06-0162",
+      "match": "exact"
+    },
+    "06-2741": {
+      "capacity": 943,
+      "satisfactory_stations": 943,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MAPLEWOOD ELEMENTARY",
+      "fish_msid": "06-0156",
+      "match": "exact"
+    },
+    "06-2861": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINES LAKES ELEMENTARY",
+      "fish_msid": "06-0163",
+      "match": "exact"
+    },
+    "06-2811": {
+      "capacity": 966,
+      "satisfactory_stations": 966,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINEWOOD ELEMENTARY",
+      "fish_msid": "06-0160",
+      "match": "exact"
+    },
+    "06-3321": {
+      "capacity": 690,
+      "satisfactory_stations": 690,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VIRGINIA SHUMAN YOUNG ELEMENTARY",
+      "fish_msid": "06-0188",
+      "match": "exact"
+    },
+    "06-3461": {
+      "capacity": 1268,
+      "satisfactory_stations": 1268,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EAGLE POINT ELEMENTARY",
+      "fish_msid": "06-0229",
+      "match": "exact"
+    },
+    "06-2751": {
+      "capacity": 3670,
+      "satisfactory_stations": 3864,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "J P TARAVELLA SENIOR HIGH",
+      "fish_msid": "06-0157",
+      "match": "exact"
+    },
+    "06-2831": {
+      "capacity": 3716,
+      "satisfactory_stations": 3912,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WESTERN SENIOR HIGH",
+      "fish_msid": "06-0161",
+      "match": "exact"
+    },
+    "06-2971": {
+      "capacity": 1151,
+      "satisfactory_stations": 1279,
+      "use_desc": "MIDDLE",
+      "fish_name": "SILVER LAKES MIDDLE",
+      "fish_msid": "06-0167",
+      "match": "disambiguated"
+    },
+    "06-0405": {
+      "capacity": 266,
+      "satisfactory_stations": 266,
+      "use_desc": "ALTERNATIVE EDUCATION",
+      "fish_name": "LANIER-JAMES EDUCATION CENTER",
+      "fish_msid": "06-0031",
+      "match": "exact"
+    },
+    "06-3031": {
+      "capacity": 731,
+      "satisfactory_stations": 731,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RIVERSIDE ELEMENTARY",
+      "fish_msid": "06-0171",
+      "match": "exact"
+    },
+    "06-2981": {
+      "capacity": 980,
+      "satisfactory_stations": 980,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COUNTRY ISLES ELEMENTARY",
+      "fish_msid": "06-0168",
+      "match": "exact"
+    },
+    "06-3041": {
+      "capacity": 705,
+      "satisfactory_stations": 705,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CORAL PARK ELEMENTARY",
+      "fish_msid": "06-0172",
+      "match": "exact"
+    },
+    "06-3051": {
+      "capacity": 1627,
+      "satisfactory_stations": 1808,
+      "use_desc": "MIDDLE",
+      "fish_name": "FOREST GLEN MIDDLE",
+      "fish_msid": "06-0173",
+      "match": "exact"
+    },
+    "06-3081": {
+      "capacity": 940,
+      "satisfactory_stations": 940,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SILVER RIDGE ELEMENTARY",
+      "fish_msid": "06-0175",
+      "match": "exact"
+    },
+    "06-2123": {
+      "capacity": 244,
+      "satisfactory_stations": 244,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "CYPRESS RUN ALTERNATIVE CENTER",
+      "fish_msid": "06-0272",
+      "match": "exact"
+    },
+    "06-3061": {
+      "capacity": 909,
+      "satisfactory_stations": 909,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SANDPIPER ELEMENTARY",
+      "fish_msid": "06-0174",
+      "match": "exact"
+    },
+    "06-2641": {
+      "capacity": 1105,
+      "satisfactory_stations": 1105,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CENTRAL PARK ELEMENTARY",
+      "fish_msid": "06-0149",
+      "match": "exact"
+    },
+    "06-3001": {
+      "capacity": 1319,
+      "satisfactory_stations": 1466,
+      "use_desc": "MIDDLE",
+      "fish_name": "WALTER C YOUNG MIDDLE",
+      "fish_msid": "06-0169",
+      "match": "exact"
+    },
+    "06-3091": {
+      "capacity": 1191,
+      "satisfactory_stations": 1191,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WINSTON PARK ELEMENTARY",
+      "fish_msid": "06-0176",
+      "match": "exact"
+    },
+    "06-3111": {
+      "capacity": 849,
+      "satisfactory_stations": 849,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COUNTRY HILLS ELEMENTARY",
+      "fish_msid": "06-0177",
+      "match": "exact"
+    },
+    "06-3131": {
+      "capacity": 1004,
+      "satisfactory_stations": 1004,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HAWKES BLUFF ELEMENTARY",
+      "fish_msid": "06-0179",
+      "match": "exact"
+    },
+    "06-3171": {
+      "capacity": 1189,
+      "satisfactory_stations": 1189,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PARK SPRINGS ELEMENTARY",
+      "fish_msid": "06-0182",
+      "match": "exact"
+    },
+    "06-2871": {
+      "capacity": 1010,
+      "satisfactory_stations": 1010,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SEA CASTLE ELEMENTARY",
+      "fish_msid": "06-0164",
+      "match": "exact"
+    },
+    "06-3011": {
+      "capacity": 3267,
+      "satisfactory_stations": 3439,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MARJORY STONEMAN DOUGLAS SENIOR HIGH",
+      "fish_msid": "06-0170",
+      "match": "exact"
+    },
+    "06-3151": {
+      "capacity": 1422,
+      "satisfactory_stations": 1581,
+      "use_desc": "MIDDLE",
+      "fish_name": "TEQUESTA TRACE MIDDLE",
+      "fish_msid": "06-0181",
+      "match": "exact"
+    },
+    "06-3181": {
+      "capacity": 825,
+      "satisfactory_stations": 825,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "INDIAN TRACE ELEMENTARY",
+      "fish_msid": "06-0183",
+      "match": "exact"
+    },
+    "06-2121": {
+      "capacity": 1713,
+      "satisfactory_stations": 1904,
+      "use_desc": "MIDDLE",
+      "fish_name": "JAMES S RICKARDS MIDDLE",
+      "fish_msid": "06-0134",
+      "match": "exact"
+    },
+    "06-3121": {
+      "capacity": 1528,
+      "satisfactory_stations": 1528,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "QUIET WATERS ELEMENTARY",
+      "fish_msid": "06-0178",
+      "match": "exact"
+    },
+    "06-2961": {
+      "capacity": 1054,
+      "satisfactory_stations": 1054,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHAPEL TRAIL ELEMENTARY",
+      "fish_msid": "06-0221",
+      "match": "exact"
+    },
+    "06-3291": {
+      "capacity": 803,
+      "satisfactory_stations": 803,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "THURGOOD MARSHALL ELEMENTARY",
+      "fish_msid": "06-0222",
+      "match": "exact"
+    },
+    "06-3331": {
+      "capacity": 1586,
+      "satisfactory_stations": 1763,
+      "use_desc": "MIDDLE",
+      "fish_name": "SILVER TRAIL MIDDLE",
+      "fish_msid": "06-0223",
+      "match": "exact"
+    },
+    "06-3441": {
+      "capacity": 872,
+      "satisfactory_stations": 872,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EAGLE RIDGE ELEMENTARY",
+      "fish_msid": "06-0225",
+      "match": "exact"
+    },
+    "06-3471": {
+      "capacity": 1975,
+      "satisfactory_stations": 2195,
+      "use_desc": "MIDDLE",
+      "fish_name": "INDIAN RIDGE MIDDLE",
+      "fish_msid": "06-0232",
+      "match": "exact"
+    },
+    "06-3491": {
+      "capacity": 816,
+      "satisfactory_stations": 816,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SILVER PALMS ELEMENTARY",
+      "fish_msid": "06-0234",
+      "match": "exact"
+    },
+    "06-3391": {
+      "capacity": 2774,
+      "satisfactory_stations": 2921,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CHARLES W FLANAGAN SENIOR HIGH",
+      "fish_msid": "06-0226",
+      "match": "exact"
+    },
+    "06-3431": {
+      "capacity": 1208,
+      "satisfactory_stations": 1343,
+      "use_desc": "MIDDLE",
+      "fish_name": "SAWGRASS SPRINGS MIDDLE",
+      "fish_msid": "06-0227",
+      "match": "exact"
+    },
+    "06-3481": {
+      "capacity": 1358,
+      "satisfactory_stations": 1358,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TRADEWINDS ELEMENTARY",
+      "fish_msid": "06-0230",
+      "match": "exact"
+    },
+    "06-3571": {
+      "capacity": 778,
+      "satisfactory_stations": 778,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PANTHER RUN ELEMENTARY",
+      "fish_msid": "06-0237",
+      "match": "exact"
+    },
+    "06-0185": {
+      "capacity": 1230,
+      "satisfactory_stations": 1367,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "POMPANO BEACH HIGH SCHOOL",
+      "fish_msid": "06-0013",
+      "match": "disambiguated"
+    },
+    "06-2942": {
+      "capacity": 1220,
+      "satisfactory_stations": 1220,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EVERGLADES ELEMENTARY",
+      "fish_msid": "06-0220",
+      "match": "disambiguated"
+    },
+    "06-3371": {
+      "capacity": 778,
+      "satisfactory_stations": 778,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SILVER LAKES ELEMENTARY",
+      "fish_msid": "06-0238",
+      "match": "disambiguated"
+    },
+    "06-3531": {
+      "capacity": 1286,
+      "satisfactory_stations": 1286,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FOX TRAIL ELEMENTARY",
+      "fish_msid": "06-0236",
+      "match": "exact"
+    },
+    "06-3591": {
+      "capacity": 755,
+      "satisfactory_stations": 755,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKESIDE ELEMENTARY",
+      "fish_msid": "06-0239",
+      "match": "exact"
+    },
+    "06-3642": {
+      "capacity": 1412,
+      "satisfactory_stations": 1412,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GATOR RUN ELEMENTARY",
+      "fish_msid": "06-0242",
+      "match": "exact"
+    },
+    "06-3651": {
+      "capacity": 511,
+      "satisfactory_stations": 568,
+      "use_desc": "COMBINATION",
+      "fish_name": "DAVE THOMAS EDUCATION CENTER-WEST",
+      "fish_msid": "06-0266",
+      "match": "exact"
+    },
+    "06-3741": {
+      "capacity": 820,
+      "satisfactory_stations": 820,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COCONUT PALM ELEMENTARY",
+      "fish_msid": "06-0245",
+      "match": "exact"
+    },
+    "06-3771": {
+      "capacity": 1000,
+      "satisfactory_stations": 1000,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHALLENGER ELEMENTARY",
+      "fish_msid": "06-0248",
+      "match": "exact"
+    },
+    "06-3781": {
+      "capacity": 1330,
+      "satisfactory_stations": 1330,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PARK TRAILS ELEMENTARY",
+      "fish_msid": "06-0244",
+      "match": "exact"
+    },
+    "06-3301": {
+      "capacity": 468,
+      "satisfactory_stations": 468,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ENDEAVOUR PRIMARY LEARNING CENTER",
+      "fish_msid": "06-0224",
+      "match": "exact"
+    },
+    "06-3623": {
+      "capacity": 4743,
+      "satisfactory_stations": 4993,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CYPRESS BAY SENIOR HIGH",
+      "fish_msid": "06-0252",
+      "match": "exact"
+    },
+    "06-3661": {
+      "capacity": 1300,
+      "satisfactory_stations": 1300,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNSET LAKES ELEMENTARY",
+      "fish_msid": "06-0259",
+      "match": "exact"
+    },
+    "06-3761": {
+      "capacity": 1214,
+      "satisfactory_stations": 1214,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PARK LAKES ELEMENTARY",
+      "fish_msid": "06-0246",
+      "match": "exact"
+    },
+    "06-3821": {
+      "capacity": 1260,
+      "satisfactory_stations": 1260,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LIBERTY ELEMENTARY",
+      "fish_msid": "06-0258",
+      "match": "exact"
+    },
+    "06-3841": {
+      "capacity": 1284,
+      "satisfactory_stations": 1284,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MANATEE BAY ELEMENTARY",
+      "fish_msid": "06-0257",
+      "match": "exact"
+    },
+    "06-3871": {
+      "capacity": 1834,
+      "satisfactory_stations": 2038,
+      "use_desc": "MIDDLE",
+      "fish_name": "WESTGLADES MIDDLE",
+      "fish_msid": "06-0256",
+      "match": "exact"
+    },
+    "06-3911": {
+      "capacity": 1566,
+      "satisfactory_stations": 1740,
+      "use_desc": "MIDDLE",
+      "fish_name": "NEW RENAISSANCE MIDDLE",
+      "fish_msid": "06-0250",
+      "match": "exact"
+    },
+    "06-4772": {
+      "capacity": 1697,
+      "satisfactory_stations": 1886,
+      "use_desc": "COMBINATION",
+      "fish_name": "MILLENNIUM 6-12 COLLEGIATE ACADEMY",
+      "fish_msid": "06-0249",
+      "match": "exact"
+    },
+    "06-3861": {
+      "capacity": 2668,
+      "satisfactory_stations": 2809,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CORAL GLADES HIGH SCHOOL",
+      "fish_msid": "06-0263",
+      "match": "exact"
+    },
+    "06-2021": {
+      "capacity": 1862,
+      "satisfactory_stations": 2069,
+      "use_desc": "MIDDLE",
+      "fish_name": "GLADES MIDDLE",
+      "fish_msid": "06-0270",
+      "match": "exact"
+    },
+    "06-3751": {
+      "capacity": 830,
+      "satisfactory_stations": 830,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DOLPHIN BAY ELEMENTARY",
+      "fish_msid": "06-0269",
+      "match": "exact"
+    },
+    "06-3541": {
+      "capacity": 2365,
+      "satisfactory_stations": 2490,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MONARCH SENIOR HIGH",
+      "fish_msid": "06-0253",
+      "match": "exact"
+    },
+    "06-3701": {
+      "capacity": 580,
+      "satisfactory_stations": 580,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROCK ISLAND ELEMENTARY",
+      "fish_msid": "06-0254",
+      "match": "exact"
+    },
+    "06-3731": {
+      "capacity": 2920,
+      "satisfactory_stations": 3074,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "EVERGLADES SENIOR HIGH",
+      "fish_msid": "06-0261",
+      "match": "disambiguated"
+    },
+    "06-3101": {
+      "capacity": 1916,
+      "satisfactory_stations": 2129,
+      "use_desc": "MIDDLE",
+      "fish_name": "LYONS CREEK MIDDLE",
+      "fish_msid": "06-0241",
+      "match": "exact"
+    },
+    "06-3622": {
+      "capacity": 3189,
+      "satisfactory_stations": 2522,
+      "use_desc": "MIDDLE",
+      "fish_name": "FALCON COVE MIDDLE",
+      "fish_msid": "06-0240",
+      "match": "exact"
+    },
+    "06-3631": {
+      "capacity": 980,
+      "satisfactory_stations": 980,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PARKSIDE ELEMENTARY",
+      "fish_msid": "06-0243",
+      "match": "exact"
+    },
+    "06-6501": {
+      "capacity": 1249,
+      "satisfactory_stations": 1388,
+      "use_desc": "COMBINATION",
+      "fish_name": "HENRY D PERRY EDUCATION CENTER",
+      "fish_msid": "06-0079",
+      "match": "exact"
+    },
+    "06-3962": {
+      "capacity": 942,
+      "satisfactory_stations": 942,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DISCOVERY ELEMENTARY",
+      "fish_msid": "06-0274",
+      "match": "exact"
+    },
+    "06-3971": {
+      "capacity": 2761,
+      "satisfactory_stations": 2907,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WEST BROWARD HIGH SCHOOL",
+      "fish_msid": "06-0271",
+      "match": "exact"
+    },
+    "06-3961": {
+      "capacity": 996,
+      "satisfactory_stations": 996,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HERON HEIGHTS ELEMENTARY",
+      "fish_msid": "06-0273",
+      "match": "exact"
+    },
+    "06-2041": {
+      "capacity": 747,
+      "satisfactory_stations": 830,
+      "use_desc": "COMBINATION",
+      "fish_name": "BEACHSIDE MONTESSORI VILLAGE",
+      "fish_msid": "06-0275",
+      "match": "exact"
+    },
+    "13-0081": {
+      "capacity": 754,
+      "satisfactory_stations": 754,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LENORA BRAYNON SMITH ELEMENTARY",
+      "fish_msid": "13-0002",
+      "match": "exact"
+    },
+    "13-0101": {
+      "capacity": 778,
+      "satisfactory_stations": 778,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ARCOLA LAKE ELEMENTARY",
+      "fish_msid": "13-0003",
+      "match": "exact"
+    },
+    "13-0121": {
+      "capacity": 1037,
+      "satisfactory_stations": 1037,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "AUBURNDALE ELEMENTARY",
+      "fish_msid": "13-0004",
+      "match": "exact"
+    },
+    "13-0161": {
+      "capacity": 869,
+      "satisfactory_stations": 869,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "AVOCADO ELEMENTARY",
+      "fish_msid": "13-0005",
+      "match": "exact"
+    },
+    "13-0201": {
+      "capacity": 540,
+      "satisfactory_stations": 540,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BANYAN ELEMENTARY",
+      "fish_msid": "13-0006",
+      "match": "exact"
+    },
+    "13-0241": {
+      "capacity": 1326,
+      "satisfactory_stations": 1474,
+      "use_desc": "COMBINATION",
+      "fish_name": "RUTH K BROAD-BAY HARBOR K-8 CENTER",
+      "fish_msid": "13-0007",
+      "match": "exact"
+    },
+    "13-0261": {
+      "capacity": 616,
+      "satisfactory_stations": 616,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BEL-AIRE ELEMENTARY",
+      "fish_msid": "13-0009",
+      "match": "exact"
+    },
+    "13-0321": {
+      "capacity": 822,
+      "satisfactory_stations": 822,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BISCAYNE BEACH ELEMENTARY",
+      "fish_msid": "13-0012",
+      "match": "exact"
+    },
+    "13-0401": {
+      "capacity": 616,
+      "satisfactory_stations": 616,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VAN E BLANTON ELEMENTARY",
+      "fish_msid": "13-0014",
+      "match": "exact"
+    },
+    "13-0441": {
+      "capacity": 611,
+      "satisfactory_stations": 679,
+      "use_desc": "COMBINATION",
+      "fish_name": "BLUE LAKES K-8 CENTER",
+      "fish_msid": "13-0015",
+      "match": "exact"
+    },
+    "13-0461": {
+      "capacity": 874,
+      "satisfactory_stations": 874,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BRENTWOOD ELEMENTARY",
+      "fish_msid": "13-0017",
+      "match": "exact"
+    },
+    "13-0521": {
+      "capacity": 708,
+      "satisfactory_stations": 708,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BROADMOOR ELEMENTARY",
+      "fish_msid": "13-0019",
+      "match": "exact"
+    },
+    "13-0561": {
+      "capacity": 762,
+      "satisfactory_stations": 762,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "W J BRYAN ELEMENTARY",
+      "fish_msid": "13-0020",
+      "match": "exact"
+    },
+    "13-0641": {
+      "capacity": 388,
+      "satisfactory_stations": 388,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BUNCHE PARK ELEMENTARY",
+      "fish_msid": "13-0022",
+      "match": "exact"
+    },
+    "13-0651": {
+      "capacity": 1188,
+      "satisfactory_stations": 1320,
+      "use_desc": "COMBINATION",
+      "fish_name": "CAMPBELL DRIVE K-8 CENTER",
+      "fish_msid": "13-0023",
+      "match": "exact"
+    },
+    "13-0661": {
+      "capacity": 994,
+      "satisfactory_stations": 1105,
+      "use_desc": "COMBINATION",
+      "fish_name": "CARIBBEAN K-8 CENTER",
+      "fish_msid": "13-0024",
+      "match": "exact"
+    },
+    "13-0681": {
+      "capacity": 806,
+      "satisfactory_stations": 806,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CAROL CITY ELEMENTARY",
+      "fish_msid": "13-0026",
+      "match": "disambiguated"
+    },
+    "13-0771": {
+      "capacity": 620,
+      "satisfactory_stations": 620,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR. WILLIAM A CHAPMAN ELEMENTARY",
+      "fish_msid": "13-0029",
+      "match": "exact"
+    },
+    "13-0801": {
+      "capacity": 928,
+      "satisfactory_stations": 2648,
+      "use_desc": "COMBINATION",
+      "fish_name": "CITRUS GROVE K-8",
+      "fish_msid": "13-0030",
+      "match": "exact"
+    },
+    "13-0841": {
+      "capacity": 458,
+      "satisfactory_stations": 458,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COCONUT GROVE ELEMENTARY",
+      "fish_msid": "13-0032",
+      "match": "exact"
+    },
+    "13-0881": {
+      "capacity": 625,
+      "satisfactory_stations": 625,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COMSTOCK ELEMENTARY",
+      "fish_msid": "13-0034",
+      "match": "exact"
+    },
+    "13-0961": {
+      "capacity": 856,
+      "satisfactory_stations": 952,
+      "use_desc": "COMBINATION",
+      "fish_name": "CORAL GABLES PREPARATORY ACADEMY",
+      "fish_msid": "13-0036",
+      "match": "exact"
+    },
+    "13-1001": {
+      "capacity": 1060,
+      "satisfactory_stations": 1060,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CORAL PARK ELEMENTARY",
+      "fish_msid": "13-0037",
+      "match": "exact"
+    },
+    "13-1041": {
+      "capacity": 932,
+      "satisfactory_stations": 932,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CORAL REEF ELEMENTARY",
+      "fish_msid": "13-0038",
+      "match": "disambiguated"
+    },
+    "13-1081": {
+      "capacity": 614,
+      "satisfactory_stations": 614,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CORAL TERRACE ELEMENTARY",
+      "fish_msid": "13-0039",
+      "match": "exact"
+    },
+    "13-1121": {
+      "capacity": 1374,
+      "satisfactory_stations": 1527,
+      "use_desc": "COMBINATION",
+      "fish_name": "CORAL WAY K-8 CENTER",
+      "fish_msid": "13-0040",
+      "match": "exact"
+    },
+    "13-1161": {
+      "capacity": 884,
+      "satisfactory_stations": 884,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CRESTVIEW ELEMENTARY",
+      "fish_msid": "13-0041",
+      "match": "exact"
+    },
+    "13-1241": {
+      "capacity": 982,
+      "satisfactory_stations": 982,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CUTLER RIDGE ELEMENTARY",
+      "fish_msid": "13-0043",
+      "match": "exact"
+    },
+    "13-1281": {
+      "capacity": 495,
+      "satisfactory_stations": 550,
+      "use_desc": "COMBINATION",
+      "fish_name": "CYPRESS K-8 CENTER",
+      "fish_msid": "13-0044",
+      "match": "exact"
+    },
+    "13-1401": {
+      "capacity": 1001,
+      "satisfactory_stations": 537,
+      "use_desc": "COMBINATION",
+      "fish_name": "CHARLES R DREW K-8 CENTER",
+      "fish_msid": "13-0048",
+      "match": "exact"
+    },
+    "13-1441": {
+      "capacity": 787,
+      "satisfactory_stations": 875,
+      "use_desc": "COMBINATION",
+      "fish_name": "PAUL LAURENCE DUNBAR K-8 CENTER",
+      "fish_msid": "13-0049",
+      "match": "exact"
+    },
+    "13-1481": {
+      "capacity": 623,
+      "satisfactory_stations": 623,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "JOHN G DUPUIS ELEMENTARY",
+      "fish_msid": "13-0050",
+      "match": "exact"
+    },
+    "13-1521": {
+      "capacity": 518,
+      "satisfactory_stations": 518,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "AMELIA EARHART ELEMENTARY",
+      "fish_msid": "13-0051",
+      "match": "exact"
+    },
+    "13-1561": {
+      "capacity": 656,
+      "satisfactory_stations": 656,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EARLINGTON HEIGHTS ELEMENTARY",
+      "fish_msid": "13-0052",
+      "match": "exact"
+    },
+    "13-1601": {
+      "capacity": 613,
+      "satisfactory_stations": 682,
+      "use_desc": "COMBINATION",
+      "fish_name": "EDISON PARK K-8 CENTER",
+      "fish_msid": "13-0053",
+      "match": "exact"
+    },
+    "13-1641": {
+      "capacity": 576,
+      "satisfactory_stations": 576,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EMERSON ELEMENTARY",
+      "fish_msid": "13-0054",
+      "match": "exact"
+    },
+    "13-1681": {
+      "capacity": 648,
+      "satisfactory_stations": 721,
+      "use_desc": "COMBINATION",
+      "fish_name": "LILLIE C EVANS K-8 CENTER",
+      "fish_msid": "13-0055",
+      "match": "exact"
+    },
+    "13-1721": {
+      "capacity": 1193,
+      "satisfactory_stations": 1326,
+      "use_desc": "COMBINATION",
+      "fish_name": "EVERGLADES K-8 CENTER",
+      "fish_msid": "13-0056",
+      "match": "exact"
+    },
+    "13-1761": {
+      "capacity": 728,
+      "satisfactory_stations": 728,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DAVID FAIRCHILD ELEMENTARY",
+      "fish_msid": "13-0057",
+      "match": "exact"
+    },
+    "13-1801": {
+      "capacity": 648,
+      "satisfactory_stations": 648,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FAIRLAWN ELEMENTARY",
+      "fish_msid": "13-0058",
+      "match": "exact"
+    },
+    "13-1841": {
+      "capacity": 504,
+      "satisfactory_stations": 504,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FLAGAMI ELEMENTARY",
+      "fish_msid": "13-0059",
+      "match": "exact"
+    },
+    "13-1881": {
+      "capacity": 938,
+      "satisfactory_stations": 938,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HENRY M FLAGLER ELEMENTARY",
+      "fish_msid": "13-0060",
+      "match": "exact"
+    },
+    "13-1921": {
+      "capacity": 848,
+      "satisfactory_stations": 848,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FLAMINGO ELEMENTARY",
+      "fish_msid": "13-0061",
+      "match": "exact"
+    },
+    "13-2001": {
+      "capacity": 830,
+      "satisfactory_stations": 830,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FLORIDA CITY ELEMENTARY",
+      "fish_msid": "13-0063",
+      "match": "exact"
+    },
+    "13-2021": {
+      "capacity": 772,
+      "satisfactory_stations": 772,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GLORIA FLOYD ELEMENTARY",
+      "fish_msid": "13-0064",
+      "match": "exact"
+    },
+    "13-2041": {
+      "capacity": 721,
+      "satisfactory_stations": 802,
+      "use_desc": "COMBINATION",
+      "fish_name": "BENJAMIN FRANKLIN K-8 CENTER",
+      "fish_msid": "13-0065",
+      "match": "exact"
+    },
+    "13-2081": {
+      "capacity": 503,
+      "satisfactory_stations": 503,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FULFORD ELEMENTARY",
+      "fish_msid": "13-0066",
+      "match": "exact"
+    },
+    "13-2161": {
+      "capacity": 438,
+      "satisfactory_stations": 438,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GOLDEN GLADES ELEMENTARY",
+      "fish_msid": "13-0069",
+      "match": "exact"
+    },
+    "13-2241": {
+      "capacity": 686,
+      "satisfactory_stations": 686,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GRATIGNY ELEMENTARY",
+      "fish_msid": "13-0072",
+      "match": "exact"
+    },
+    "13-2261": {
+      "capacity": 560,
+      "satisfactory_stations": 560,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GREENGLADE ELEMENTARY",
+      "fish_msid": "13-0073",
+      "match": "exact"
+    },
+    "13-2281": {
+      "capacity": 742,
+      "satisfactory_stations": 742,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GREYNOLDS PARK ELEMENTARY",
+      "fish_msid": "13-0074",
+      "match": "exact"
+    },
+    "13-2321": {
+      "capacity": 897,
+      "satisfactory_stations": 897,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GULFSTREAM ELEMENTARY",
+      "fish_msid": "13-0075",
+      "match": "exact"
+    },
+    "13-2361": {
+      "capacity": 886,
+      "satisfactory_stations": 886,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HIALEAH ELEMENTARY",
+      "fish_msid": "13-0078",
+      "match": "disambiguated"
+    },
+    "13-2401": {
+      "capacity": 643,
+      "satisfactory_stations": 643,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HIBISCUS ELEMENTARY",
+      "fish_msid": "13-0079",
+      "match": "exact"
+    },
+    "13-2441": {
+      "capacity": 636,
+      "satisfactory_stations": 636,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VIRGINIA A BOONE HIGHLAND OAKS ELEMENTAR",
+      "fish_msid": "13-0080",
+      "match": "fuzzy"
+    },
+    "13-2501": {
+      "capacity": 572,
+      "satisfactory_stations": 572,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HOLMES ELEMENTARY",
+      "fish_msid": "13-0081",
+      "match": "exact"
+    },
+    "13-2541": {
+      "capacity": 771,
+      "satisfactory_stations": 771,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HOWARD DRIVE ELEMENTARY",
+      "fish_msid": "13-0085",
+      "match": "exact"
+    },
+    "13-2581": {
+      "capacity": 1050,
+      "satisfactory_stations": 1167,
+      "use_desc": "COMBINATION",
+      "fish_name": "MADIE IVES K-8 PREPARATORY ACADEMY",
+      "fish_msid": "13-0086",
+      "match": "exact"
+    },
+    "13-2641": {
+      "capacity": 724,
+      "satisfactory_stations": 724,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "KENDALE ELEMENTARY",
+      "fish_msid": "13-0088",
+      "match": "exact"
+    },
+    "13-2651": {
+      "capacity": 872,
+      "satisfactory_stations": 872,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "KENDALE LAKES ELEMENTARY",
+      "fish_msid": "13-0089",
+      "match": "exact"
+    },
+    "13-2661": {
+      "capacity": 1424,
+      "satisfactory_stations": 1424,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "KENSINGTON PARK ELEMENTARY",
+      "fish_msid": "13-0090",
+      "match": "exact"
+    },
+    "13-2701": {
+      "capacity": 1177,
+      "satisfactory_stations": 1308,
+      "use_desc": "COMBINATION",
+      "fish_name": "KENWOOD K-8 CENTER",
+      "fish_msid": "13-0091",
+      "match": "exact"
+    },
+    "13-2741": {
+      "capacity": 1150,
+      "satisfactory_stations": 1278,
+      "use_desc": "COMBINATION",
+      "fish_name": "KEY BISCAYNE K-8 CENTER",
+      "fish_msid": "13-0092",
+      "match": "exact"
+    },
+    "13-2781": {
+      "capacity": 818,
+      "satisfactory_stations": 818,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "KINLOCH PARK ELEMENTARY",
+      "fish_msid": "13-0094",
+      "match": "disambiguated"
+    },
+    "13-2801": {
+      "capacity": 476,
+      "satisfactory_stations": 476,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE STEVENS ELEMENTARY",
+      "fish_msid": "13-0095",
+      "match": "disambiguated"
+    },
+    "13-2821": {
+      "capacity": 500,
+      "satisfactory_stations": 500,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKEVIEW ELEMENTARY",
+      "fish_msid": "13-0096",
+      "match": "exact"
+    },
+    "13-2881": {
+      "capacity": 1017,
+      "satisfactory_stations": 1130,
+      "use_desc": "COMBINATION",
+      "fish_name": "LEEWOOD K-8 CENTER",
+      "fish_msid": "13-0098",
+      "match": "exact"
+    },
+    "13-2901": {
+      "capacity": 1137,
+      "satisfactory_stations": 1264,
+      "use_desc": "COMBINATION",
+      "fish_name": "LEISURE CITY K-8 CENTER",
+      "fish_msid": "13-0100",
+      "match": "exact"
+    },
+    "13-2941": {
+      "capacity": 819,
+      "satisfactory_stations": 819,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAURA C SAUNDERS ELEMENTARY",
+      "fish_msid": "13-0101",
+      "match": "exact"
+    },
+    "13-2981": {
+      "capacity": 830,
+      "satisfactory_stations": 830,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LIBERTY CITY ELEMENTARY",
+      "fish_msid": "13-0102",
+      "match": "exact"
+    },
+    "13-3021": {
+      "capacity": 674,
+      "satisfactory_stations": 674,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "JESSE J. McCRARY JR. ELEMENTARY SCHOOL",
+      "fish_msid": "13-0103",
+      "match": "exact"
+    },
+    "13-3041": {
+      "capacity": 564,
+      "satisfactory_stations": 564,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LORAH PARK ELEMENTARY",
+      "fish_msid": "13-0104",
+      "match": "exact"
+    },
+    "13-3061": {
+      "capacity": 446,
+      "satisfactory_stations": 446,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LUDLAM ELEMENTARY",
+      "fish_msid": "13-0106",
+      "match": "exact"
+    },
+    "13-3101": {
+      "capacity": 1323,
+      "satisfactory_stations": 1470,
+      "use_desc": "COMBINATION",
+      "fish_name": "FRANK CRAWFORD MARTIN K-8 CENTER",
+      "fish_msid": "13-0107",
+      "match": "exact"
+    },
+    "13-3141": {
+      "capacity": 976,
+      "satisfactory_stations": 976,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MEADOWLANE ELEMENTARY",
+      "fish_msid": "13-0109",
+      "match": "exact"
+    },
+    "13-3181": {
+      "capacity": 590,
+      "satisfactory_stations": 590,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MELROSE ELEMENTARY",
+      "fish_msid": "13-0110",
+      "match": "exact"
+    },
+    "13-3241": {
+      "capacity": 412,
+      "satisfactory_stations": 412,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MIAMI GARDENS ELEMENTARY",
+      "fish_msid": "13-0112",
+      "match": "exact"
+    },
+    "13-3261": {
+      "capacity": 1265,
+      "satisfactory_stations": 1265,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MIAMI HEIGHTS ELEMENTARY",
+      "fish_msid": "13-0113",
+      "match": "exact"
+    },
+    "13-3341": {
+      "capacity": 822,
+      "satisfactory_stations": 822,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MIAMI SHORES ELEMENTARY",
+      "fish_msid": "13-0116",
+      "match": "exact"
+    },
+    "13-3381": {
+      "capacity": 602,
+      "satisfactory_stations": 602,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MIAMI SPRINGS ELEMENTARY",
+      "fish_msid": "13-0118",
+      "match": "disambiguated"
+    },
+    "13-3501": {
+      "capacity": 666,
+      "satisfactory_stations": 740,
+      "use_desc": "COMBINATION",
+      "fish_name": "MORNINGSIDE K-8 CENTER",
+      "fish_msid": "13-0122",
+      "match": "exact"
+    },
+    "13-3541": {
+      "capacity": 715,
+      "satisfactory_stations": 715,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROBERT RUSSA MOTON ELEMENTARY",
+      "fish_msid": "13-0123",
+      "match": "exact"
+    },
+    "13-3581": {
+      "capacity": 735,
+      "satisfactory_stations": 817,
+      "use_desc": "COMBINATION",
+      "fish_name": "MYRTLE GROVE K-8 CENTER",
+      "fish_msid": "13-0124",
+      "match": "exact"
+    },
+    "13-3621": {
+      "capacity": 1693,
+      "satisfactory_stations": 1882,
+      "use_desc": "COMBINATION",
+      "fish_name": "COCONUT PALM K-8 ACADEMY",
+      "fish_msid": "13-0444",
+      "match": "exact"
+    },
+    "13-3661": {
+      "capacity": 668,
+      "satisfactory_stations": 668,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NATURAL BRIDGE ELEMENTARY",
+      "fish_msid": "13-0126",
+      "match": "exact"
+    },
+    "13-3701": {
+      "capacity": 708,
+      "satisfactory_stations": 708,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORLAND ELEMENTARY",
+      "fish_msid": "13-0127",
+      "match": "disambiguated"
+    },
+    "13-3741": {
+      "capacity": 891,
+      "satisfactory_stations": 891,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH BEACH ELEMENTARY",
+      "fish_msid": "13-0128",
+      "match": "exact"
+    },
+    "13-3781": {
+      "capacity": 492,
+      "satisfactory_stations": 492,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BARBARA HAWKINS ELEMENTARY",
+      "fish_msid": "13-0129",
+      "match": "exact"
+    },
+    "13-3821": {
+      "capacity": 651,
+      "satisfactory_stations": 724,
+      "use_desc": "COMBINATION",
+      "fish_name": "NORTH COUNTY K-8 CENTER",
+      "fish_msid": "13-0130",
+      "match": "exact"
+    },
+    "13-3861": {
+      "capacity": 508,
+      "satisfactory_stations": 508,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH GLADE ELEMENTARY",
+      "fish_msid": "13-0131",
+      "match": "exact"
+    },
+    "13-3901": {
+      "capacity": 670,
+      "satisfactory_stations": 670,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH HIALEAH ELEMENTARY",
+      "fish_msid": "13-0132",
+      "match": "exact"
+    },
+    "13-3941": {
+      "capacity": 764,
+      "satisfactory_stations": 764,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH MIAMI ELEMENTARY",
+      "fish_msid": "13-0133",
+      "match": "disambiguated"
+    },
+    "13-3981": {
+      "capacity": 551,
+      "satisfactory_stations": 551,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH TWIN LAKES ELEMENTARY",
+      "fish_msid": "13-0134",
+      "match": "exact"
+    },
+    "13-4001": {
+      "capacity": 655,
+      "satisfactory_stations": 655,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORWOOD ELEMENTARY",
+      "fish_msid": "13-0135",
+      "match": "exact"
+    },
+    "13-4021": {
+      "capacity": 652,
+      "satisfactory_stations": 652,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OAK GROVE ELEMENTARY",
+      "fish_msid": "13-0136",
+      "match": "exact"
+    },
+    "13-4061": {
+      "capacity": 1030,
+      "satisfactory_stations": 1030,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OJUS ELEMENTARY",
+      "fish_msid": "13-0137",
+      "match": "exact"
+    },
+    "13-4071": {
+      "capacity": 560,
+      "satisfactory_stations": 560,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "AGENORIA S PASCHAL/OLINDA ELEMENTARY",
+      "fish_msid": "13-0138",
+      "match": "exact"
+    },
+    "13-4091": {
+      "capacity": 642,
+      "satisfactory_stations": 642,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OLYMPIA HEIGHTS ELEMENTARY",
+      "fish_msid": "13-0139",
+      "match": "exact"
+    },
+    "13-4121": {
+      "capacity": 558,
+      "satisfactory_stations": 558,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR. ROBERT B. INGRAM ELEMENTARY",
+      "fish_msid": "13-0140",
+      "match": "exact"
+    },
+    "13-4171": {
+      "capacity": 723,
+      "satisfactory_stations": 723,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ORCHARD VILLA ELEMENTARY",
+      "fish_msid": "13-0141",
+      "match": "exact"
+    },
+    "13-4221": {
+      "capacity": 668,
+      "satisfactory_stations": 668,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALMETTO ELEMENTARY",
+      "fish_msid": "13-0142",
+      "match": "disambiguated"
+    },
+    "13-4241": {
+      "capacity": 978,
+      "satisfactory_stations": 978,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALM LAKES ELEMENTARY",
+      "fish_msid": "13-0143",
+      "match": "exact"
+    },
+    "13-4261": {
+      "capacity": 824,
+      "satisfactory_stations": 824,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALM SPRINGS ELEMENTARY",
+      "fish_msid": "13-0144",
+      "match": "disambiguated"
+    },
+    "13-4281": {
+      "capacity": 1603,
+      "satisfactory_stations": 1603,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALM SPRINGS NORTH ELEMENTARY",
+      "fish_msid": "13-0145",
+      "match": "exact"
+    },
+    "13-4301": {
+      "capacity": 436,
+      "satisfactory_stations": 436,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PARKVIEW ELEMENTARY",
+      "fish_msid": "13-0146",
+      "match": "exact"
+    },
+    "13-4341": {
+      "capacity": 478,
+      "satisfactory_stations": 478,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PARKWAY ELEMENTARY",
+      "fish_msid": "13-0147",
+      "match": "exact"
+    },
+    "13-4381": {
+      "capacity": 840,
+      "satisfactory_stations": 840,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR. HENRY E. PERRINE ACADEMY OF THE ARTS",
+      "fish_msid": "13-0148",
+      "match": "exact"
+    },
+    "13-4401": {
+      "capacity": 388,
+      "satisfactory_stations": 388,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "KELSEY L PHARR ELEMENTARY",
+      "fish_msid": "13-0149",
+      "match": "exact"
+    },
+    "13-4421": {
+      "capacity": 1110,
+      "satisfactory_stations": 1110,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINECREST ELEMENTARY",
+      "fish_msid": "13-0150",
+      "match": "exact"
+    },
+    "13-4441": {
+      "capacity": 648,
+      "satisfactory_stations": 648,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINE LAKE ELEMENTARY",
+      "fish_msid": "13-0151",
+      "match": "exact"
+    },
+    "13-4461": {
+      "capacity": 790,
+      "satisfactory_stations": 790,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINE VILLA ELEMENTARY",
+      "fish_msid": "13-0152",
+      "match": "exact"
+    },
+    "13-4501": {
+      "capacity": 756,
+      "satisfactory_stations": 756,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "POINCIANA PARK ELEMENTARY",
+      "fish_msid": "13-0153",
+      "match": "exact"
+    },
+    "13-4541": {
+      "capacity": 560,
+      "satisfactory_stations": 560,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RAINBOW PARK ELEMENTARY",
+      "fish_msid": "13-0155",
+      "match": "exact"
+    },
+    "13-4581": {
+      "capacity": 903,
+      "satisfactory_stations": 903,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "REDLAND ELEMENTARY",
+      "fish_msid": "13-0378",
+      "match": "disambiguated"
+    },
+    "13-4611": {
+      "capacity": 719,
+      "satisfactory_stations": 719,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "REDONDO ELEMENTARY",
+      "fish_msid": "13-0157",
+      "match": "exact"
+    },
+    "13-4681": {
+      "capacity": 856,
+      "satisfactory_stations": 856,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RIVERSIDE ELEMENTARY",
+      "fish_msid": "13-0159",
+      "match": "exact"
+    },
+    "13-4721": {
+      "capacity": 554,
+      "satisfactory_stations": 554,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROCKWAY ELEMENTARY",
+      "fish_msid": "13-0161",
+      "match": "disambiguated"
+    },
+    "13-4741": {
+      "capacity": 722,
+      "satisfactory_stations": 722,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROYAL GREEN ELEMENTARY",
+      "fish_msid": "13-0162",
+      "match": "exact"
+    },
+    "13-4761": {
+      "capacity": 576,
+      "satisfactory_stations": 576,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROYAL PALM ELEMENTARY",
+      "fish_msid": "13-0163",
+      "match": "exact"
+    },
+    "13-4801": {
+      "capacity": 696,
+      "satisfactory_stations": 696,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GERTRUDE K EDELMAN/SABAL PALM ELEMENTARY",
+      "fish_msid": "13-0164",
+      "match": "exact"
+    },
+    "13-4841": {
+      "capacity": 713,
+      "satisfactory_stations": 713,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SANTA CLARA ELEMENTARY",
+      "fish_msid": "13-0165",
+      "match": "exact"
+    },
+    "13-4881": {
+      "capacity": 678,
+      "satisfactory_stations": 678,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SCOTT LAKE ELEMENTARY",
+      "fish_msid": "13-0166",
+      "match": "exact"
+    },
+    "13-4921": {
+      "capacity": 842,
+      "satisfactory_stations": 842,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SEMINOLE ELEMENTARY",
+      "fish_msid": "13-0167",
+      "match": "exact"
+    },
+    "13-4961": {
+      "capacity": 398,
+      "satisfactory_stations": 398,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SHADOWLAWN ELEMENTARY",
+      "fish_msid": "13-0168",
+      "match": "exact"
+    },
+    "13-5001": {
+      "capacity": 968,
+      "satisfactory_stations": 968,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SHENANDOAH ELEMENTARY",
+      "fish_msid": "13-0169",
+      "match": "disambiguated"
+    },
+    "13-5041": {
+      "capacity": 629,
+      "satisfactory_stations": 629,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SILVER BLUFF ELEMENTARY",
+      "fish_msid": "13-0172",
+      "match": "exact"
+    },
+    "13-5081": {
+      "capacity": 588,
+      "satisfactory_stations": 588,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR. FREDERICA S WILSON/SKYWAY ELEMENTARY",
+      "fish_msid": "13-0174",
+      "match": "exact"
+    },
+    "13-5121": {
+      "capacity": 686,
+      "satisfactory_stations": 686,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SNAPPER CREEK ELEMENTARY",
+      "fish_msid": "13-0176",
+      "match": "exact"
+    },
+    "13-5201": {
+      "capacity": 1292,
+      "satisfactory_stations": 1292,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SOUTH HIALEAH  ELEMENTARY",
+      "fish_msid": "13-0178",
+      "match": "exact"
+    },
+    "13-5281": {
+      "capacity": 692,
+      "satisfactory_stations": 692,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SOUTH MIAMI HEIGHTS ELEMENTARY",
+      "fish_msid": "13-0180",
+      "match": "exact"
+    },
+    "13-5321": {
+      "capacity": 1408,
+      "satisfactory_stations": 1408,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SOUTHSIDE PREPARATORY ACADEMY",
+      "fish_msid": "13-0181",
+      "match": "exact"
+    },
+    "13-5361": {
+      "capacity": 430,
+      "satisfactory_stations": 430,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SPRINGVIEW ELEMENTARY",
+      "fish_msid": "13-0182",
+      "match": "exact"
+    },
+    "13-5381": {
+      "capacity": 916,
+      "satisfactory_stations": 916,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "E W F STIRRUP ELEMENTARY",
+      "fish_msid": "13-0183",
+      "match": "exact"
+    },
+    "13-5401": {
+      "capacity": 1222,
+      "satisfactory_stations": 1222,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNSET ELEMENTARY",
+      "fish_msid": "13-0184",
+      "match": "exact"
+    },
+    "13-5421": {
+      "capacity": 646,
+      "satisfactory_stations": 646,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNSET PARK ELEMENTARY",
+      "fish_msid": "13-0185",
+      "match": "exact"
+    },
+    "13-5441": {
+      "capacity": 826,
+      "satisfactory_stations": 826,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SYLVANIA HEIGHTS ELEMENTARY",
+      "fish_msid": "13-0187",
+      "match": "exact"
+    },
+    "13-5481": {
+      "capacity": 915,
+      "satisfactory_stations": 915,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TREASURE ISLAND ELEMENTARY",
+      "fish_msid": "13-0188",
+      "match": "exact"
+    },
+    "13-5521": {
+      "capacity": 802,
+      "satisfactory_stations": 802,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TROPICAL ELEMENTARY",
+      "fish_msid": "13-0189",
+      "match": "exact"
+    },
+    "13-5601": {
+      "capacity": 668,
+      "satisfactory_stations": 668,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TWIN LAKES ELEMENTARY",
+      "fish_msid": "13-0191",
+      "match": "exact"
+    },
+    "13-5641": {
+      "capacity": 460,
+      "satisfactory_stations": 460,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VILLAGE GREEN ELEMENTARY",
+      "fish_msid": "13-0192",
+      "match": "exact"
+    },
+    "13-5671": {
+      "capacity": 879,
+      "satisfactory_stations": 977,
+      "use_desc": "COMBINATION",
+      "fish_name": "VINELAND K-8 CENTER",
+      "fish_msid": "13-0193",
+      "match": "exact"
+    },
+    "13-5711": {
+      "capacity": 721,
+      "satisfactory_stations": 721,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MAE M WALTERS ELEMENTARY",
+      "fish_msid": "13-0194",
+      "match": "exact"
+    },
+    "13-5791": {
+      "capacity": 981,
+      "satisfactory_stations": 1090,
+      "use_desc": "COMBINATION",
+      "fish_name": "WEST HOMESTEAD K-8 CENTER",
+      "fish_msid": "13-0195",
+      "match": "exact"
+    },
+    "13-5831": {
+      "capacity": 423,
+      "satisfactory_stations": 471,
+      "use_desc": "COMBINATION",
+      "fish_name": "HENRY S WEST LABORATORY SCHOOL",
+      "fish_msid": "13-0196",
+      "match": "exact"
+    },
+    "13-5901": {
+      "capacity": 587,
+      "satisfactory_stations": 653,
+      "use_desc": "COMBINATION",
+      "fish_name": "CARRIE P MEEK/WESTVIEW K-8 CENTER",
+      "fish_msid": "13-0198",
+      "match": "exact"
+    },
+    "13-5951": {
+      "capacity": 724,
+      "satisfactory_stations": 724,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WHISPERING PINES ELEMENTARY",
+      "fish_msid": "13-0200",
+      "match": "exact"
+    },
+    "13-5961": {
+      "capacity": 1146,
+      "satisfactory_stations": 1274,
+      "use_desc": "COMBINATION",
+      "fish_name": "WINSTON PARK K-8 CENTER",
+      "fish_msid": "13-0201",
+      "match": "exact"
+    },
+    "13-5971": {
+      "capacity": 482,
+      "satisfactory_stations": 482,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NATHAN B YOUNG ELEMENTARY",
+      "fish_msid": "13-0202",
+      "match": "exact"
+    },
+    "13-6011": {
+      "capacity": 1153,
+      "satisfactory_stations": 1282,
+      "use_desc": "MIDDLE",
+      "fish_name": "GEORGIA JONES-AYERS MIDDLE SCHOOL",
+      "fish_msid": "13-0203",
+      "match": "exact"
+    },
+    "13-6021": {
+      "capacity": 1137,
+      "satisfactory_stations": 1264,
+      "use_desc": "MIDDLE",
+      "fish_name": "ARVIDA MIDDLE",
+      "fish_msid": "13-0204",
+      "match": "exact"
+    },
+    "13-6031": {
+      "capacity": 1365,
+      "satisfactory_stations": 1517,
+      "use_desc": "MIDDLE",
+      "fish_name": "BROWNSVILLE MIDDLE",
+      "fish_msid": "13-0205",
+      "match": "exact"
+    },
+    "13-6051": {
+      "capacity": 1060,
+      "satisfactory_stations": 1178,
+      "use_desc": "MIDDLE",
+      "fish_name": "CAROL CITY MIDDLE",
+      "fish_msid": "13-0207",
+      "match": "disambiguated"
+    },
+    "13-6071": {
+      "capacity": 880,
+      "satisfactory_stations": 978,
+      "use_desc": "MIDDLE",
+      "fish_name": "GEORGE WASHINGTON CARVER MIDDLE",
+      "fish_msid": "13-0209",
+      "match": "disambiguated"
+    },
+    "13-6081": {
+      "capacity": 1713,
+      "satisfactory_stations": 1804,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CUTLER BAY SENIOR HIGH SCHOOL",
+      "fish_msid": "13-0210",
+      "match": "disambiguated"
+    },
+    "13-6091": {
+      "capacity": 928,
+      "satisfactory_stations": 2648,
+      "use_desc": "COMBINATION",
+      "fish_name": "CITRUS GROVE K-8",
+      "fish_msid": "13-0030",
+      "match": "exact"
+    },
+    "13-6111": {
+      "capacity": 964,
+      "satisfactory_stations": 1072,
+      "use_desc": "MIDDLE",
+      "fish_name": "CUTLER BAY MIDDLE SCHOOL",
+      "fish_msid": "13-0212",
+      "match": "disambiguated"
+    },
+    "13-6171": {
+      "capacity": 1150,
+      "satisfactory_stations": 1278,
+      "use_desc": "MIDDLE",
+      "fish_name": "HENRY H FILER MIDDLE",
+      "fish_msid": "13-0215",
+      "match": "exact"
+    },
+    "13-6211": {
+      "capacity": 952,
+      "satisfactory_stations": 1058,
+      "use_desc": "MIDDLE",
+      "fish_name": "GLADES MIDDLE",
+      "fish_msid": "13-0216",
+      "match": "exact"
+    },
+    "13-6231": {
+      "capacity": 954,
+      "satisfactory_stations": 1061,
+      "use_desc": "MIDDLE",
+      "fish_name": "HIALEAH MIDDLE",
+      "fish_msid": "13-0218",
+      "match": "disambiguated"
+    },
+    "13-6241": {
+      "capacity": 1023,
+      "satisfactory_stations": 1137,
+      "use_desc": "MIDDLE",
+      "fish_name": "HIGHLAND OAKS MIDDLE",
+      "fish_msid": "13-0219",
+      "match": "exact"
+    },
+    "13-6251": {
+      "capacity": 859,
+      "satisfactory_stations": 955,
+      "use_desc": "MIDDLE",
+      "fish_name": "HOMESTEAD MIDDLE",
+      "fish_msid": "13-0220",
+      "match": "disambiguated"
+    },
+    "13-6301": {
+      "capacity": 1397,
+      "satisfactory_stations": 1553,
+      "use_desc": "MIDDLE",
+      "fish_name": "JOHN F KENNEDY MIDDLE",
+      "fish_msid": "13-0222",
+      "match": "exact"
+    },
+    "13-6331": {
+      "capacity": 1355,
+      "satisfactory_stations": 1506,
+      "use_desc": "MIDDLE",
+      "fish_name": "KINLOCH PARK MIDDLE",
+      "fish_msid": "13-0223",
+      "match": "disambiguated"
+    },
+    "13-6351": {
+      "capacity": 924,
+      "satisfactory_stations": 1027,
+      "use_desc": "MIDDLE",
+      "fish_name": "LAKE STEVENS MIDDLE",
+      "fish_msid": "13-0224",
+      "match": "disambiguated"
+    },
+    "13-6391": {
+      "capacity": 831,
+      "satisfactory_stations": 924,
+      "use_desc": "MIDDLE",
+      "fish_name": "MADISON MIDDLE",
+      "fish_msid": "13-0226",
+      "match": "exact"
+    },
+    "13-6411": {
+      "capacity": 1467,
+      "satisfactory_stations": 1631,
+      "use_desc": "MIDDLE",
+      "fish_name": "HORACE MANN MIDDLE",
+      "fish_msid": "13-0227",
+      "match": "exact"
+    },
+    "13-6441": {
+      "capacity": 1226,
+      "satisfactory_stations": 1363,
+      "use_desc": "MIDDLE",
+      "fish_name": "HOWARD D MCMILLAN MIDDLE",
+      "fish_msid": "13-0230",
+      "match": "exact"
+    },
+    "13-6501": {
+      "capacity": 1172,
+      "satisfactory_stations": 1303,
+      "use_desc": "MIDDLE",
+      "fish_name": "MIAMI LAKES MIDDLE",
+      "fish_msid": "13-0233",
+      "match": "disambiguated"
+    },
+    "13-6521": {
+      "capacity": 1306,
+      "satisfactory_stations": 1452,
+      "use_desc": "MIDDLE",
+      "fish_name": "MIAMI SPRINGS MIDDLE",
+      "fish_msid": "13-0234",
+      "match": "disambiguated"
+    },
+    "13-6541": {
+      "capacity": 1060,
+      "satisfactory_stations": 1178,
+      "use_desc": "MIDDLE",
+      "fish_name": "MIAMI BEACH NAUTILUS MIDDLE SCHOOL",
+      "fish_msid": "13-0235",
+      "match": "exact"
+    },
+    "13-6571": {
+      "capacity": 1441,
+      "satisfactory_stations": 1602,
+      "use_desc": "MIDDLE",
+      "fish_name": "NORLAND MIDDLE",
+      "fish_msid": "13-0236",
+      "match": "disambiguated"
+    },
+    "13-6591": {
+      "capacity": 797,
+      "satisfactory_stations": 886,
+      "use_desc": "MIDDLE",
+      "fish_name": "NORTH DADE MIDDLE",
+      "fish_msid": "13-0237",
+      "match": "exact"
+    },
+    "13-6631": {
+      "capacity": 955,
+      "satisfactory_stations": 1062,
+      "use_desc": "MIDDLE",
+      "fish_name": "NORTH MIAMI MIDDLE",
+      "fish_msid": "13-0238",
+      "match": "disambiguated"
+    },
+    "13-6681": {
+      "capacity": 1354,
+      "satisfactory_stations": 1505,
+      "use_desc": "MIDDLE",
+      "fish_name": "PALM SPRINGS MIDDLE",
+      "fish_msid": "13-0239",
+      "match": "disambiguated"
+    },
+    "13-6701": {
+      "capacity": 1202,
+      "satisfactory_stations": 1336,
+      "use_desc": "MIDDLE",
+      "fish_name": "PALMETTO MIDDLE",
+      "fish_msid": "13-0240",
+      "match": "disambiguated"
+    },
+    "13-6741": {
+      "capacity": 1287,
+      "satisfactory_stations": 1430,
+      "use_desc": "MIDDLE",
+      "fish_name": "PONCE DE LEON MIDDLE",
+      "fish_msid": "13-0242",
+      "match": "exact"
+    },
+    "13-6761": {
+      "capacity": 1252,
+      "satisfactory_stations": 1392,
+      "use_desc": "MIDDLE",
+      "fish_name": "REDLAND MIDDLE",
+      "fish_msid": "13-0243",
+      "match": "disambiguated"
+    },
+    "13-6781": {
+      "capacity": 1365,
+      "satisfactory_stations": 1517,
+      "use_desc": "COMBINATION",
+      "fish_name": "RICHMOND HEIGHTS MIDDLE",
+      "fish_msid": "13-0244",
+      "match": "exact"
+    },
+    "13-6801": {
+      "capacity": 1064,
+      "satisfactory_stations": 1183,
+      "use_desc": "MIDDLE",
+      "fish_name": "RIVIERA MIDDLE",
+      "fish_msid": "13-0245",
+      "match": "exact"
+    },
+    "13-6821": {
+      "capacity": 1374,
+      "satisfactory_stations": 1527,
+      "use_desc": "MIDDLE",
+      "fish_name": "ROCKWAY MIDDLE",
+      "fish_msid": "13-0246",
+      "match": "disambiguated"
+    },
+    "13-6841": {
+      "capacity": 1352,
+      "satisfactory_stations": 1503,
+      "use_desc": "MIDDLE",
+      "fish_name": "SHENANDOAH MIDDLE",
+      "fish_msid": "13-0247",
+      "match": "disambiguated"
+    },
+    "13-6861": {
+      "capacity": 1696,
+      "satisfactory_stations": 1885,
+      "use_desc": "MIDDLE",
+      "fish_name": "SOUTHWOOD MIDDLE",
+      "fish_msid": "13-0248",
+      "match": "exact"
+    },
+    "13-6881": {
+      "capacity": 746,
+      "satisfactory_stations": 829,
+      "use_desc": "MIDDLE",
+      "fish_name": "SOUTH MIAMI  MIDDLE",
+      "fish_msid": "13-0249",
+      "match": "disambiguated"
+    },
+    "13-6901": {
+      "capacity": 959,
+      "satisfactory_stations": 1066,
+      "use_desc": "MIDDLE",
+      "fish_name": "W R THOMAS MIDDLE",
+      "fish_msid": "13-0250",
+      "match": "exact"
+    },
+    "13-6961": {
+      "capacity": 1228,
+      "satisfactory_stations": 1365,
+      "use_desc": "MIDDLE",
+      "fish_name": "WEST MIAMI MIDDLE",
+      "fish_msid": "13-0252",
+      "match": "exact"
+    },
+    "13-7011": {
+      "capacity": 2065,
+      "satisfactory_stations": 2174,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "AMERICAN SENIOR HIGH",
+      "fish_msid": "13-0254",
+      "match": "exact"
+    },
+    "13-7071": {
+      "capacity": 2906,
+      "satisfactory_stations": 3059,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CORAL GABLES SENIOR HIGH",
+      "fish_msid": "13-0256",
+      "match": "exact"
+    },
+    "13-7111": {
+      "capacity": 3362,
+      "satisfactory_stations": 3539,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "HIALEAH SENIOR HIGH",
+      "fish_msid": "13-0258",
+      "match": "disambiguated"
+    },
+    "13-7131": {
+      "capacity": 2915,
+      "satisfactory_stations": 3069,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "HIALEAH-MIAMI LAKES SENIOR HIGH",
+      "fish_msid": "13-0259",
+      "match": "exact"
+    },
+    "13-7151": {
+      "capacity": 2902,
+      "satisfactory_stations": 3055,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "HOMESTEAD SENIOR HIGH",
+      "fish_msid": "13-0260",
+      "match": "disambiguated"
+    },
+    "13-7201": {
+      "capacity": 2354,
+      "satisfactory_stations": 2478,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI BEACH SENIOR HIGH",
+      "fish_msid": "13-0262",
+      "match": "exact"
+    },
+    "13-7231": {
+      "capacity": 2700,
+      "satisfactory_stations": 2843,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI CAROL CITY SENIOR HIGH",
+      "fish_msid": "13-0263",
+      "match": "exact"
+    },
+    "13-7251": {
+      "capacity": 2321,
+      "satisfactory_stations": 2444,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI CENTRAL SENIOR HIGH",
+      "fish_msid": "13-0264",
+      "match": "exact"
+    },
+    "13-7271": {
+      "capacity": 3372,
+      "satisfactory_stations": 3550,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI CORAL PARK SENIOR HIGH",
+      "fish_msid": "13-0266",
+      "match": "exact"
+    },
+    "13-7301": {
+      "capacity": 1624,
+      "satisfactory_stations": 1710,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI EDISON SENIOR HIGH",
+      "fish_msid": "13-0267",
+      "match": "exact"
+    },
+    "13-7341": {
+      "capacity": 2335,
+      "satisfactory_stations": 2458,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI JACKSON SENIOR HIGH",
+      "fish_msid": "13-0268",
+      "match": "exact"
+    },
+    "13-7361": {
+      "capacity": 3174,
+      "satisfactory_stations": 3342,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI KILLIAN SENIOR HIGH",
+      "fish_msid": "13-0269",
+      "match": "exact"
+    },
+    "13-7381": {
+      "capacity": 1995,
+      "satisfactory_stations": 2100,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI NORLAND SENIOR",
+      "fish_msid": "13-0270",
+      "match": "exact"
+    },
+    "13-7411": {
+      "capacity": 2309,
+      "satisfactory_stations": 2431,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI NORTHWESTERN SENIOR HIGH",
+      "fish_msid": "13-0271",
+      "match": "exact"
+    },
+    "13-7431": {
+      "capacity": 2713,
+      "satisfactory_stations": 2856,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI PALMETTO SENIOR HIGH",
+      "fish_msid": "13-0272",
+      "match": "exact"
+    },
+    "13-7461": {
+      "capacity": 2613,
+      "satisfactory_stations": 2751,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI SENIOR HIGH",
+      "fish_msid": "13-0273",
+      "match": "exact"
+    },
+    "13-7511": {
+      "capacity": 2100,
+      "satisfactory_stations": 2211,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI SPRINGS SENIOR HIGH",
+      "fish_msid": "13-0274",
+      "match": "disambiguated"
+    },
+    "13-7531": {
+      "capacity": 2422,
+      "satisfactory_stations": 2550,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI SUNSET SENIOR HIGH",
+      "fish_msid": "13-0275",
+      "match": "exact"
+    },
+    "13-7541": {
+      "capacity": 2500,
+      "satisfactory_stations": 2632,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "NORTH MIAMI BEACH SENIOR HIGH",
+      "fish_msid": "13-0276",
+      "match": "exact"
+    },
+    "13-7591": {
+      "capacity": 2789,
+      "satisfactory_stations": 2936,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "NORTH MIAMI SENIOR HIGH",
+      "fish_msid": "13-0277",
+      "match": "disambiguated"
+    },
+    "13-7631": {
+      "capacity": 564,
+      "satisfactory_stations": 564,
+      "use_desc": "ALTERNATIVE EDUCATION",
+      "fish_name": "MIAMI MACARTHUR EDUCATIONAL CENTER",
+      "fish_msid": "13-0125",
+      "match": "exact"
+    },
+    "13-7701": {
+      "capacity": 3302,
+      "satisfactory_stations": 3476,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "SOUTH DADE SENIOR HIGH",
+      "fish_msid": "13-0280",
+      "match": "disambiguated"
+    },
+    "13-7721": {
+      "capacity": 2470,
+      "satisfactory_stations": 2601,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "SOUTH MIAMI SENIOR HIGH",
+      "fish_msid": "13-0281",
+      "match": "disambiguated"
+    },
+    "13-7731": {
+      "capacity": 2451,
+      "satisfactory_stations": 2581,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "MIAMI SOUTHRIDGE SENIOR HIGH",
+      "fish_msid": "13-0282",
+      "match": "exact"
+    },
+    "13-7741": {
+      "capacity": 2845,
+      "satisfactory_stations": 2995,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "SOUTHWEST MIAMI SENIOR HIGH",
+      "fish_msid": "13-0283",
+      "match": "exact"
+    },
+    "13-8121": {
+      "capacity": 378,
+      "satisfactory_stations": 378,
+      "use_desc": "ALTERNATIVE EDUCATION",
+      "fish_name": "COPE CENTER NORTH",
+      "fish_msid": "13-0293",
+      "match": "exact"
+    },
+    "13-3431": {
+      "capacity": 731,
+      "satisfactory_stations": 731,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PHYLLIS R MILLER ELEMENTARY",
+      "fish_msid": "13-0120",
+      "match": "exact"
+    },
+    "13-4391": {
+      "capacity": 866,
+      "satisfactory_stations": 963,
+      "use_desc": "COMBINATION",
+      "fish_name": "IRVING & BEATRICE PESKOE K-8 CENTER",
+      "fish_msid": "13-0338",
+      "match": "exact"
+    },
+    "13-7601": {
+      "capacity": 1846,
+      "satisfactory_stations": 1944,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WILLIAM H TURNER TECHNICAL ARTS SENIOR H",
+      "fish_msid": "13-0278",
+      "match": "fuzzy"
+    },
+    "13-1331": {
+      "capacity": 1272,
+      "satisfactory_stations": 1414,
+      "use_desc": "COMBINATION",
+      "fish_name": "DEVON AIRE K-8 CENTER",
+      "fish_msid": "13-0045",
+      "match": "exact"
+    },
+    "13-2111": {
+      "capacity": 865,
+      "satisfactory_stations": 865,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HIALEAH GARDENS ELEMENTARY",
+      "fish_msid": "13-0337",
+      "match": "disambiguated"
+    },
+    "13-2151": {
+      "capacity": 1051,
+      "satisfactory_stations": 1051,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "JACK DAVID GORDON  ELEMENTARY",
+      "fish_msid": "13-0068",
+      "match": "exact"
+    },
+    "13-2521": {
+      "capacity": 854,
+      "satisfactory_stations": 854,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OLIVER HOOVER ELEMENTARY",
+      "fish_msid": "13-0083",
+      "match": "exact"
+    },
+    "13-0271": {
+      "capacity": 641,
+      "satisfactory_stations": 641,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BENT TREE ELEMENTARY",
+      "fish_msid": "13-0010",
+      "match": "exact"
+    },
+    "13-0671": {
+      "capacity": 792,
+      "satisfactory_stations": 792,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CALUSA ELEMENTARY",
+      "fish_msid": "13-0025",
+      "match": "exact"
+    },
+    "13-0921": {
+      "capacity": 130,
+      "satisfactory_stations": 130,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "NEVA KING COOPER EDUCATIONAL CENTER",
+      "fish_msid": "13-0035",
+      "match": "exact"
+    },
+    "13-6221": {
+      "capacity": 1501,
+      "satisfactory_stations": 1668,
+      "use_desc": "MIDDLE",
+      "fish_name": "HAMMOCKS MIDDLE",
+      "fish_msid": "13-0217",
+      "match": "exact"
+    },
+    "13-5431": {
+      "capacity": 931,
+      "satisfactory_stations": 931,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SWEETWATER ELEMENTARY",
+      "fish_msid": "13-0186",
+      "match": "exact"
+    },
+    "13-2331": {
+      "capacity": 812,
+      "satisfactory_stations": 812,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHARLES R HADLEY ELEMENTARY",
+      "fish_msid": "13-0076",
+      "match": "exact"
+    },
+    "13-2341": {
+      "capacity": 635,
+      "satisfactory_stations": 635,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "JOE HALL ELEMENTARY",
+      "fish_msid": "13-0077",
+      "match": "exact"
+    },
+    "13-5021": {
+      "capacity": 1088,
+      "satisfactory_stations": 1088,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BEN SHEPPARD ELEMENTARY",
+      "fish_msid": "13-0170",
+      "match": "exact"
+    },
+    "13-3051": {
+      "capacity": 682,
+      "satisfactory_stations": 682,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TOUSSAINT L'OUVERTURE ELEMENTARY",
+      "fish_msid": "13-0105",
+      "match": "exact"
+    },
+    "13-4691": {
+      "capacity": 1072,
+      "satisfactory_stations": 1192,
+      "use_desc": "COMBINATION",
+      "fish_name": "JANE S ROBERTS K-8 CENTER",
+      "fish_msid": "13-0160",
+      "match": "exact"
+    },
+    "13-5131": {
+      "capacity": 436,
+      "satisfactory_stations": 436,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTH DADE CENTER FOR MODERN LANGUAGES",
+      "fish_msid": "13-0177",
+      "match": "exact"
+    },
+    "13-6121": {
+      "capacity": 1057,
+      "satisfactory_stations": 1175,
+      "use_desc": "MIDDLE",
+      "fish_name": "RUBEN DARIO  MIDDLE",
+      "fish_msid": "13-0213",
+      "match": "exact"
+    },
+    "13-1371": {
+      "capacity": 1321,
+      "satisfactory_stations": 1321,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MARJORY STONEMAN DOUGLAS ELEMENTARY",
+      "fish_msid": "13-0047",
+      "match": "exact"
+    },
+    "13-4511": {
+      "capacity": 937,
+      "satisfactory_stations": 937,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR GILBERT L PORTER ELEMENTARY",
+      "fish_msid": "13-0154",
+      "match": "exact"
+    },
+    "13-7051": {
+      "capacity": 3818,
+      "satisfactory_stations": 4019,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "G HOLMES BRADDOCK SENIOR HIGH",
+      "fish_msid": "13-0255",
+      "match": "exact"
+    },
+    "13-0451": {
+      "capacity": 1931,
+      "satisfactory_stations": 2146,
+      "use_desc": "COMBINATION",
+      "fish_name": "BOWMAN ASHE/DOOLIN K-8 ACADEMY",
+      "fish_msid": "13-0016",
+      "match": "exact"
+    },
+    "13-0831": {
+      "capacity": 950,
+      "satisfactory_stations": 950,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CLAUDE PEPPER ELEMENTARY",
+      "fish_msid": "13-0031",
+      "match": "exact"
+    },
+    "13-5051": {
+      "capacity": 1488,
+      "satisfactory_stations": 1654,
+      "use_desc": "COMBINATION",
+      "fish_name": "ERNEST R GRAHAM K-8 ACADEMY",
+      "fish_msid": "13-0173",
+      "match": "exact"
+    },
+    "13-5091": {
+      "capacity": 576,
+      "satisfactory_stations": 576,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MIAMI BEACH SOUTH POINTE ELEMENTARY SCHO",
+      "fish_msid": "13-0175",
+      "match": "fuzzy"
+    },
+    "13-8151": {
+      "capacity": 359,
+      "satisfactory_stations": 359,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "ROBERT RENICK EDUCATION CENTER",
+      "fish_msid": "13-0297",
+      "match": "exact"
+    },
+    "13-8181": {
+      "capacity": 449,
+      "satisfactory_stations": 449,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "RUTH OWENS KRUSE EDUCATION CENTER",
+      "fish_msid": "13-0299",
+      "match": "exact"
+    },
+    "13-0111": {
+      "capacity": 713,
+      "satisfactory_stations": 713,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MAYA ANGELOU ELEMENTARY",
+      "fish_msid": "13-0360",
+      "match": "exact"
+    },
+    "13-2891": {
+      "capacity": 935,
+      "satisfactory_stations": 935,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WILLIAM H. LEHMAN ELEMENTARY",
+      "fish_msid": "13-0099",
+      "match": "exact"
+    },
+    "13-7751": {
+      "capacity": 2934,
+      "satisfactory_stations": 3089,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "BARBARA GOLEMAN SENIOR HIGH",
+      "fish_msid": "13-0284",
+      "match": "exact"
+    },
+    "13-0251": {
+      "capacity": 1103,
+      "satisfactory_stations": 1103,
+      "use_desc": "COMBINATION",
+      "fish_name": "ETHEL KOGER BECKHAM K-8 CENTER",
+      "fish_msid": "13-0008",
+      "match": "exact"
+    },
+    "13-1811": {
+      "capacity": 721,
+      "satisfactory_stations": 721,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DANTE B FASCELL ELEMENTARY",
+      "fish_msid": "13-0370",
+      "match": "exact"
+    },
+    "13-2511": {
+      "capacity": 1039,
+      "satisfactory_stations": 1039,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ZORA NEALE HURSTON ELEMENTARY",
+      "fish_msid": "13-0082",
+      "match": "exact"
+    },
+    "13-3111": {
+      "capacity": 703,
+      "satisfactory_stations": 703,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WESLEY MATTHEWS ELEMENTARY",
+      "fish_msid": "13-0108",
+      "match": "exact"
+    },
+    "13-4491": {
+      "capacity": 1723,
+      "satisfactory_stations": 1915,
+      "use_desc": "COMBINATION",
+      "fish_name": "HENRY E S REEVES K-8 CENTER",
+      "fish_msid": "13-0366",
+      "match": "exact"
+    },
+    "13-5101": {
+      "capacity": 1242,
+      "satisfactory_stations": 1242,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "JOHN I SMITH K-8 CENTER",
+      "fish_msid": "13-0347",
+      "match": "exact"
+    },
+    "13-5981": {
+      "capacity": 898,
+      "satisfactory_stations": 898,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR EDWARD L WHIGHAM ELEMENTARY",
+      "fish_msid": "13-0362",
+      "match": "exact"
+    },
+    "13-5991": {
+      "capacity": 937,
+      "satisfactory_stations": 937,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHARLES DAVID WYCHE JR ELEMENTARY",
+      "fish_msid": "13-0343",
+      "match": "exact"
+    },
+    "13-6041": {
+      "capacity": 1019,
+      "satisfactory_stations": 1133,
+      "use_desc": "MIDDLE",
+      "fish_name": "PAUL W BELL MIDDLE",
+      "fish_msid": "13-0206",
+      "match": "exact"
+    },
+    "13-7101": {
+      "capacity": 2642,
+      "satisfactory_stations": 2782,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CORAL REEF SENIOR HIGH",
+      "fish_msid": "13-0365",
+      "match": "disambiguated"
+    },
+    "13-2911": {
+      "capacity": 1071,
+      "satisfactory_stations": 1191,
+      "use_desc": "COMBINATION",
+      "fish_name": "LINDA LENTIN K-8 CENTER",
+      "fish_msid": "13-0377",
+      "match": "exact"
+    },
+    "13-7141": {
+      "capacity": 2185,
+      "satisfactory_stations": 2301,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "DR MICHAEL M KROP SENIOR HIGH",
+      "fish_msid": "13-0376",
+      "match": "exact"
+    },
+    "13-1691": {
+      "capacity": 890,
+      "satisfactory_stations": 890,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHRISTINA M EVE ELEMENTARY",
+      "fish_msid": "13-0372",
+      "match": "exact"
+    },
+    "13-6361": {
+      "capacity": 1071,
+      "satisfactory_stations": 1190,
+      "use_desc": "MIDDLE",
+      "fish_name": "JOSE DE DIEGO MIDDLE",
+      "fish_msid": "13-0225",
+      "match": "exact"
+    },
+    "13-7791": {
+      "capacity": 2079,
+      "satisfactory_stations": 2189,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "BOOKER T WASHINGTON SENIOR HIGH",
+      "fish_msid": "13-0251",
+      "match": "exact"
+    },
+    "13-0071": {
+      "capacity": 1421,
+      "satisfactory_stations": 1579,
+      "use_desc": "COMBINATION",
+      "fish_name": "EUGENIA B THOMAS K-8 CENTER",
+      "fish_msid": "13-0346",
+      "match": "exact"
+    },
+    "13-5141": {
+      "capacity": 964,
+      "satisfactory_stations": 1072,
+      "use_desc": "COMBINATION",
+      "fish_name": "HUBERT O SIBLEY K-8 ACADEMY",
+      "fish_msid": "13-0408",
+      "match": "exact"
+    },
+    "13-0091": {
+      "capacity": 1962,
+      "satisfactory_stations": 2180,
+      "use_desc": "COMBINATION",
+      "fish_name": "BOB GRAHAM EDUCATION CENTER",
+      "fish_msid": "13-0416",
+      "match": "exact"
+    },
+    "13-3191": {
+      "capacity": 707,
+      "satisfactory_stations": 786,
+      "use_desc": "COMBINATION",
+      "fish_name": "ADA MERRITT  K-8 CENTER",
+      "fish_msid": "13-0231",
+      "match": "exact"
+    },
+    "13-7121": {
+      "capacity": 3755,
+      "satisfactory_stations": 3953,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "JOHN A FERGUSON SENIOR HIGH",
+      "fish_msid": "13-0417",
+      "match": "exact"
+    },
+    "13-5061": {
+      "capacity": 626,
+      "satisfactory_stations": 626,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR CARLOS J FINLAY ELEMENTARY",
+      "fish_msid": "13-0371",
+      "match": "exact"
+    },
+    "13-6161": {
+      "capacity": 1313,
+      "satisfactory_stations": 1459,
+      "use_desc": "MIDDLE",
+      "fish_name": "LAWTON CHILES MIDDLE",
+      "fish_msid": "13-0404",
+      "match": "exact"
+    },
+    "13-7781": {
+      "capacity": 2817,
+      "satisfactory_stations": 2966,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "FELIX VARELA SENIOR HIGH",
+      "fish_msid": "13-0409",
+      "match": "exact"
+    },
+    "13-5005": {
+      "capacity": 1367,
+      "satisfactory_stations": 1519,
+      "use_desc": "COMBINATION",
+      "fish_name": "DAVID LAWRENCE JR K-8 CENTER",
+      "fish_msid": "13-0421",
+      "match": "exact"
+    },
+    "13-7241": {
+      "capacity": 1776,
+      "satisfactory_stations": 1870,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "RONALD W. REAGAN/DORAL SENIOR HIGH SCHOO",
+      "fish_msid": "13-0422",
+      "match": "fuzzy"
+    },
+    "13-7049": {
+      "capacity": 1748,
+      "satisfactory_stations": 1841,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WESTLAND HIALEAH SENIOR HIGH SCHOOL",
+      "fish_msid": "13-0432",
+      "match": "exact"
+    },
+    "13-6611": {
+      "capacity": 1493,
+      "satisfactory_stations": 1659,
+      "use_desc": "MIDDLE",
+      "fish_name": "COUNTRY CLUB MIDDLE SCHOOL",
+      "fish_msid": "13-0433",
+      "match": "exact"
+    },
+    "13-7191": {
+      "capacity": 2670,
+      "satisfactory_stations": 2811,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "HIALEAH GARDENS SENIOR HIGH SCHOOL",
+      "fish_msid": "13-0426",
+      "match": "disambiguated"
+    },
+    "13-0125": {
+      "capacity": 1032,
+      "satisfactory_stations": 1032,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORMA BUTLER BOSSARD ELEMENTARY",
+      "fish_msid": "13-0429",
+      "match": "exact"
+    },
+    "13-2371": {
+      "capacity": 1241,
+      "satisfactory_stations": 1241,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WEST HIALEAH GARDENS ELEMENTARY SCHOOL",
+      "fish_msid": "13-0425",
+      "match": "exact"
+    },
+    "13-0211": {
+      "capacity": 1148,
+      "satisfactory_stations": 1148,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR. MANUEL C. BARREIRO ELEMENTARY",
+      "fish_msid": "13-0439",
+      "match": "exact"
+    },
+    "13-0231": {
+      "capacity": 1485,
+      "satisfactory_stations": 1650,
+      "use_desc": "COMBINATION",
+      "fish_name": "AVENTURA WATERWAYS K-8 CENTER",
+      "fish_msid": "13-0423",
+      "match": "exact"
+    },
+    "13-0311": {
+      "capacity": 824,
+      "satisfactory_stations": 824,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "GOULDS ELEMENTARY SCHOOL",
+      "fish_msid": "13-0436",
+      "match": "exact"
+    },
+    "13-6771": {
+      "capacity": 1973,
+      "satisfactory_stations": 2193,
+      "use_desc": "MIDDLE",
+      "fish_name": "JORGE MAS CANOSA MIDDLE SCHOOL",
+      "fish_msid": "13-0430",
+      "match": "exact"
+    },
+    "13-2191": {
+      "capacity": 1637,
+      "satisfactory_stations": 1637,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SPANISH LAKE ELEMENTARY SCHOOL",
+      "fish_msid": "13-0435",
+      "match": "exact"
+    },
+    "13-0073": {
+      "capacity": 1508,
+      "satisfactory_stations": 1676,
+      "use_desc": "COMBINATION",
+      "fish_name": "MANDARIN LAKES K-8 ACADEMY",
+      "fish_msid": "13-0445",
+      "match": "exact"
+    },
+    "13-6751": {
+      "capacity": 1504,
+      "satisfactory_stations": 1672,
+      "use_desc": "MIDDLE",
+      "fish_name": "HIALEAH GARDENS MIDDLE SCHOOL",
+      "fish_msid": "13-0424",
+      "match": "disambiguated"
+    },
+    "13-7056": {
+      "capacity": 486,
+      "satisfactory_stations": 486,
+      "use_desc": "ALTERNATIVE EDUCATION",
+      "fish_name": "YOUNG MEN'S PREPARATORY ACADEMY",
+      "fish_msid": "13-0021",
+      "match": "exact"
+    },
+    "13-0122": {
+      "capacity": 1519,
+      "satisfactory_stations": 1688,
+      "use_desc": "COMBINATION",
+      "fish_name": "DR. ROLANDO ESPINOSA K-8 CENTER",
+      "fish_msid": "13-0441",
+      "match": "exact"
+    },
+    "13-0092": {
+      "capacity": 1769,
+      "satisfactory_stations": 1966,
+      "use_desc": "COMBINATION",
+      "fish_name": "NORMAN S. EDELCUP/SUNNY ISLES BEACH K-8",
+      "fish_msid": "13-0447",
+      "match": "exact"
+    },
+    "13-6023": {
+      "capacity": 1242,
+      "satisfactory_stations": 1381,
+      "use_desc": "MIDDLE",
+      "fish_name": "ANDOVER MIDDLE SCHOOL",
+      "fish_msid": "13-0438",
+      "match": "exact"
+    },
+    "13-6052": {
+      "capacity": 1657,
+      "satisfactory_stations": 1842,
+      "use_desc": "COMBINATION",
+      "fish_name": "MIAMI ARTS STUDIO 6-12 @ ZELDA GLAZER",
+      "fish_msid": "13-0437",
+      "match": "exact"
+    },
+    "13-7029": {
+      "capacity": 1647,
+      "satisfactory_stations": 1734,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "TERRA ENVIRONMENTAL RESEARCH INSTITUTE",
+      "fish_msid": "13-0279",
+      "match": "exact"
+    },
+    "13-7291": {
+      "capacity": 1093,
+      "satisfactory_stations": 1215,
+      "use_desc": "COMBINATION",
+      "fish_name": "JOSE MARTI MAST 6-12 ACADEMY",
+      "fish_msid": "13-0228",
+      "match": "exact"
+    },
+    "13-7005": {
+      "capacity": 998,
+      "satisfactory_stations": 1175,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "iTECH@ THOMAS A EDISON EDUCATION CENTER",
+      "fish_msid": "13-0232",
+      "match": "exact"
+    },
+    "13-3001": {
+      "capacity": 625,
+      "satisfactory_stations": 695,
+      "use_desc": "COMBINATION",
+      "fish_name": "WEST LAKES PREPARATORY ACADEMY",
+      "fish_msid": "13-0265",
+      "match": "exact"
+    },
+    "13-4011": {
+      "capacity": 1083,
+      "satisfactory_stations": 1204,
+      "use_desc": "COMBINATION",
+      "fish_name": "DR. TONI BILBAO PREPARATORY ACADEMY",
+      "fish_msid": "13-0450",
+      "match": "exact"
+    },
+    "13-3031": {
+      "capacity": 750,
+      "satisfactory_stations": 750,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "KENDALL SQUARE K-8 CENTER",
+      "fish_msid": "13-0451",
+      "match": "exact"
+    },
+    "13-7459": {
+      "capacity": 450,
+      "satisfactory_stations": 600,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "IPREP ACADEMY NORTH",
+      "fish_msid": "13-0452",
+      "match": "exact"
+    },
+    "13-3881": {
+      "capacity": 670,
+      "satisfactory_stations": 745,
+      "use_desc": "COMBINATION",
+      "fish_name": "ANDREA CASTILLO PREPARATORY ACADEMY",
+      "fish_msid": "13-0453",
+      "match": "exact"
+    },
+    "13-7641": {
+      "capacity": 1014,
+      "satisfactory_stations": 1193,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "J C BERMUDEZ DORAL SENIOR HIGH SCHOOL",
+      "fish_msid": "13-0397",
+      "match": "exact"
+    },
+    "48-1611": {
+      "capacity": 747,
+      "satisfactory_stations": 747,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WILLIAM FRANGUS ELEMENTARY",
+      "fish_msid": "48-0119",
+      "match": "exact"
+    },
+    "48-1621": {
+      "capacity": 832,
+      "satisfactory_stations": 832,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SHINGLE CREEK ELEMENTARY",
+      "fish_msid": "48-0120",
+      "match": "exact"
+    },
+    "48-1651": {
+      "capacity": 3581,
+      "satisfactory_stations": 3770,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "CYPRESS CREEK HIGH",
+      "fish_msid": "48-0122",
+      "match": "exact"
+    },
+    "48-1671": {
+      "capacity": 1191,
+      "satisfactory_stations": 1324,
+      "use_desc": "MIDDLE",
+      "fish_name": "PIEDMONT LAKES MIDDLE",
+      "fish_msid": "48-0123",
+      "match": "exact"
+    },
+    "48-0121": {
+      "capacity": 2327,
+      "satisfactory_stations": 2450,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "EDGEWATER HIGH",
+      "fish_msid": "48-0002",
+      "match": "exact"
+    },
+    "48-0131": {
+      "capacity": 1247,
+      "satisfactory_stations": 1386,
+      "use_desc": "MIDDLE",
+      "fish_name": "HOWARD MIDDLE",
+      "fish_msid": "48-0003",
+      "match": "exact"
+    },
+    "48-0151": {
+      "capacity": 1191,
+      "satisfactory_stations": 1324,
+      "use_desc": "MIDDLE",
+      "fish_name": "MEMORIAL MIDDLE",
+      "fish_msid": "48-0005",
+      "match": "exact"
+    },
+    "48-0201": {
+      "capacity": 504,
+      "satisfactory_stations": 504,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HILLCREST ELEMENTARY",
+      "fish_msid": "48-0009",
+      "match": "exact"
+    },
+    "48-0221": {
+      "capacity": 1232,
+      "satisfactory_stations": 1369,
+      "use_desc": "COMBINATION",
+      "fish_name": "LAKE COMO SCHOOL",
+      "fish_msid": "48-0011",
+      "match": "exact"
+    },
+    "48-0231": {
+      "capacity": 884,
+      "satisfactory_stations": 884,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINELOCH ELEMENTARY",
+      "fish_msid": "48-0012",
+      "match": "exact"
+    },
+    "48-0251": {
+      "capacity": 545,
+      "satisfactory_stations": 545,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PRINCETON ELEMENTARY",
+      "fish_msid": "48-0013",
+      "match": "exact"
+    },
+    "48-0271": {
+      "capacity": 735,
+      "satisfactory_stations": 735,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ORLO VISTA ELEMENTARY",
+      "fish_msid": "48-0014",
+      "match": "exact"
+    },
+    "48-0282": {
+      "capacity": 1036,
+      "satisfactory_stations": 1152,
+      "use_desc": "MIDDLE",
+      "fish_name": "APOPKA MIDDLE",
+      "fish_msid": "48-0015",
+      "match": "disambiguated"
+    },
+    "48-0311": {
+      "capacity": 500,
+      "satisfactory_stations": 500,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "KILLARNEY ELEMENTARY",
+      "fish_msid": "48-0017",
+      "match": "exact"
+    },
+    "48-0342": {
+      "capacity": 1435,
+      "satisfactory_stations": 1595,
+      "use_desc": "MIDDLE",
+      "fish_name": "OCOEE MIDDLE",
+      "fish_msid": "48-0018",
+      "match": "disambiguated"
+    },
+    "48-0352": {
+      "capacity": 1406,
+      "satisfactory_stations": 1563,
+      "use_desc": "MIDDLE",
+      "fish_name": "LAKEVIEW MIDDLE",
+      "fish_msid": "48-0019",
+      "match": "exact"
+    },
+    "48-0361": {
+      "capacity": 783,
+      "satisfactory_stations": 783,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TILDENVILLE ELEMENTARY",
+      "fish_msid": "48-0020",
+      "match": "exact"
+    },
+    "48-0421": {
+      "capacity": 659,
+      "satisfactory_stations": 659,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LOCKHART ELEMENTARY",
+      "fish_msid": "48-0023",
+      "match": "disambiguated"
+    },
+    "48-0431": {
+      "capacity": 673,
+      "satisfactory_stations": 673,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "UNION PARK ELEMENTARY",
+      "fish_msid": "48-0024",
+      "match": "disambiguated"
+    },
+    "48-0461": {
+      "capacity": 669,
+      "satisfactory_stations": 669,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ZELLWOOD ELEMENTARY",
+      "fish_msid": "48-0025",
+      "match": "exact"
+    },
+    "48-0511": {
+      "capacity": 750,
+      "satisfactory_stations": 750,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DILLARD STREET ELEMENTARY",
+      "fish_msid": "48-0026",
+      "match": "exact"
+    },
+    "48-0521": {
+      "capacity": 723,
+      "satisfactory_stations": 723,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE SILVER ELEMENTARY",
+      "fish_msid": "48-0027",
+      "match": "exact"
+    },
+    "48-0531": {
+      "capacity": 950,
+      "satisfactory_stations": 950,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BALDWIN PARK ELEMENTARY",
+      "fish_msid": "48-0215",
+      "match": "exact"
+    },
+    "48-0541": {
+      "capacity": 832,
+      "satisfactory_stations": 832,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DREAM LAKE ELEMENTARY",
+      "fish_msid": "48-0029",
+      "match": "exact"
+    },
+    "48-0551": {
+      "capacity": 732,
+      "satisfactory_stations": 732,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CONWAY ELEMENTARY",
+      "fish_msid": "48-0030",
+      "match": "disambiguated"
+    },
+    "48-0561": {
+      "capacity": 766,
+      "satisfactory_stations": 766,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKEMONT ELEMENTARY",
+      "fish_msid": "48-0031",
+      "match": "exact"
+    },
+    "48-0571": {
+      "capacity": 1239,
+      "satisfactory_stations": 1377,
+      "use_desc": "MIDDLE",
+      "fish_name": "GLENRIDGE MIDDLE",
+      "fish_msid": "48-0032",
+      "match": "exact"
+    },
+    "48-0581": {
+      "capacity": 1050,
+      "satisfactory_stations": 1167,
+      "use_desc": "MIDDLE",
+      "fish_name": "COLLEGE PARK MIDDLE",
+      "fish_msid": "48-0033",
+      "match": "exact"
+    },
+    "48-0611": {
+      "capacity": 696,
+      "satisfactory_stations": 696,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "AZALEA PARK ELEMENTARY",
+      "fish_msid": "48-0035",
+      "match": "exact"
+    },
+    "48-0621": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINE HILLS ELEMENTARY",
+      "fish_msid": "48-0036",
+      "match": "exact"
+    },
+    "48-0631": {
+      "capacity": 1029,
+      "satisfactory_stations": 1144,
+      "use_desc": "COMBINATION",
+      "fish_name": "BLANKNER K-8 SCHOOL",
+      "fish_msid": "48-0189",
+      "match": "exact"
+    },
+    "48-0641": {
+      "capacity": 664,
+      "satisfactory_stations": 664,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROCK LAKE ELEMENTARY",
+      "fish_msid": "48-0038",
+      "match": "exact"
+    },
+    "48-0651": {
+      "capacity": 762,
+      "satisfactory_stations": 762,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE WESTON ELEMENTARY",
+      "fish_msid": "48-0039",
+      "match": "exact"
+    },
+    "48-0661": {
+      "capacity": 3696,
+      "satisfactory_stations": 3891,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "COLONIAL HIGH",
+      "fish_msid": "48-0040",
+      "match": "exact"
+    },
+    "48-0681": {
+      "capacity": 855,
+      "satisfactory_stations": 855,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ENGELWOOD ELEMENTARY",
+      "fish_msid": "48-0042",
+      "match": "exact"
+    },
+    "48-0691": {
+      "capacity": 3341,
+      "satisfactory_stations": 3170,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "OAK RIDGE HIGH",
+      "fish_msid": "48-0043",
+      "match": "exact"
+    },
+    "48-0711": {
+      "capacity": 754,
+      "satisfactory_stations": 754,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHENEY ELEMENTARY",
+      "fish_msid": "48-0045",
+      "match": "exact"
+    },
+    "48-0721": {
+      "capacity": 982,
+      "satisfactory_stations": 1092,
+      "use_desc": "MIDDLE",
+      "fish_name": "LOCKHART MIDDLE",
+      "fish_msid": "48-0046",
+      "match": "disambiguated"
+    },
+    "48-0731": {
+      "capacity": 976,
+      "satisfactory_stations": 1085,
+      "use_desc": "MIDDLE",
+      "fish_name": "MAITLAND MIDDLE",
+      "fish_msid": "48-0047",
+      "match": "exact"
+    },
+    "48-0741": {
+      "capacity": 590,
+      "satisfactory_stations": 590,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SALLY RIDE ELEMENTARY",
+      "fish_msid": "48-0048",
+      "match": "exact"
+    },
+    "48-0751": {
+      "capacity": 691,
+      "satisfactory_stations": 691,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BROOKSHIRE ELEMENTARY",
+      "fish_msid": "48-0049",
+      "match": "exact"
+    },
+    "48-0781": {
+      "capacity": 588,
+      "satisfactory_stations": 588,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DOVER SHORES ELEMENTARY",
+      "fish_msid": "48-0050",
+      "match": "exact"
+    },
+    "48-0791": {
+      "capacity": 674,
+      "satisfactory_stations": 674,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MOLLIE RAY ELEMENTARY",
+      "fish_msid": "48-0051",
+      "match": "exact"
+    },
+    "48-0811": {
+      "capacity": 664,
+      "satisfactory_stations": 664,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TANGELO PARK ELEMENTARY",
+      "fish_msid": "48-0053",
+      "match": "exact"
+    },
+    "48-0821": {
+      "capacity": 796,
+      "satisfactory_stations": 796,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LOVELL ELEMENTARY",
+      "fish_msid": "48-0054",
+      "match": "exact"
+    },
+    "48-0831": {
+      "capacity": 888,
+      "satisfactory_stations": 888,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CHICKASAW ELEMENTARY",
+      "fish_msid": "48-0055",
+      "match": "exact"
+    },
+    "48-0841": {
+      "capacity": 627,
+      "satisfactory_stations": 627,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SPRING LAKE ELEMENTARY",
+      "fish_msid": "48-0056",
+      "match": "exact"
+    },
+    "48-0851": {
+      "capacity": 819,
+      "satisfactory_stations": 819,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LANCASTER ELEMENTARY",
+      "fish_msid": "48-0057",
+      "match": "exact"
+    },
+    "48-0861": {
+      "capacity": 654,
+      "satisfactory_stations": 654,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROLLING HILLS ELEMENTARY",
+      "fish_msid": "48-0058",
+      "match": "exact"
+    },
+    "48-0871": {
+      "capacity": 938,
+      "satisfactory_stations": 938,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BONNEVILLE ELEMENTARY",
+      "fish_msid": "48-0059",
+      "match": "exact"
+    },
+    "48-0881": {
+      "capacity": 758,
+      "satisfactory_stations": 758,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HIAWASSEE ELEMENTARY",
+      "fish_msid": "48-0060",
+      "match": "exact"
+    },
+    "48-0901": {
+      "capacity": 1277,
+      "satisfactory_stations": 1419,
+      "use_desc": "COMBINATION",
+      "fish_name": "PERSHING SCHOOL",
+      "fish_msid": "48-0062",
+      "match": "exact"
+    },
+    "48-0911": {
+      "capacity": 1478,
+      "satisfactory_stations": 1643,
+      "use_desc": "MIDDLE",
+      "fish_name": "UNION PARK MIDDLE",
+      "fish_msid": "48-0063",
+      "match": "disambiguated"
+    },
+    "48-0921": {
+      "capacity": 1184,
+      "satisfactory_stations": 1316,
+      "use_desc": "MIDDLE",
+      "fish_name": "ROBINSWOOD MIDDLE",
+      "fish_msid": "48-0064",
+      "match": "exact"
+    },
+    "48-1111": {
+      "capacity": 1342,
+      "satisfactory_stations": 1492,
+      "use_desc": "MIDDLE",
+      "fish_name": "ROBERTO CLEMENTE MIDDLE",
+      "fish_msid": "48-0083",
+      "match": "exact"
+    },
+    "48-1133": {
+      "capacity": 1234,
+      "satisfactory_stations": 1372,
+      "use_desc": "MIDDLE",
+      "fish_name": "WESTRIDGE MIDDLE",
+      "fish_msid": "48-0085",
+      "match": "exact"
+    },
+    "48-1171": {
+      "capacity": 830,
+      "satisfactory_stations": 830,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WINEGARD ELEMENTARY",
+      "fish_msid": "48-0088",
+      "match": "exact"
+    },
+    "48-1181": {
+      "capacity": 711,
+      "satisfactory_stations": 711,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DOMMERICH ELEMENTARY",
+      "fish_msid": "48-0089",
+      "match": "exact"
+    },
+    "48-1221": {
+      "capacity": 645,
+      "satisfactory_stations": 645,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE SYBELIA ELEMENTARY",
+      "fish_msid": "48-0090",
+      "match": "exact"
+    },
+    "48-1231": {
+      "capacity": 950,
+      "satisfactory_stations": 950,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WINDERMERE ELEMENTARY",
+      "fish_msid": "48-0091",
+      "match": "disambiguated"
+    },
+    "48-1241": {
+      "capacity": 1209,
+      "satisfactory_stations": 1344,
+      "use_desc": "MIDDLE",
+      "fish_name": "MEADOWBROOK MIDDLE",
+      "fish_msid": "48-0092",
+      "match": "exact"
+    },
+    "48-1251": {
+      "capacity": 801,
+      "satisfactory_stations": 801,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RIVERSIDE ELEMENTARY",
+      "fish_msid": "48-0093",
+      "match": "exact"
+    },
+    "48-1261": {
+      "capacity": 924,
+      "satisfactory_stations": 924,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SADLER ELEMENTARY",
+      "fish_msid": "48-0094",
+      "match": "exact"
+    },
+    "48-1282": {
+      "capacity": 902,
+      "satisfactory_stations": 902,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "APOPKA ELEMENTARY",
+      "fish_msid": "48-0095",
+      "match": "disambiguated"
+    },
+    "48-1351": {
+      "capacity": 712,
+      "satisfactory_stations": 712,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HUNGERFORD ELEMENTARY",
+      "fish_msid": "48-0098",
+      "match": "exact"
+    },
+    "48-1361": {
+      "capacity": 538,
+      "satisfactory_stations": 538,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PHILLIS WHEATLEY ELEMENTARY",
+      "fish_msid": "48-0099",
+      "match": "exact"
+    },
+    "48-1391": {
+      "capacity": 917,
+      "satisfactory_stations": 1019,
+      "use_desc": "MIDDLE",
+      "fish_name": "CONWAY MIDDLE",
+      "fish_msid": "48-0100",
+      "match": "disambiguated"
+    },
+    "48-1401": {
+      "capacity": 644,
+      "satisfactory_stations": 644,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ALOMA ELEMENTARY",
+      "fish_msid": "48-0101",
+      "match": "exact"
+    },
+    "48-1411": {
+      "capacity": 3280,
+      "satisfactory_stations": 3453,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WINTER PARK HIGH",
+      "fish_msid": "48-0102",
+      "match": "exact"
+    },
+    "48-1421": {
+      "capacity": 660,
+      "satisfactory_stations": 660,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "IVEY LANE ELEMENTARY",
+      "fish_msid": "48-0103",
+      "match": "exact"
+    },
+    "48-1431": {
+      "capacity": 896,
+      "satisfactory_stations": 896,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RIDGEWOOD PARK ELEMENTARY",
+      "fish_msid": "48-0104",
+      "match": "exact"
+    },
+    "48-1441": {
+      "capacity": 743,
+      "satisfactory_stations": 743,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SHENANDOAH ELEMENTARY",
+      "fish_msid": "48-0105",
+      "match": "exact"
+    },
+    "48-1451": {
+      "capacity": 842,
+      "satisfactory_stations": 842,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "COLUMBIA ELEMENTARY",
+      "fish_msid": "48-0217",
+      "match": "exact"
+    },
+    "48-1491": {
+      "capacity": 1166,
+      "satisfactory_stations": 1166,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALMETTO ELEMENTARY",
+      "fish_msid": "48-0108",
+      "match": "exact"
+    },
+    "48-1501": {
+      "capacity": 664,
+      "satisfactory_stations": 664,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OAK HILL ELEMENTARY",
+      "fish_msid": "48-0109",
+      "match": "exact"
+    },
+    "48-1511": {
+      "capacity": 3060,
+      "satisfactory_stations": 3222,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WEST ORANGE HIGH",
+      "fish_msid": "48-0110",
+      "match": "exact"
+    },
+    "48-1521": {
+      "capacity": 3583,
+      "satisfactory_stations": 3772,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "APOPKA HIGH",
+      "fish_msid": "48-0111",
+      "match": "disambiguated"
+    },
+    "48-1541": {
+      "capacity": 494,
+      "satisfactory_stations": 494,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINAR ELEMENTARY",
+      "fish_msid": "48-0113",
+      "match": "exact"
+    },
+    "48-1551": {
+      "capacity": 1516,
+      "satisfactory_stations": 1685,
+      "use_desc": "MIDDLE",
+      "fish_name": "LIBERTY MIDDLE",
+      "fish_msid": "48-0114",
+      "match": "exact"
+    },
+    "48-1561": {
+      "capacity": 289,
+      "satisfactory_stations": 289,
+      "use_desc": "EXCEPTIONAL STUDENT",
+      "fish_name": "MAGNOLIA SCHOOL",
+      "fish_msid": "48-0115",
+      "match": "exact"
+    },
+    "48-5711": {
+      "capacity": 1740,
+      "satisfactory_stations": 1832,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "JONES HIGH",
+      "fish_msid": "48-0124",
+      "match": "exact"
+    },
+    "48-5841": {
+      "capacity": 684,
+      "satisfactory_stations": 684,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ECCLESTON ELEMENTARY",
+      "fish_msid": "48-0127",
+      "match": "exact"
+    },
+    "48-5861": {
+      "capacity": 632,
+      "satisfactory_stations": 632,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WASHINGTON SHORES ELEMENTARY",
+      "fish_msid": "48-0129",
+      "match": "exact"
+    },
+    "48-5871": {
+      "capacity": 1240,
+      "satisfactory_stations": 1378,
+      "use_desc": "MIDDLE",
+      "fish_name": "CARVER MIDDLE",
+      "fish_msid": "48-0130",
+      "match": "exact"
+    },
+    "48-1591": {
+      "capacity": 963,
+      "satisfactory_stations": 963,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DR PHILLIPS ELEMENTARY",
+      "fish_msid": "48-0117",
+      "match": "disambiguated"
+    },
+    "48-1531": {
+      "capacity": 866,
+      "satisfactory_stations": 866,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OCOEE ELEMENTARY",
+      "fish_msid": "48-0112",
+      "match": "disambiguated"
+    },
+    "48-1601": {
+      "capacity": 629,
+      "satisfactory_stations": 629,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "DEERWOOD ELEMENTARY",
+      "fish_msid": "48-0118",
+      "match": "exact"
+    },
+    "48-0941": {
+      "capacity": 881,
+      "satisfactory_stations": 881,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PRAIRIE LAKE ELEMENTARY",
+      "fish_msid": "48-0233",
+      "match": "exact"
+    },
+    "48-0931": {
+      "capacity": 3060,
+      "satisfactory_stations": 3222,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "DR PHILLIPS HIGH",
+      "fish_msid": "48-0065",
+      "match": "disambiguated"
+    },
+    "48-0961": {
+      "capacity": 767,
+      "satisfactory_stations": 767,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PALM LAKE ELEMENTARY",
+      "fish_msid": "48-0068",
+      "match": "exact"
+    },
+    "48-0971": {
+      "capacity": 809,
+      "satisfactory_stations": 809,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VENTURA ELEMENTARY",
+      "fish_msid": "48-0069",
+      "match": "exact"
+    },
+    "48-1011": {
+      "capacity": 904,
+      "satisfactory_stations": 904,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROCK SPRINGS ELEMENTARY",
+      "fish_msid": "48-0073",
+      "match": "exact"
+    },
+    "48-1021": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "METROWEST ELEMENTARY",
+      "fish_msid": "48-0074",
+      "match": "exact"
+    },
+    "48-0981": {
+      "capacity": 884,
+      "satisfactory_stations": 983,
+      "use_desc": "COMBINATION",
+      "fish_name": "ARBOR RIDGE K-8 SCHOOL",
+      "fish_msid": "48-0070",
+      "match": "exact"
+    },
+    "48-1041": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MEADOW WOODS ELEMENTARY",
+      "fish_msid": "48-0076",
+      "match": "disambiguated"
+    },
+    "48-1001": {
+      "capacity": 2864,
+      "satisfactory_stations": 3015,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "UNIVERSITY HIGH",
+      "fish_msid": "48-0072",
+      "match": "exact"
+    },
+    "48-1061": {
+      "capacity": 1356,
+      "satisfactory_stations": 1507,
+      "use_desc": "COMBINATION",
+      "fish_name": "WINDY RIDGE K-8 SCHOOL",
+      "fish_msid": "48-0078",
+      "match": "exact"
+    },
+    "48-1071": {
+      "capacity": 848,
+      "satisfactory_stations": 848,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BAY MEADOWS ELEMENTARY",
+      "fish_msid": "48-0079",
+      "match": "exact"
+    },
+    "48-1081": {
+      "capacity": 832,
+      "satisfactory_stations": 832,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "JOHN YOUNG ELEMENTARY",
+      "fish_msid": "48-0080",
+      "match": "exact"
+    },
+    "48-0991": {
+      "capacity": 832,
+      "satisfactory_stations": 832,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CLAY SPRINGS ELEMENTARY",
+      "fish_msid": "48-0071",
+      "match": "exact"
+    },
+    "48-1031": {
+      "capacity": 1516,
+      "satisfactory_stations": 1685,
+      "use_desc": "MIDDLE",
+      "fish_name": "SOUTHWEST MIDDLE",
+      "fish_msid": "48-0075",
+      "match": "exact"
+    },
+    "48-1051": {
+      "capacity": 861,
+      "satisfactory_stations": 861,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WATERBRIDGE ELEMENTARY",
+      "fish_msid": "48-0077",
+      "match": "exact"
+    },
+    "48-1091": {
+      "capacity": 800,
+      "satisfactory_stations": 800,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WATERFORD ELEMENTARY",
+      "fish_msid": "48-0081",
+      "match": "exact"
+    },
+    "48-1141": {
+      "capacity": 518,
+      "satisfactory_stations": 518,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LITTLE RIVER ELEMENTARY",
+      "fish_msid": "48-0086",
+      "match": "exact"
+    },
+    "48-1461": {
+      "capacity": 622,
+      "satisfactory_stations": 622,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HIDDEN OAKS ELEMENTARY",
+      "fish_msid": "48-0107",
+      "match": "exact"
+    },
+    "48-0156": {
+      "capacity": 832,
+      "satisfactory_stations": 832,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CYPRESS SPRINGS ELEMENTARY",
+      "fish_msid": "48-0156",
+      "match": "exact"
+    },
+    "48-0381": {
+      "capacity": 1269,
+      "satisfactory_stations": 1411,
+      "use_desc": "MIDDLE",
+      "fish_name": "HUNTERS CREEK MIDDLE",
+      "fish_msid": "48-0154",
+      "match": "disambiguated"
+    },
+    "48-1191": {
+      "capacity": 1162,
+      "satisfactory_stations": 1162,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "HUNTERS CREEK ELEMENTARY",
+      "fish_msid": "48-0155",
+      "match": "disambiguated"
+    },
+    "48-1681": {
+      "capacity": 1228,
+      "satisfactory_stations": 1365,
+      "use_desc": "MIDDLE",
+      "fish_name": "GOTHA MIDDLE",
+      "fish_msid": "48-0157",
+      "match": "exact"
+    },
+    "48-1121": {
+      "capacity": 990,
+      "satisfactory_stations": 1101,
+      "use_desc": "MIDDLE",
+      "fish_name": "DISCOVERY MIDDLE",
+      "fish_msid": "48-0161",
+      "match": "exact"
+    },
+    "48-1271": {
+      "capacity": 860,
+      "satisfactory_stations": 860,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ROSEMONT ELEMENTARY",
+      "fish_msid": "48-0165",
+      "match": "exact"
+    },
+    "48-1341": {
+      "capacity": 653,
+      "satisfactory_stations": 653,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SOUTHWOOD ELEMENTARY",
+      "fish_msid": "48-0164",
+      "match": "exact"
+    },
+    "48-1371": {
+      "capacity": 621,
+      "satisfactory_stations": 621,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNRISE ELEMENTARY",
+      "fish_msid": "48-0163",
+      "match": "exact"
+    },
+    "48-1571": {
+      "capacity": 666,
+      "satisfactory_stations": 666,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE WHITNEY ELEMENTARY",
+      "fish_msid": "48-0162",
+      "match": "exact"
+    },
+    "48-0141": {
+      "capacity": 751,
+      "satisfactory_stations": 751,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKEVILLE ELEMENTARY",
+      "fish_msid": "48-0172",
+      "match": "exact"
+    },
+    "48-0241": {
+      "capacity": 846,
+      "satisfactory_stations": 846,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE GEM ELEMENTARY",
+      "fish_msid": "48-0169",
+      "match": "exact"
+    },
+    "48-0261": {
+      "capacity": 751,
+      "satisfactory_stations": 751,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "RIVERDALE ELEMENTARY",
+      "fish_msid": "48-0168",
+      "match": "exact"
+    },
+    "48-0301": {
+      "capacity": 660,
+      "satisfactory_stations": 660,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAKE GEORGE ELEMENTARY",
+      "fish_msid": "48-0171",
+      "match": "exact"
+    },
+    "48-0401": {
+      "capacity": 675,
+      "satisfactory_stations": 675,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "PINEWOOD ELEMENTARY",
+      "fish_msid": "48-0170",
+      "match": "exact"
+    },
+    "48-1281": {
+      "capacity": 1080,
+      "satisfactory_stations": 1200,
+      "use_desc": "MIDDLE",
+      "fish_name": "CORNER LAKE MIDDLE",
+      "fish_msid": "48-0166",
+      "match": "exact"
+    },
+    "48-1381": {
+      "capacity": 1076,
+      "satisfactory_stations": 1196,
+      "use_desc": "MIDDLE",
+      "fish_name": "MEADOW WOODS MIDDLE",
+      "fish_msid": "48-0167",
+      "match": "disambiguated"
+    },
+    "48-0212": {
+      "capacity": 694,
+      "satisfactory_stations": 694,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "OAKSHIRE ELEMENTARY",
+      "fish_msid": "48-0176",
+      "match": "exact"
+    },
+    "48-0213": {
+      "capacity": 896,
+      "satisfactory_stations": 896,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAWTON CHILES ELEMENTARY",
+      "fish_msid": "48-0175",
+      "match": "exact"
+    },
+    "48-0771": {
+      "capacity": 842,
+      "satisfactory_stations": 842,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "NORTHLAKE PARK ELEMENTARY",
+      "fish_msid": "48-0177",
+      "match": "exact"
+    },
+    "48-1291": {
+      "capacity": 1458,
+      "satisfactory_stations": 1620,
+      "use_desc": "MIDDLE",
+      "fish_name": "CHAIN OF LAKES MIDDLE",
+      "fish_msid": "48-0174",
+      "match": "exact"
+    },
+    "48-0215": {
+      "capacity": 712,
+      "satisfactory_stations": 712,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "THREE POINTS ELEMENTARY",
+      "fish_msid": "48-0183",
+      "match": "exact"
+    },
+    "48-0217": {
+      "capacity": 722,
+      "satisfactory_stations": 722,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CAMELOT ELEMENTARY",
+      "fish_msid": "48-0185",
+      "match": "exact"
+    },
+    "48-0222": {
+      "capacity": 931,
+      "satisfactory_stations": 931,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "AVALON ELEMENTARY",
+      "fish_msid": "48-0184",
+      "match": "disambiguated"
+    },
+    "48-1631": {
+      "capacity": 3736,
+      "satisfactory_stations": 3933,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "TIMBER CREEK HIGH",
+      "fish_msid": "48-0180",
+      "match": "exact"
+    },
+    "48-1632": {
+      "capacity": 3323,
+      "satisfactory_stations": 3498,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "OLYMPIA HIGH",
+      "fish_msid": "48-0181",
+      "match": "exact"
+    },
+    "48-1682": {
+      "capacity": 1137,
+      "satisfactory_stations": 1264,
+      "use_desc": "MIDDLE",
+      "fish_name": "ODYSSEY MIDDLE",
+      "fish_msid": "48-0182",
+      "match": "exact"
+    },
+    "48-0235": {
+      "capacity": 744,
+      "satisfactory_stations": 744,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "THORNEBROOKE ELEMENTARY",
+      "fish_msid": "48-0188",
+      "match": "exact"
+    },
+    "48-0253": {
+      "capacity": 718,
+      "satisfactory_stations": 718,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WEST OAKS ELEMENTARY",
+      "fish_msid": "48-0194",
+      "match": "exact"
+    },
+    "48-0232": {
+      "capacity": 794,
+      "satisfactory_stations": 794,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WEST CREEK ELEMENTARY",
+      "fish_msid": "48-0195",
+      "match": "exact"
+    },
+    "48-1662": {
+      "capacity": 3158,
+      "satisfactory_stations": 3325,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "FREEDOM HIGH",
+      "fish_msid": "48-0192",
+      "match": "disambiguated"
+    },
+    "48-0214": {
+      "capacity": 722,
+      "satisfactory_stations": 722,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ENDEAVOR ELEMENTARY",
+      "fish_msid": "48-0178",
+      "match": "exact"
+    },
+    "48-0216": {
+      "capacity": 722,
+      "satisfactory_stations": 722,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CITRUS ELEMENTARY",
+      "fish_msid": "48-0179",
+      "match": "exact"
+    },
+    "48-1542": {
+      "capacity": 2797,
+      "satisfactory_stations": 2945,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WEKIVA HIGH",
+      "fish_msid": "48-0216",
+      "match": "exact"
+    },
+    "48-1553": {
+      "capacity": 1030,
+      "satisfactory_stations": 1030,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MILLENNIA ELEMENTARY",
+      "fish_msid": "48-0210",
+      "match": "exact"
+    },
+    "48-1562": {
+      "capacity": 842,
+      "satisfactory_stations": 842,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WESTBROOKE ELEMENTARY",
+      "fish_msid": "48-0221",
+      "match": "exact"
+    },
+    "48-1582": {
+      "capacity": 1094,
+      "satisfactory_stations": 1094,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MOSS PARK ELEMENTARY",
+      "fish_msid": "48-0213",
+      "match": "exact"
+    },
+    "48-1612": {
+      "capacity": 828,
+      "satisfactory_stations": 828,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CASTLE CREEK ELEMENTARY",
+      "fish_msid": "48-0205",
+      "match": "exact"
+    },
+    "48-1702": {
+      "capacity": 1211,
+      "satisfactory_stations": 1346,
+      "use_desc": "MIDDLE",
+      "fish_name": "WOLF LAKE MIDDLE",
+      "fish_msid": "48-0209",
+      "match": "disambiguated"
+    },
+    "48-1703": {
+      "capacity": 1290,
+      "satisfactory_stations": 1434,
+      "use_desc": "MIDDLE",
+      "fish_name": "SOUTH CREEK MIDDLE",
+      "fish_msid": "48-0206",
+      "match": "exact"
+    },
+    "48-1731": {
+      "capacity": 900,
+      "satisfactory_stations": 900,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SAND LAKE ELEMENTARY",
+      "fish_msid": "48-0200",
+      "match": "exact"
+    },
+    "48-1741": {
+      "capacity": 828,
+      "satisfactory_stations": 828,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WYNDHAM LAKES ELEMENTARY",
+      "fish_msid": "48-0208",
+      "match": "exact"
+    },
+    "48-1751": {
+      "capacity": 882,
+      "satisfactory_stations": 882,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WOLF LAKE ELEMENTARY",
+      "fish_msid": "48-0203",
+      "match": "disambiguated"
+    },
+    "48-1752": {
+      "capacity": 828,
+      "satisfactory_stations": 828,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VISTA LAKES ELEMENTARY",
+      "fish_msid": "48-0207",
+      "match": "exact"
+    },
+    "48-1762": {
+      "capacity": 1437,
+      "satisfactory_stations": 1597,
+      "use_desc": "MIDDLE",
+      "fish_name": "BRIDGEWATER MIDDLE",
+      "fish_msid": "48-0214",
+      "match": "exact"
+    },
+    "48-1763": {
+      "capacity": 1071,
+      "satisfactory_stations": 1191,
+      "use_desc": "MIDDLE",
+      "fish_name": "AVALON MIDDLE",
+      "fish_msid": "48-0211",
+      "match": "disambiguated"
+    },
+    "48-1771": {
+      "capacity": 828,
+      "satisfactory_stations": 828,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "STONE LAKES ELEMENTARY",
+      "fish_msid": "48-0204",
+      "match": "exact"
+    },
+    "48-1776": {
+      "capacity": 874,
+      "satisfactory_stations": 874,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNSET PARK ELEMENTARY",
+      "fish_msid": "48-0212",
+      "match": "exact"
+    },
+    "48-0242": {
+      "capacity": 1140,
+      "satisfactory_stations": 1267,
+      "use_desc": "MIDDLE",
+      "fish_name": "LEGACY MIDDLE",
+      "fish_msid": "48-0199",
+      "match": "exact"
+    },
+    "48-0245": {
+      "capacity": 1255,
+      "satisfactory_stations": 1395,
+      "use_desc": "MIDDLE",
+      "fish_name": "FREEDOM MIDDLE",
+      "fish_msid": "48-0198",
+      "match": "disambiguated"
+    },
+    "48-0252": {
+      "capacity": 2803,
+      "satisfactory_stations": 2951,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "OCOEE HIGH",
+      "fish_msid": "48-0197",
+      "match": "disambiguated"
+    },
+    "48-0259": {
+      "capacity": 756,
+      "satisfactory_stations": 756,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EAST LAKE ELEMENTARY",
+      "fish_msid": "48-0201",
+      "match": "exact"
+    },
+    "48-0321": {
+      "capacity": 1040,
+      "satisfactory_stations": 1040,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "ANDOVER ELEMENTARY",
+      "fish_msid": "48-0196",
+      "match": "exact"
+    },
+    "48-0322": {
+      "capacity": 1090,
+      "satisfactory_stations": 1090,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WHISPERING OAK ELEMENTARY",
+      "fish_msid": "48-0202",
+      "match": "exact"
+    },
+    "48-1991": {
+      "capacity": 838,
+      "satisfactory_stations": 838,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "TIMBER LAKES ELEMENTARY",
+      "fish_msid": "48-0222",
+      "match": "exact"
+    },
+    "48-1941": {
+      "capacity": 1069,
+      "satisfactory_stations": 1069,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WETHERBEE ELEMENTARY",
+      "fish_msid": "48-0227",
+      "match": "exact"
+    },
+    "48-1931": {
+      "capacity": 1199,
+      "satisfactory_stations": 1333,
+      "use_desc": "MIDDLE",
+      "fish_name": "LAKE NONA MIDDLE",
+      "fish_msid": "48-0228",
+      "match": "disambiguated"
+    },
+    "48-0122": {
+      "capacity": 811,
+      "satisfactory_stations": 811,
+      "use_desc": "ALTERNATIVE EDUCATION",
+      "fish_name": "POSITIVE PATHWAYS TRANSITION CENTER",
+      "fish_msid": "48-0190",
+      "match": "exact"
+    },
+    "48-1971": {
+      "capacity": 862,
+      "satisfactory_stations": 862,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "FORSYTH WOODS ELEMENTARY",
+      "fish_msid": "48-0226",
+      "match": "exact"
+    },
+    "48-1801": {
+      "capacity": 3002,
+      "satisfactory_stations": 3161,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "EAST RIVER HIGH",
+      "fish_msid": "48-0224",
+      "match": "exact"
+    },
+    "48-1951": {
+      "capacity": 3956,
+      "satisfactory_stations": 4165,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "LAKE NONA HIGH",
+      "fish_msid": "48-0223",
+      "match": "disambiguated"
+    },
+    "48-1811": {
+      "capacity": 618,
+      "satisfactory_stations": 618,
+      "use_desc": "COMBINATION",
+      "fish_name": "ACCELERATION EAST",
+      "fish_msid": "48-0191",
+      "match": "exact"
+    },
+    "48-1821": {
+      "capacity": 859,
+      "satisfactory_stations": 859,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNRIDGE ELEMENTARY",
+      "fish_msid": "48-0229",
+      "match": "disambiguated"
+    },
+    "48-1841": {
+      "capacity": 499,
+      "satisfactory_stations": 499,
+      "use_desc": "COMBINATION",
+      "fish_name": "ACCELERATION WEST",
+      "fish_msid": "48-0158",
+      "match": "exact"
+    },
+    "48-1831": {
+      "capacity": 1390,
+      "satisfactory_stations": 1390,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUN BLAZE ELEMENTARY",
+      "fish_msid": "48-0231",
+      "match": "exact"
+    },
+    "48-1911": {
+      "capacity": 1299,
+      "satisfactory_stations": 1444,
+      "use_desc": "MIDDLE",
+      "fish_name": "SUNRIDGE MIDDLE",
+      "fish_msid": "48-0230",
+      "match": "disambiguated"
+    },
+    "48-1492": {
+      "capacity": 999,
+      "satisfactory_stations": 999,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "MILLENNIA GARDENS ELEMENTARY",
+      "fish_msid": "48-0238",
+      "match": "exact"
+    },
+    "48-1482": {
+      "capacity": 940,
+      "satisfactory_stations": 940,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "INDEPENDENCE ELEMENTARY",
+      "fish_msid": "48-0235",
+      "match": "exact"
+    },
+    "48-1861": {
+      "capacity": 1053,
+      "satisfactory_stations": 1171,
+      "use_desc": "COMBINATION",
+      "fish_name": "WEDGEFIELD SCHOOL",
+      "fish_msid": "48-0236",
+      "match": "exact"
+    },
+    "48-1871": {
+      "capacity": 1458,
+      "satisfactory_stations": 1620,
+      "use_desc": "MIDDLE",
+      "fish_name": "INNOVATION MIDDLE",
+      "fish_msid": "48-0242",
+      "match": "exact"
+    },
+    "48-1392": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "BAY LAKE ELEMENTARY",
+      "fish_msid": "48-0239",
+      "match": "exact"
+    },
+    "48-1921": {
+      "capacity": 922,
+      "satisfactory_stations": 922,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "EAGLE CREEK ELEMENTARY",
+      "fish_msid": "48-0234",
+      "match": "exact"
+    },
+    "48-1201": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WESTPOINTE ELEMENTARY",
+      "fish_msid": "48-0240",
+      "match": "exact"
+    },
+    "48-0331": {
+      "capacity": 1197,
+      "satisfactory_stations": 1197,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "LAUREATE PARK ELEMENTARY",
+      "fish_msid": "48-0243",
+      "match": "exact"
+    },
+    "48-1852": {
+      "capacity": 1240,
+      "satisfactory_stations": 1378,
+      "use_desc": "MIDDLE",
+      "fish_name": "TIMBER SPRINGS MIDDLE",
+      "fish_msid": "48-0237",
+      "match": "exact"
+    },
+    "48-1014": {
+      "capacity": 1228,
+      "satisfactory_stations": 1365,
+      "use_desc": "COMBINATION",
+      "fish_name": "OCPS ACADEMIC CENTER FOR EXCELLENCE",
+      "fish_msid": "48-0244",
+      "match": "exact"
+    },
+    "48-1022": {
+      "capacity": 1422,
+      "satisfactory_stations": 1580,
+      "use_desc": "MIDDLE",
+      "fish_name": "HORIZON WEST MIDDLE",
+      "fish_msid": "48-0248",
+      "match": "exact"
+    },
+    "48-1012": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "CASTLEVIEW ELEMENTARY",
+      "fish_msid": "48-0247",
+      "match": "exact"
+    },
+    "48-1024": {
+      "capacity": 1323,
+      "satisfactory_stations": 1323,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WATER SPRING ELEMENTARY",
+      "fish_msid": "48-0249",
+      "match": "exact"
+    },
+    "48-1908": {
+      "capacity": 3038,
+      "satisfactory_stations": 3198,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "WINDERMERE HIGH",
+      "fish_msid": "48-0241",
+      "match": "disambiguated"
+    },
+    "48-0601": {
+      "capacity": 534,
+      "satisfactory_stations": 594,
+      "use_desc": "COMBINATION",
+      "fish_name": "ORLANDO GIFTED ACADEMY",
+      "fish_msid": "48-0007",
+      "match": "exact"
+    },
+    "48-0520": {
+      "capacity": 1061,
+      "satisfactory_stations": 1061,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUMMERLAKE ELEMENTARY",
+      "fish_msid": "48-0251",
+      "match": "exact"
+    },
+    "48-1851": {
+      "capacity": 1229,
+      "satisfactory_stations": 1366,
+      "use_desc": "COMBINATION",
+      "fish_name": "AUDUBON PARK SCHOOL",
+      "fish_msid": "48-0245",
+      "match": "exact"
+    },
+    "48-0510": {
+      "capacity": 837,
+      "satisfactory_stations": 837,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "VISTA POINTE ELEMENTARY",
+      "fish_msid": "48-0252",
+      "match": "exact"
+    },
+    "48-1023": {
+      "capacity": 1071,
+      "satisfactory_stations": 1071,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "SUNSHINE ELEMENTARY",
+      "fish_msid": "48-0253",
+      "match": "exact"
+    },
+    "48-0932": {
+      "capacity": 2706,
+      "satisfactory_stations": 2849,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "LAKE BUENA VISTA HIGH",
+      "fish_msid": "48-0256",
+      "match": "exact"
+    },
+    "48-1471": {
+      "capacity": 2864,
+      "satisfactory_stations": 3015,
+      "use_desc": "SENIOR HIGH",
+      "fish_name": "HORIZON HIGH",
+      "fish_msid": "48-0255",
+      "match": "exact"
+    },
+    "48-0482": {
+      "capacity": 1323,
+      "satisfactory_stations": 1323,
+      "use_desc": "ELEMENTARY",
+      "fish_name": "WATER SPRING ELEMENTARY",
+      "fish_msid": "48-0249",
+      "match": "exact"
+    }
+  }
+}

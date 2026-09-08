@@ -1,0 +1,892 @@
+{
+  "vintage": "Current as of retrieval (2026-09-06)",
+  "source": "unitedstates/congress-legislators (U.S. House); Florida House and Senate chamber rosters (state legislature)",
+  "source_url": "https://unitedstates.github.io/congress-legislators/legislators-current.json",
+  "retrieved": "2026-09-06",
+  "congressional": {
+    "CD-26": {
+      "name": "Mario Diaz-Balart",
+      "party": "Republican",
+      "phone": "202-225-4211",
+      "url": "https://mariodiazbalart.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-25": {
+      "name": "Debbie Wasserman Schultz",
+      "party": "Democrat",
+      "phone": "202-225-7931",
+      "url": "https://wassermanschultz.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-11": {
+      "name": "Daniel Webster",
+      "party": "Republican",
+      "phone": "202-225-1002",
+      "url": "https://webster.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-24": {
+      "name": "Frederica S. Wilson",
+      "party": "Democrat",
+      "phone": "202-225-4506",
+      "url": "https://wilson.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-9": {
+      "name": "Darren Soto",
+      "party": "Democrat",
+      "phone": "202-225-9889",
+      "url": "https://soto.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-18": {
+      "name": "Scott Franklin",
+      "party": "Republican",
+      "phone": "202-225-1252",
+      "url": "https://franklin.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-28": {
+      "name": "Carlos A. Gimenez",
+      "party": "Republican",
+      "phone": "202-225-2778",
+      "url": "https://gimenez.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-27": {
+      "name": "Maria Elvira Salazar",
+      "party": "Republican",
+      "phone": "202-225-3931",
+      "url": "https://salazar.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-7": {
+      "name": "Cory Mills",
+      "party": "Republican",
+      "phone": "202-225-4035",
+      "url": "https://mills.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-10": {
+      "name": "Maxwell Frost",
+      "party": "Democrat",
+      "phone": "202-225-2176",
+      "url": "https://frost.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-23": {
+      "name": "Jared Moskowitz",
+      "party": "Democrat",
+      "phone": "202-225-3001",
+      "url": "https://moskowitz.house.gov",
+      "source": "unitedstates/congress-legislators"
+    },
+    "CD-8": {
+      "name": "Mike Haridopolos",
+      "party": "Republican",
+      "phone": "202-225-3671",
+      "url": "https://haridopolos.house.gov",
+      "source": "unitedstates/congress-legislators"
+    }
+  },
+  "senate": [],
+  "state_legislative": {
+    "SLDL-5": {
+      "name": "Shane G. Abbott",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-48": {
+      "name": "Jon Albert",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-69": {
+      "name": "Daniel Antonio \"Danny\" Alvarez",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-46": {
+      "name": "Jose Alvarez",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-57": {
+      "name": "Adam Anderson",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-2": {
+      "name": "Robert Alexander \"Alex\" Andrade",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-41": {
+      "name": "Bruce Hadley Antone",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-107": {
+      "name": "Wallace Aristide",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-17": {
+      "name": "Jessica Baker",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-39": {
+      "name": "Douglas Michael \"Doug\" Bankson",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-29": {
+      "name": "Webster Barnaby",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-103": {
+      "name": "Robin Bartleman",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-106": {
+      "name": "Fabián Basabe",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-81": {
+      "name": "Yvette Benarroch",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-58": {
+      "name": "Kimberly Berfield",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-15": {
+      "name": "Dean Black",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-115": {
+      "name": "Omar Blanco",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-35": {
+      "name": "Erika Booth",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-111": {
+      "name": "David Borrero",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-80": {
+      "name": "Adam Botana",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-3": {
+      "name": "Dr. Joel Rudman",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-34": {
+      "name": "Robert A. \"Robbie\" Brackett",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-10": {
+      "name": "Robert Charles \"Chuck\" Brannan III",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-74": {
+      "name": "James Buchanan",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-114": {
+      "name": "Demi Busatta",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-99": {
+      "name": "Daryl Campbell",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-50": {
+      "name": "Jennifer Canady",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-101": {
+      "name": "Hillary Cassel",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-24": {
+      "name": "Ryan Chamberlin",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-117": {
+      "name": "Kevin D. Chambliss",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-61": {
+      "name": "Linda Chaney",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-26": {
+      "name": "Nan Cobb",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-72": {
+      "name": "William \"Bill\" Conerly",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-60": {
+      "name": "Lindsay Cross",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-96": {
+      "name": "Dan Daley",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-14": {
+      "name": "Kimberly Daniels",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-67": {
+      "name": "Fentrice Driskell",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-12": {
+      "name": "Wyman Duggan",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-97": {
+      "name": "Lisa Dunkley",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-88": {
+      "name": "Jervonte \"Tae\" Edmonds",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-42": {
+      "name": "Dr. Anna V. Eskamani",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-77": {
+      "name": "Tiffany Esposito",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-110": {
+      "name": "Tom Fabricio",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-8": {
+      "name": "Gallop Franklin II",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-109": {
+      "name": "Ashley Viola Gantt",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-11": {
+      "name": "Sam Garrison",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-27": {
+      "name": "Richard Gentry",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-93": {
+      "name": "Anne Gerwig",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-79": {
+      "name": "Mike Giallombardo",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-65": {
+      "name": "Karen Gonzalez Pittman",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-91": {
+      "name": "Peggy Gossett-Seidman",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-102": {
+      "name": "Michael \"Mike\" Gottlieb",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-19": {
+      "name": "Sam Greco",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-87": {
+      "name": "Michael A. \"Mike\" Caruso",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-6": {
+      "name": "Philip Wayne \"Griff\" Griffitts Jr.",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-23": {
+      "name": "J.J. Grow",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-44": {
+      "name": "Jennifer \"Rita\" Harris",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-63": {
+      "name": "Dianne \"Ms Dee\" Hart-Lowman",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-21": {
+      "name": "Yvonne Hayes Hinson",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-32": {
+      "name": "Debbie Mayfield",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-53": {
+      "name": "Jeff Holcomb",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-51": {
+      "name": "Josie Tomkow",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-95": {
+      "name": "Christine Hunschofsky",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-59": {
+      "name": "Berny Jacques",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-22": {
+      "name": "Chad Johnson",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-108": {
+      "name": "Dotie Joseph",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-18": {
+      "name": "Kim Kendall",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-49": {
+      "name": "Jennifer Kincart Jonsson",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-66": {
+      "name": "Traci Koster",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-100": {
+      "name": "Chip LaMarca",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-90": {
+      "name": "Joe * Casello",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-43": {
+      "name": "Johanna López",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-54": {
+      "name": "Randall Scott \"Randy\" Maggard",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-4": {
+      "name": "Patt Maney",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-68": {
+      "name": "Lawrence McClure",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-73": {
+      "name": "Fiona McFarland",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-82": {
+      "name": "Lauren Melo",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-16": {
+      "name": "Kiyan Michael",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-33": {
+      "name": "Monique Miller",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-120": {
+      "name": "James Vernon \"Jim\" Mooney Jr.",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-75": {
+      "name": "Danny Nix Jr.",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-13": {
+      "name": "Angela \"Angie\" Nixon",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-76": {
+      "name": "Vanessa Oliver",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-85": {
+      "name": "Tobin Rogers \"Toby\" Overdorf",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-70": {
+      "name": "Michael Owen",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-28": {
+      "name": "Bill Partington",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-36": {
+      "name": "Rachel Saunders Plakon",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-37": {
+      "name": "Susan Plasencia",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-119": {
+      "name": "Juan Carlos Porras",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-62": {
+      "name": "Michele K. Rayner",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-118": {
+      "name": "Mike Redondo",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-112": {
+      "name": "Alex Rizo",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-104": {
+      "name": "Felicia Simone Robinson",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-71": {
+      "name": "William Cloud \"Will\" Robinson Jr.",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-98": {
+      "name": "Mitch Rosenwald",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-1": {
+      "name": "Michelle Salzman",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-20": {
+      "name": "Judson Sapp",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-52": {
+      "name": "John Paul Temple",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-7": {
+      "name": "Jason Shoaf",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-31": {
+      "name": "Tyler I. Sirois",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-92": {
+      "name": "Kelly Skidmore",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-38": {
+      "name": "David Smith",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-86": {
+      "name": "John Snyder",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-45": {
+      "name": "Leonard Spencer",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-47": {
+      "name": "Paula A. Stark",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-9": {
+      "name": "Allison Tant",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-89": {
+      "name": "Debra Tendrich",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-84": {
+      "name": "Dana Trabulsy",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-30": {
+      "name": "Chase Tramont",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-83": {
+      "name": "Kaylee Tuck",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-64": {
+      "name": "Susan L. Valdés",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-94": {
+      "name": "Meg Weinberger",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-105": {
+      "name": "Marie Paule Woodson",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-25": {
+      "name": "Taylor Michael Yarkosky",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-56": {
+      "name": "Bradford Troy \"Brad\" Yeager",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-40": {
+      "name": "LaVon Bracy Davis",
+      "party": "Democrat",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-113": {
+      "name": "Vicki L. Lopez",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-116": {
+      "name": "Daniel Perez",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-78": {
+      "name": "Jenna Persons-Mulicka",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDL-55": {
+      "name": "Kevin M. Steele",
+      "party": "Republican",
+      "source": "Florida House of Representatives roster (2024-2026)"
+    },
+    "SLDU-27": {
+      "name": "Ben Albritton",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-25": {
+      "name": "Kristen Arrington",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-26": {
+      "name": "Lori Berman",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-24": {
+      "name": "Mack Bernard",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-20": {
+      "name": "Jim Boyd",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-15": {
+      "name": "LaVon Bracy Davis",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-6": {
+      "name": "Jennifer Bradley",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-10": {
+      "name": "Jason Brodeur",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-23": {
+      "name": "Danny Burgess",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-12": {
+      "name": "Colleen Burton",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-38": {
+      "name": "Alexis Calatayud",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-5": {
+      "name": "Tracie Davis",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-18": {
+      "name": "Nick DiCeglie",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-1": {
+      "name": "Don Gaetz",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-36": {
+      "name": "Ileana Garcia",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-29": {
+      "name": "Erin Grall",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-22": {
+      "name": "Joe Gruters",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-31": {
+      "name": "Gayle Harrell",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-21": {
+      "name": "Ed Hooper",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-34": {
+      "name": "Shevrin Jones",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-7": {
+      "name": "Thomas Leek",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-33": {
+      "name": "Jonathan Martin",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-11": {
+      "name": "Ralph Massullo",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-19": {
+      "name": "Debbie Mayfield",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-9": {
+      "name": "Stan McClain",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-14": {
+      "name": "Brian Nathan",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-32": {
+      "name": "Rosalind Osgood",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-28": {
+      "name": "Kathleen Passidomo",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-37": {
+      "name": "Jason Pizzo",
+      "party": null,
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-30": {
+      "name": "Tina Polsky",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-40": {
+      "name": "Ana Maria Rodriguez",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-16": {
+      "name": "Darryl Rouson",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-35": {
+      "name": "Barbara Sharief",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-3": {
+      "name": "Corey Simon",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-17": {
+      "name": "Carlos Smith",
+      "party": "Democrat",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-13": {
+      "name": "Keith Truenow",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-2": {
+      "name": "Jay Trumbull",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-8": {
+      "name": "Tom Wright",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    },
+    "SLDU-4": {
+      "name": "Clay Yarborough",
+      "party": "Republican",
+      "source": "The Florida Senate roster (2024-2026)"
+    }
+  },
+  "board": {},
+  "notes": "Congressional (U.S. House) members from unitedstates/congress-legislators. State House/Senate names from the official Florida chamber rosters (2024-2026 term); keyed state_legislative['SLDL-<n>'] / ['SLDU-<n>']. U.S. Senators are statewide and are not surfaced in the tool. County school-board members: see board keys where populated."
+}

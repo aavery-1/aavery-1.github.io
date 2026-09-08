@@ -1,0 +1,160 @@
+// Data sources & accuracy reference, opened from the AppBar help menu. This is a
+// trust surface: for a tool used to make siting decisions, every value on screen
+// must be traceable to a named source with its vintage AND an honest note on
+// coverage/confidence. Kept in sync with the vintage stamps in public/data/*.
+//
+// Confidence tags are deliberate and honest: "Verified" means checked against the
+// primary source; "Official" means the authoritative government dataset;
+// "Derived" means computed by the tool (spatial join or formula) and therefore
+// dependent on the inputs; a coverage figure means the field is not populated for
+// every school.
+
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Chip } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, ACCENT } from "../muiTheme";
+
+type Confidence = "Verified" | "Official" | "Derived" | "Coverage" | "Reference";
+
+interface Entry {
+  label: string;
+  source: string;
+  vintage?: string;
+  note?: string;        // honest coverage / confidence caveat
+  tag: Confidence;
+  tagText?: string;     // overrides the tag label (e.g. a coverage percentage)
+}
+
+interface Group { heading: string; entries: Entry[]; }
+
+const GROUPS: Group[] = [
+  {
+    heading: "Per-school data",
+    entries: [
+      { label: "School directory & MSID", tag: "Official",
+        source: "NCES Common Core of Data, via Urban Institute Education Data Portal",
+        vintage: "2023-2024 directory",
+        note: "1,136 schools, each with a unique MSID (district-school, e.g. 13-0801), rebuilt from the 2023-24 CCD directory (open and operating schools in Miami-Dade, Broward, and Orange). Closed and consolidated schools are excluded; any school with a current A-F grade is retained even if the directory lags. 2 charters that opened too recently to appear in the directory are still pending coordinates." },
+      { label: "Letter grades (current & history)", tag: "Verified",
+        source: "Florida Department of Education, School Grades files",
+        vintage: "1999-2000 through 2025-2026",
+        note: "Cross-checked cell-for-cell against the FL DOE spreadsheet: 992 graded schools, every year, 0 discrepancies. 'Current grade' is the most recent A-F year. 990 schools carry a current A-F grade; 146 (charter/alternative/virtual/ESE centers) are ungraded and show NR." },
+      { label: "Persistently Low-Performing (PLP)", tag: "Official",
+        source: "FL DOE PLP designations list per F.S. 1002.333",
+        vintage: "2024-2025",
+        note: "The official DOE list is used directly (not inferred). It captures all three statutory criteria." },
+      { label: "Title I eligibility", tag: "Official",
+        source: "NCES Common Core of Data (Title I eligibility flag)",
+        vintage: "2023-2024 directory",
+        note: "879 eligible / 216 not, from the CCD directory. 41 recently added or reopened schools have no Title I flag yet and show 'unknown' (not treated as ineligible). A school's Title I status can change year to year." },
+      { label: "Enrollment (current & history)", tag: "Official",
+        source: "NCES CCD membership, via Urban Institute Education Data Portal",
+        vintage: "2014-2015 through 2024-2025",
+        note: "Real reported membership for every school." },
+      { label: "Capacity, COFTE & surplus", tag: "Official",
+        source: "FL DOE FISH Level of Service reports, per county: Miami-Dade (reported 2026-04-10), Broward (2022-23), Orange (2023-24)",
+        note: "Authoritative student stations, capital-outlay FTE enrollment (COFTE), and surplus for 741 district-operated schools, matched by name. Utilization and co-location use the statutory COFTE-based Facility Utilization Rate (Rule 6A-1.0998271(1)(n)). Charters/virtual and a few unmatched schools show 'not reported' (co-location applies only to district facilities). The Broward and Orange reports predate the Miami-Dade one." },
+    ],
+  },
+  {
+    heading: "Districts & boundaries",
+    entries: [
+      { label: "Congressional / State House / State Senate", tag: "Derived",
+        source: "U.S. Census Bureau TIGERweb (119th Congress; 2024 state legislative districts)",
+        note: "Each school is assigned by a point-in-polygon spatial join against the official district boundaries. A school within a few hundred feet of a district line should be confirmed against its address." },
+      { label: "Representatives", tag: "Reference",
+        source: "unitedstates/congress-legislators (U.S. House) + Florida House & Senate chamber rosters",
+        vintage: "retrieved 2026-09-06",
+        note: "Names reflect the roster at retrieval; verify after any election or appointment." },
+      { label: "School board districts", tag: "Derived",
+        source: "Miami-Dade & Broward county GIS boundaries + Supervisor-of-Elections rosters; Orange from OCPS per-district school lists",
+        note: "Miami-Dade and Broward are assigned by spatial join against official polygons. Orange has no open boundary GIS, so its schools are matched to a board district by the district's own school list (195 of 202 matched); Orange has no boundary overlay." },
+    ],
+  },
+  {
+    heading: "Map overlays",
+    entries: [
+      { label: "Opportunity Zones", tag: "Official",
+        source: "HUD spatial representation of Treasury/IRS-designated Qualified Opportunity Zones",
+        vintage: "2018 designations, in effect through 12/31/2028",
+        note: "Used as one of the statutory siting pathways (F.S. 1002.333(1)(d)1.b)." },
+      { label: "Median household income", tag: "Official",
+        source: "U.S. Census Bureau ACS 5-year (B19013) + TIGERweb tracts",
+        vintage: "2019-2023",
+        note: "Tract-level estimate; respect the ACS margin of error for small tracts." },
+      { label: "Population growth", tag: "Official",
+        source: "U.S. Census Bureau Population Estimates Program (Vintage 2024) + ACS 5-year",
+        vintage: "2023 to 2024",
+        note: "County level." },
+      { label: "Existing Schools of Hope", tag: "Official",
+        source: "FL DOE Schools of Hope Revolving Loan Fund ledger (F.S. 1001.292)",
+        note: "12 loan-fund sites statewide; the 3 within the pilot counties (all Miami-Dade) are mapped. The ledger lists none in Broward or Orange. Loan-fund recipients only, not the full FL DOE list of approved or operating Schools of Hope." },
+    ],
+  },
+  {
+    heading: "Computed by the tool",
+    entries: [
+      { label: "Co-location candidate", tag: "Derived",
+        source: "F.S. 1002.333(7) and Rule 6A-1.0998271(5)",
+        note: "A district facility that is underused (statutory COFTE-based Facility Utilization Rate at or below 75%, or 400+ surplus student stations from FISH) AND inside a School of Hope siting area. Labeled 'candidate', not 'eligible', because the rule also bars co-location at buildings placed into service within the last 4 years, and per-building age is not in the available data." },
+      { label: "School of Hope siting area", tag: "Derived",
+        source: "F.S. 1002.333(1)(d)1.b",
+        note: "The greater of a PLP school's attendance zone, a 5-mile radius of a PLP school (same district), or a Florida Opportunity Zone, and Title I eligible. Attendance zones are not modeled (always smaller than the 5-mile radius in these counties)." },
+      { label: "Distances, radii, and areas", tag: "Verified",
+        source: "WGS84 ellipsoidal geodesic (Vincenty); areas on the WGS84 ellipsoid",
+        note: "Validated against the canonical Vincenty reference to under 1 mm and machine-checked in the test suite. Rendered in Web Mercator but never measured in it." },
+    ],
+  },
+];
+
+const TAG_STYLE: Record<Confidence, { bg: string; fg: string }> = {
+  Verified: { bg: alpha("#0D9488", 0.14), fg: "#0F766E" },
+  Official: { bg: alpha(ACCENT, 0.12), fg: "#1E40AF" },
+  Derived: { bg: alpha("#D97706", 0.14), fg: "#B45309" },
+  Coverage: { bg: alpha("#D97706", 0.14), fg: "#B45309" },
+  Reference: { bg: alpha(SHELL_DIM, 0.14), fg: SHELL_DIM },
+};
+
+export function AttributionStrip({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="attribution-title">
+      <DialogTitle id="attribution-title" sx={{ pb: 0.5 }}>
+        Data sources & accuracy
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Every value on the map traces to a named source. Tags say how far we can vouch for it:
+          {" "}<b>Verified</b> (checked against the source), <b>Official</b> (authoritative dataset),
+          {" "}<b>Derived</b> (computed by the tool), or a coverage figure.
+        </Typography>
+      </DialogTitle>
+      <DialogContent dividers>
+        {GROUPS.map((group) => (
+          <Box key={group.heading} sx={{ mb: 2.5, "&:last-of-type": { mb: 0.5 } }}>
+            <Typography sx={{ fontSize: 11, fontWeight: 700, color: SHELL_DIM, textTransform: "none", letterSpacing: "0.01em", mb: 1 }}>
+              {group.heading}
+            </Typography>
+            {group.entries.map((e) => {
+              const t = TAG_STYLE[e.tag];
+              return (
+                <Box key={e.label} sx={{ mb: 1.5, pb: 1.5, borderBottom: `1px solid ${SHELL_HAIRLINE}`, "&:last-of-type": { mb: 0, pb: 0, borderBottom: "none" } }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "space-between", mb: 0.3 }}>
+                    <Typography sx={{ fontSize: 13, fontWeight: 700, color: SHELL_ON }}>{e.label}</Typography>
+                    <Chip label={e.tagText ?? e.tag} size="small" sx={{ height: 19, fontSize: 10, fontWeight: 700, bgcolor: t.bg, color: t.fg, flex: "none" }} />
+                  </Box>
+                  <Typography sx={{ fontSize: 12, color: SHELL_ON }}>
+                    {e.source}{e.vintage ? <Box component="span" sx={{ color: SHELL_DIM }}> · {e.vintage}</Box> : null}
+                  </Typography>
+                  {e.note && <Typography sx={{ fontSize: 12, color: SHELL_DIM, mt: 0.4, lineHeight: 1.45 }}>{e.note}</Typography>}
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+        <Typography sx={{ fontSize: 11, color: SHELL_DIM, mt: 2, fontStyle: "italic", lineHeight: 1.5 }}>
+          Base map imagery © Google. This tool supports siting analysis; confirm any specific eligibility determination against the primary FL DOE and county records before acting.
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} variant="contained" disableElevation>Done</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

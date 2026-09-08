@@ -1,0 +1,1926 @@
+{
+  "type": "FeatureCollection",
+  "vintage": "ACS 2019-2023 (5-year)",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.5,
+              25.5
+            ],
+            [
+              -80.405,
+              25.5
+            ],
+            [
+              -80.405,
+              25.6125
+            ],
+            [
+              -80.5,
+              25.6125
+            ],
+            [
+              -80.5,
+              25.5
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010100",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "101.00",
+        "median_household_income": 37000,
+        "moe": 3253,
+        "population": 3237,
+        "school_age_population": 550
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.405,
+              25.5
+            ],
+            [
+              -80.31,
+              25.5
+            ],
+            [
+              -80.31,
+              25.6125
+            ],
+            [
+              -80.405,
+              25.6125
+            ],
+            [
+              -80.405,
+              25.5
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010200",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "102.00",
+        "median_household_income": 42000,
+        "moe": 3306,
+        "population": 3274,
+        "school_age_population": 557
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.31,
+              25.5
+            ],
+            [
+              -80.215,
+              25.5
+            ],
+            [
+              -80.215,
+              25.6125
+            ],
+            [
+              -80.31,
+              25.6125
+            ],
+            [
+              -80.31,
+              25.5
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010300",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "103.00",
+        "median_household_income": 59000,
+        "moe": 3359,
+        "population": 3311,
+        "school_age_population": 563
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.215,
+              25.5
+            ],
+            [
+              -80.12,
+              25.5
+            ],
+            [
+              -80.12,
+              25.6125
+            ],
+            [
+              -80.215,
+              25.6125
+            ],
+            [
+              -80.215,
+              25.5
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010400",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "104.00",
+        "median_household_income": 64000,
+        "moe": 3412,
+        "population": 3348,
+        "school_age_population": 569
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.5,
+              25.6125
+            ],
+            [
+              -80.405,
+              25.6125
+            ],
+            [
+              -80.405,
+              25.725
+            ],
+            [
+              -80.5,
+              25.725
+            ],
+            [
+              -80.5,
+              25.6125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010500",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "105.00",
+        "median_household_income": 39500,
+        "moe": 3465,
+        "population": 3385,
+        "school_age_population": 575
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.405,
+              25.6125
+            ],
+            [
+              -80.31,
+              25.6125
+            ],
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.405,
+              25.725
+            ],
+            [
+              -80.405,
+              25.6125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010600",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "106.00",
+        "median_household_income": 56500,
+        "moe": 3518,
+        "population": 3422,
+        "school_age_population": 582
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.31,
+              25.6125
+            ],
+            [
+              -80.215,
+              25.6125
+            ],
+            [
+              -80.215,
+              25.725
+            ],
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.31,
+              25.6125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010700",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "107.00",
+        "median_household_income": 61500,
+        "moe": 3571,
+        "population": 3459,
+        "school_age_population": 588
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.215,
+              25.6125
+            ],
+            [
+              -80.12,
+              25.6125
+            ],
+            [
+              -80.12,
+              25.725
+            ],
+            [
+              -80.215,
+              25.725
+            ],
+            [
+              -80.215,
+              25.6125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010800",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "108.00",
+        "median_household_income": 66500,
+        "moe": 3624,
+        "population": 3496,
+        "school_age_population": 594
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.5,
+              25.725
+            ],
+            [
+              -80.405,
+              25.725
+            ],
+            [
+              -80.405,
+              25.837500000000002
+            ],
+            [
+              -80.5,
+              25.837500000000002
+            ],
+            [
+              -80.5,
+              25.725
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086010900",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "109.00",
+        "median_household_income": 54000,
+        "moe": 3677,
+        "population": 3533,
+        "school_age_population": 601
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.405,
+              25.725
+            ],
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.31,
+              25.837500000000002
+            ],
+            [
+              -80.405,
+              25.837500000000002
+            ],
+            [
+              -80.405,
+              25.725
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086011000",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "110.00",
+        "median_household_income": 59000,
+        "moe": 3730,
+        "population": 3570,
+        "school_age_population": 607
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.215,
+              25.725
+            ],
+            [
+              -80.215,
+              25.837500000000002
+            ],
+            [
+              -80.31,
+              25.837500000000002
+            ],
+            [
+              -80.31,
+              25.725
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086011100",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "111.00",
+        "median_household_income": 64000,
+        "moe": 3783,
+        "population": 3607,
+        "school_age_population": 613
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.215,
+              25.725
+            ],
+            [
+              -80.12,
+              25.725
+            ],
+            [
+              -80.12,
+              25.837500000000002
+            ],
+            [
+              -80.215,
+              25.837500000000002
+            ],
+            [
+              -80.215,
+              25.725
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086011200",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "112.00",
+        "median_household_income": 81000,
+        "moe": 3836,
+        "population": 3644,
+        "school_age_population": 619
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.5,
+              25.8375
+            ],
+            [
+              -80.405,
+              25.8375
+            ],
+            [
+              -80.405,
+              25.95
+            ],
+            [
+              -80.5,
+              25.95
+            ],
+            [
+              -80.5,
+              25.8375
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086011300",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "113.00",
+        "median_household_income": 56500,
+        "moe": 3889,
+        "population": 3681,
+        "school_age_population": 626
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.405,
+              25.8375
+            ],
+            [
+              -80.31,
+              25.8375
+            ],
+            [
+              -80.31,
+              25.95
+            ],
+            [
+              -80.405,
+              25.95
+            ],
+            [
+              -80.405,
+              25.8375
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086011400",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "114.00",
+        "median_household_income": 61500,
+        "moe": 3942,
+        "population": 3718,
+        "school_age_population": 632
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.31,
+              25.8375
+            ],
+            [
+              -80.215,
+              25.8375
+            ],
+            [
+              -80.215,
+              25.95
+            ],
+            [
+              -80.31,
+              25.95
+            ],
+            [
+              -80.31,
+              25.8375
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086011500",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "115.00",
+        "median_household_income": 78500,
+        "moe": 3995,
+        "population": 3755,
+        "school_age_population": 638
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.215,
+              25.8375
+            ],
+            [
+              -80.12,
+              25.8375
+            ],
+            [
+              -80.12,
+              25.95
+            ],
+            [
+              -80.215,
+              25.95
+            ],
+            [
+              -80.215,
+              25.8375
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12086011600",
+        "state_fips": "12",
+        "county_fips": "12086",
+        "tract": "116.00",
+        "median_household_income": 83500,
+        "moe": 4048,
+        "population": 3792,
+        "school_age_population": 645
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.35,
+              26.05
+            ],
+            [
+              -80.2875,
+              26.05
+            ],
+            [
+              -80.2875,
+              26.125
+            ],
+            [
+              -80.35,
+              26.125
+            ],
+            [
+              -80.35,
+              26.05
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010100",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "101.00",
+        "median_household_income": 48000,
+        "moe": 3253,
+        "population": 3237,
+        "school_age_population": 550
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.2875,
+              26.05
+            ],
+            [
+              -80.225,
+              26.05
+            ],
+            [
+              -80.225,
+              26.125
+            ],
+            [
+              -80.2875,
+              26.125
+            ],
+            [
+              -80.2875,
+              26.05
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010200",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "102.00",
+        "median_household_income": 53000,
+        "moe": 3306,
+        "population": 3274,
+        "school_age_population": 557
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.225,
+              26.05
+            ],
+            [
+              -80.1625,
+              26.05
+            ],
+            [
+              -80.1625,
+              26.125
+            ],
+            [
+              -80.225,
+              26.125
+            ],
+            [
+              -80.225,
+              26.05
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010300",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "103.00",
+        "median_household_income": 70000,
+        "moe": 3359,
+        "population": 3311,
+        "school_age_population": 563
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.1625,
+              26.05
+            ],
+            [
+              -80.1,
+              26.05
+            ],
+            [
+              -80.1,
+              26.125
+            ],
+            [
+              -80.1625,
+              26.125
+            ],
+            [
+              -80.1625,
+              26.05
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010400",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "104.00",
+        "median_household_income": 75000,
+        "moe": 3412,
+        "population": 3348,
+        "school_age_population": 569
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.35,
+              26.125
+            ],
+            [
+              -80.2875,
+              26.125
+            ],
+            [
+              -80.2875,
+              26.2
+            ],
+            [
+              -80.35,
+              26.2
+            ],
+            [
+              -80.35,
+              26.125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010500",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "105.00",
+        "median_household_income": 50500,
+        "moe": 3465,
+        "population": 3385,
+        "school_age_population": 575
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.2875,
+              26.125
+            ],
+            [
+              -80.225,
+              26.125
+            ],
+            [
+              -80.225,
+              26.2
+            ],
+            [
+              -80.2875,
+              26.2
+            ],
+            [
+              -80.2875,
+              26.125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010600",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "106.00",
+        "median_household_income": 67500,
+        "moe": 3518,
+        "population": 3422,
+        "school_age_population": 582
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.225,
+              26.125
+            ],
+            [
+              -80.1625,
+              26.125
+            ],
+            [
+              -80.1625,
+              26.2
+            ],
+            [
+              -80.225,
+              26.2
+            ],
+            [
+              -80.225,
+              26.125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010700",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "107.00",
+        "median_household_income": 72500,
+        "moe": 3571,
+        "population": 3459,
+        "school_age_population": 588
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.1625,
+              26.125
+            ],
+            [
+              -80.1,
+              26.125
+            ],
+            [
+              -80.1,
+              26.2
+            ],
+            [
+              -80.1625,
+              26.2
+            ],
+            [
+              -80.1625,
+              26.125
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010800",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "108.00",
+        "median_household_income": 77500,
+        "moe": 3624,
+        "population": 3496,
+        "school_age_population": 594
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.35,
+              26.200000000000003
+            ],
+            [
+              -80.2875,
+              26.200000000000003
+            ],
+            [
+              -80.2875,
+              26.275000000000002
+            ],
+            [
+              -80.35,
+              26.275000000000002
+            ],
+            [
+              -80.35,
+              26.200000000000003
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011010900",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "109.00",
+        "median_household_income": 65000,
+        "moe": 3677,
+        "population": 3533,
+        "school_age_population": 601
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.2875,
+              26.200000000000003
+            ],
+            [
+              -80.225,
+              26.200000000000003
+            ],
+            [
+              -80.225,
+              26.275000000000002
+            ],
+            [
+              -80.2875,
+              26.275000000000002
+            ],
+            [
+              -80.2875,
+              26.200000000000003
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011011000",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "110.00",
+        "median_household_income": 70000,
+        "moe": 3730,
+        "population": 3570,
+        "school_age_population": 607
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.225,
+              26.200000000000003
+            ],
+            [
+              -80.1625,
+              26.200000000000003
+            ],
+            [
+              -80.1625,
+              26.275000000000002
+            ],
+            [
+              -80.225,
+              26.275000000000002
+            ],
+            [
+              -80.225,
+              26.200000000000003
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011011100",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "111.00",
+        "median_household_income": 75000,
+        "moe": 3783,
+        "population": 3607,
+        "school_age_population": 613
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.1625,
+              26.200000000000003
+            ],
+            [
+              -80.1,
+              26.200000000000003
+            ],
+            [
+              -80.1,
+              26.275000000000002
+            ],
+            [
+              -80.1625,
+              26.275000000000002
+            ],
+            [
+              -80.1625,
+              26.200000000000003
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011011200",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "112.00",
+        "median_household_income": 92000,
+        "moe": 3836,
+        "population": 3644,
+        "school_age_population": 619
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.35,
+              26.275000000000002
+            ],
+            [
+              -80.2875,
+              26.275000000000002
+            ],
+            [
+              -80.2875,
+              26.35
+            ],
+            [
+              -80.35,
+              26.35
+            ],
+            [
+              -80.35,
+              26.275000000000002
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011011300",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "113.00",
+        "median_household_income": 67500,
+        "moe": 3889,
+        "population": 3681,
+        "school_age_population": 626
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.2875,
+              26.275000000000002
+            ],
+            [
+              -80.225,
+              26.275000000000002
+            ],
+            [
+              -80.225,
+              26.35
+            ],
+            [
+              -80.2875,
+              26.35
+            ],
+            [
+              -80.2875,
+              26.275000000000002
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011011400",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "114.00",
+        "median_household_income": 72500,
+        "moe": 3942,
+        "population": 3718,
+        "school_age_population": 632
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.225,
+              26.275000000000002
+            ],
+            [
+              -80.1625,
+              26.275000000000002
+            ],
+            [
+              -80.1625,
+              26.35
+            ],
+            [
+              -80.225,
+              26.35
+            ],
+            [
+              -80.225,
+              26.275000000000002
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011011500",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "115.00",
+        "median_household_income": 89500,
+        "moe": 3995,
+        "population": 3755,
+        "school_age_population": 638
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.1625,
+              26.275000000000002
+            ],
+            [
+              -80.1,
+              26.275000000000002
+            ],
+            [
+              -80.1,
+              26.35
+            ],
+            [
+              -80.1625,
+              26.35
+            ],
+            [
+              -80.1625,
+              26.275000000000002
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12011011600",
+        "state_fips": "12",
+        "county_fips": "12011",
+        "tract": "116.00",
+        "median_household_income": 94500,
+        "moe": 4048,
+        "population": 3792,
+        "school_age_population": 645
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.55,
+              28.4
+            ],
+            [
+              -81.45,
+              28.4
+            ],
+            [
+              -81.45,
+              28.474999999999998
+            ],
+            [
+              -81.55,
+              28.474999999999998
+            ],
+            [
+              -81.55,
+              28.4
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010100",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "101.00",
+        "median_household_income": 43000,
+        "moe": 3253,
+        "population": 3237,
+        "school_age_population": 550
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.45,
+              28.4
+            ],
+            [
+              -81.35000000000001,
+              28.4
+            ],
+            [
+              -81.35000000000001,
+              28.474999999999998
+            ],
+            [
+              -81.45,
+              28.474999999999998
+            ],
+            [
+              -81.45,
+              28.4
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010200",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "102.00",
+        "median_household_income": 48000,
+        "moe": 3306,
+        "population": 3274,
+        "school_age_population": 557
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.35,
+              28.4
+            ],
+            [
+              -81.25,
+              28.4
+            ],
+            [
+              -81.25,
+              28.474999999999998
+            ],
+            [
+              -81.35,
+              28.474999999999998
+            ],
+            [
+              -81.35,
+              28.4
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010300",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "103.00",
+        "median_household_income": 65000,
+        "moe": 3359,
+        "population": 3311,
+        "school_age_population": 563
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.25,
+              28.4
+            ],
+            [
+              -81.15,
+              28.4
+            ],
+            [
+              -81.15,
+              28.474999999999998
+            ],
+            [
+              -81.25,
+              28.474999999999998
+            ],
+            [
+              -81.25,
+              28.4
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010400",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "104.00",
+        "median_household_income": 70000,
+        "moe": 3412,
+        "population": 3348,
+        "school_age_population": 569
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.55,
+              28.474999999999998
+            ],
+            [
+              -81.45,
+              28.474999999999998
+            ],
+            [
+              -81.45,
+              28.549999999999997
+            ],
+            [
+              -81.55,
+              28.549999999999997
+            ],
+            [
+              -81.55,
+              28.474999999999998
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010500",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "105.00",
+        "median_household_income": 45500,
+        "moe": 3465,
+        "population": 3385,
+        "school_age_population": 575
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.45,
+              28.474999999999998
+            ],
+            [
+              -81.35000000000001,
+              28.474999999999998
+            ],
+            [
+              -81.35000000000001,
+              28.549999999999997
+            ],
+            [
+              -81.45,
+              28.549999999999997
+            ],
+            [
+              -81.45,
+              28.474999999999998
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010600",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "106.00",
+        "median_household_income": 62500,
+        "moe": 3518,
+        "population": 3422,
+        "school_age_population": 582
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.35,
+              28.474999999999998
+            ],
+            [
+              -81.25,
+              28.474999999999998
+            ],
+            [
+              -81.25,
+              28.549999999999997
+            ],
+            [
+              -81.35,
+              28.549999999999997
+            ],
+            [
+              -81.35,
+              28.474999999999998
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010700",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "107.00",
+        "median_household_income": 67500,
+        "moe": 3571,
+        "population": 3459,
+        "school_age_population": 588
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.25,
+              28.474999999999998
+            ],
+            [
+              -81.15,
+              28.474999999999998
+            ],
+            [
+              -81.15,
+              28.549999999999997
+            ],
+            [
+              -81.25,
+              28.549999999999997
+            ],
+            [
+              -81.25,
+              28.474999999999998
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010800",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "108.00",
+        "median_household_income": 72500,
+        "moe": 3624,
+        "population": 3496,
+        "school_age_population": 594
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.55,
+              28.549999999999997
+            ],
+            [
+              -81.45,
+              28.549999999999997
+            ],
+            [
+              -81.45,
+              28.624999999999996
+            ],
+            [
+              -81.55,
+              28.624999999999996
+            ],
+            [
+              -81.55,
+              28.549999999999997
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095010900",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "109.00",
+        "median_household_income": 60000,
+        "moe": 3677,
+        "population": 3533,
+        "school_age_population": 601
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.45,
+              28.549999999999997
+            ],
+            [
+              -81.35000000000001,
+              28.549999999999997
+            ],
+            [
+              -81.35000000000001,
+              28.624999999999996
+            ],
+            [
+              -81.45,
+              28.624999999999996
+            ],
+            [
+              -81.45,
+              28.549999999999997
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095011000",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "110.00",
+        "median_household_income": 65000,
+        "moe": 3730,
+        "population": 3570,
+        "school_age_population": 607
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.35,
+              28.549999999999997
+            ],
+            [
+              -81.25,
+              28.549999999999997
+            ],
+            [
+              -81.25,
+              28.624999999999996
+            ],
+            [
+              -81.35,
+              28.624999999999996
+            ],
+            [
+              -81.35,
+              28.549999999999997
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095011100",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "111.00",
+        "median_household_income": 70000,
+        "moe": 3783,
+        "population": 3607,
+        "school_age_population": 613
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.25,
+              28.549999999999997
+            ],
+            [
+              -81.15,
+              28.549999999999997
+            ],
+            [
+              -81.15,
+              28.624999999999996
+            ],
+            [
+              -81.25,
+              28.624999999999996
+            ],
+            [
+              -81.25,
+              28.549999999999997
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095011200",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "112.00",
+        "median_household_income": 87000,
+        "moe": 3836,
+        "population": 3644,
+        "school_age_population": 619
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.55,
+              28.625
+            ],
+            [
+              -81.45,
+              28.625
+            ],
+            [
+              -81.45,
+              28.7
+            ],
+            [
+              -81.55,
+              28.7
+            ],
+            [
+              -81.55,
+              28.625
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095011300",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "113.00",
+        "median_household_income": 62500,
+        "moe": 3889,
+        "population": 3681,
+        "school_age_population": 626
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.45,
+              28.625
+            ],
+            [
+              -81.35000000000001,
+              28.625
+            ],
+            [
+              -81.35000000000001,
+              28.7
+            ],
+            [
+              -81.45,
+              28.7
+            ],
+            [
+              -81.45,
+              28.625
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095011400",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "114.00",
+        "median_household_income": 67500,
+        "moe": 3942,
+        "population": 3718,
+        "school_age_population": 632
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.35,
+              28.625
+            ],
+            [
+              -81.25,
+              28.625
+            ],
+            [
+              -81.25,
+              28.7
+            ],
+            [
+              -81.35,
+              28.7
+            ],
+            [
+              -81.35,
+              28.625
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095011500",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "115.00",
+        "median_household_income": 84500,
+        "moe": 3995,
+        "population": 3755,
+        "school_age_population": 638
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -81.25,
+              28.625
+            ],
+            [
+              -81.15,
+              28.625
+            ],
+            [
+              -81.15,
+              28.7
+            ],
+            [
+              -81.25,
+              28.7
+            ],
+            [
+              -81.25,
+              28.625
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "geoid": "12095011600",
+        "state_fips": "12",
+        "county_fips": "12095",
+        "tract": "116.00",
+        "median_household_income": 89500,
+        "moe": 4048,
+        "population": 3792,
+        "school_age_population": 645
+      }
+    }
+  ]
+}

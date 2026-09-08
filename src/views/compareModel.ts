@@ -1,0 +1,171 @@
+// The data model behind the Compare view: given the pinned schools plus the
+// always-available context (filter context and the spatial indexes), it produces
+// the labelled sections and aligned rows the matrix renders. Kept as a pure
+// function so the rendering stays dumb and the logic is unit-tested.
+//
+// Every value is read from the eagerly-built spatial indexes and the school
+// properties, exactly as the inspector reads them, so a fact (board district,
+// income, districts) is ALWAYS populated regardless of which map overlays happen
+// to be toggled on. No row is ranked and no aggregate score is produced: the
+// tool lays out the facts, the analyst forms the judgment. `diff` marks a row
+// whose values are not all identical; it drives the "Differences only" filter
+// and a neutral marker, never a ranking.
+
+import { utilizationStyle } from "../store";
+import {
+  incomeAtPoint, boardDistrictAtPoint, opportunityZoneAtPoint,
+  legislativeDistrictsAtPoint, formatIncomeWithMoe,
+} from "../data/derive/contextReads";
+import { schoolTypeLabel, titleILabel } from "../data/types";
+import type { LegislativeProps, Representative, SchoolFeature } from "../data/types";
+import type { SchoolFilterContext } from "../data/derive/filters";
+import type { DataContextValue } from "../data/DataContext";
+import type { LngLat } from "../geo/measure";
+
+// A single comparison row: one label and one value per pinned site, in the same
+// order as the site columns. `help` is an optional tooltip that defines a term
+// (Baymard / NN/g: never make the reader Google a label). `diff` is true when
+// the values are not all identical across the pinned set.
+export interface CompareRow {
+  key: string;
+  label: string;
+  help?: string;
+  values: string[];
+  diff: boolean;
+}
+
+export interface CompareSection {
+  title: string;
+  rows: CompareRow[];
+}
+
+// District schools carry a lower-cased county as their "operator" in the data
+// ("Miami-dade"); show the properly-cased county instead. Charters keep their
+// real operator name (e.g. "KIPP Miami").
+export function operatorLabel(s: SchoolFeature): string {
+  const op = s.properties.operator;
+  if (!op) return `${s.properties.county} County`;
+  return op.toLowerCase() === s.properties.county.toLowerCase() ? `${s.properties.county} County` : op;
+}
+
+function repLabel(r: Representative | undefined): string {
+  if (!r) return "";
+  return `${r.name}${r.party ? ` (${r.party[0]})` : ""}`;
+}
+
+// Build every section from the always-available indexes + properties. Reading
+// the same helpers the inspector uses keeps the two views in exact agreement.
+export function buildCompareSections(
+  schools: SchoolFeature[],
+  ctx: SchoolFilterContext,
+  data: DataContextValue,
+): CompareSection[] {
+  if (schools.length === 0) return [];
+
+  const points = schools.map((s) => s.geometry.coordinates as LngLat);
+  const legFor = (i: number) => legislativeDistrictsAtPoint(data.legislativeIndex, points[i]);
+  const chamber = (i: number, c: LegislativeProps["chamber"]) => legFor(i).find((d) => d.chamber === c);
+
+  const boardValue = (i: number) => {
+    const bd = boardDistrictAtPoint(data.boardIndex, points[i]);
+    if (bd) return `District ${bd.district_number} (${bd.county})${bd.member_name ? `, ${bd.member_name}` : ""}`;
+    const fallback = schools[i].properties.board_district;
+    return fallback ? `District ${fallback}` : "Not mapped here";
+  };
+  const cdValue = (i: number) => {
+    const cd = chamber(i, "CD");
+    if (!cd) return "Not mapped here";
+    const rep = data.reps?.congressional[`CD-${cd.district_number}`];
+    return `District ${cd.district_number}${rep ? `, ${repLabel(rep)}` : ""}`;
+  };
+  const slduValue = (i: number) => {
+    const d = chamber(i, "SLDU");
+    if (!d) return "Not mapped here";
+    const rep = data.reps?.state_legislative[`SLDU-${d.district_number}`];
+    return `District ${d.district_number}${rep ? `, ${repLabel(rep)}` : ""}`;
+  };
+  const sldlValue = (i: number) => {
+    const d = chamber(i, "SLDL");
+    if (!d) return "Not mapped here";
+    const rep = data.reps?.state_legislative[`SLDL-${d.district_number}`];
+    return `District ${d.district_number}${rep ? `, ${repLabel(rep)}` : ""}`;
+  };
+  const incomeValue = (i: number) => {
+    const inc = incomeAtPoint(data.incomeIndex, points[i]);
+    return inc && inc.median_household_income != null ? `${formatIncomeWithMoe(inc)} (tract ${inc.geoid})` : "No tract data here";
+  };
+  const ozValue = (i: number) => {
+    const oz = opportunityZoneAtPoint(data.ozIndex, points[i]);
+    return oz?.designated ? `Yes, tract ${oz.geoid}` : "No";
+  };
+  const utilValue = (i: number) => {
+    const p = schools[i].properties;
+    return p.enrollment != null && p.capacity ? `${Math.round((p.enrollment / p.capacity) * 100)}%` : "Not reported";
+  };
+  const enrollValue = (i: number) => {
+    const p = schools[i].properties;
+    return p.enrollment != null ? `${p.enrollment.toLocaleString("en-US")} (${p.enrollment_year})` : "Not reported";
+  };
+  const capacityValue = (i: number) => {
+    const p = schools[i].properties;
+    return p.capacity != null ? `${p.capacity.toLocaleString("en-US")} stations` : "Not reported";
+  };
+  const facilityUseValue = (i: number) => {
+    const p = schools[i].properties;
+    return utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus).label;
+  };
+
+  const build = (key: string, label: string, fn: (i: number) => string, help?: string): CompareRow => {
+    const values = schools.map((_, i) => fn(i));
+    return { key, label, help, values, diff: new Set(values).size > 1 };
+  };
+  const yesNo = (key: string, label: string, set: Set<string>, help?: string): CompareRow =>
+    build(key, label, (i) => (set.has(schools[i].properties.msid) ? "Yes" : "No"), help);
+
+  return [
+    {
+      title: "Overview",
+      rows: [
+        build("grade", "Current grade", (i) => `${schools[i].properties.current_grade} (${schools[i].properties.current_grade_year})`),
+        build("level", "Level", (i) => schools[i].properties.level),
+        build("type", "Type", (i) => schoolTypeLabel(schools[i].properties.type)),
+        build("operator", "Operator", (i) => operatorLabel(schools[i])),
+        build("county", "County", (i) => schools[i].properties.county),
+      ],
+    },
+    {
+      title: "School of Hope eligibility",
+      rows: [
+        yesNo("soh", "In a School of Hope siting area", ctx.sohEligibleMsids, "Within a siting area: 5 miles of a persistently low-performing school or in an Opportunity Zone, and Title I eligible (F.S. 1002.333)."),
+        yesNo("plp", "Persistently low-performing (PLP) anchor", ctx.plp, "A school on the state's persistently low-performing list; a hope operator may open nearby to serve its students."),
+        yesNo("coloc", "Co-location candidate", ctx.coLocationMsids, "An underused district building (utilization at or below 75%, or 400+ surplus stations) inside a siting area. The rule's exclusion of buildings under 4 years old is not modeled, so this is a candidate, not confirmed eligibility."),
+        build("titlei", "Title I eligibility", (i) => titleILabel(schools[i].properties.title_i), "Federal Title I status (NCES CCD), the available proxy for economic disadvantage."),
+      ],
+    },
+    {
+      title: "Enrollment and capacity",
+      rows: [
+        build("enroll", "Enrollment", enrollValue, "Membership enrollment (NCES CCD), with its year."),
+        build("capacity", "FISH capacity", capacityValue, "Permanent FISH student stations (FL DOE)."),
+        build("util", "Utilization (enrollment / capacity)", utilValue, "Enrollment divided by FISH student stations."),
+        build("facility", "Facility use tier", facilityUseValue, "The statutory tier: underused (at or below 75%, or 400+ surplus stations), in use, or fully used (90% or above)."),
+      ],
+    },
+    {
+      title: "Districts and representation",
+      rows: [
+        build("board", "School board district", boardValue),
+        build("cd", "Congressional district", cdValue),
+        build("sldu", "State Senate district", slduValue),
+        build("sldl", "State House district", sldlValue),
+      ],
+    },
+    {
+      title: "Community context",
+      rows: [
+        build("income", "Median household income (area)", incomeValue, "American Community Survey median household income for the school's census tract, with margin of error."),
+        build("oz", "In an Opportunity Zone", ozValue, "Whether the school's tract is a designated Qualified Opportunity Zone."),
+      ],
+    },
+  ];
+}

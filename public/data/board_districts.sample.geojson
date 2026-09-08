@@ -1,0 +1,158 @@
+{
+  "type": "FeatureCollection",
+  "vintage": "As of 2022 redistricting (sample, Miami-Dade only, simplified)",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.5,
+              25.725
+            ],
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.31,
+              25.95
+            ],
+            [
+              -80.5,
+              25.95
+            ],
+            [
+              -80.5,
+              25.725
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "county": "Miami-Dade",
+        "county_fips": "12086",
+        "district_number": "1",
+        "member_name": null,
+        "source": "Miami-Dade County GIS (sample, simplified quadrant partition)",
+        "source_url": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.12,
+              25.725
+            ],
+            [
+              -80.12,
+              25.95
+            ],
+            [
+              -80.31,
+              25.95
+            ],
+            [
+              -80.31,
+              25.725
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "county": "Miami-Dade",
+        "county_fips": "12086",
+        "district_number": "2",
+        "member_name": null,
+        "source": "Miami-Dade County GIS (sample, simplified quadrant partition)",
+        "source_url": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.5,
+              25.5
+            ],
+            [
+              -80.31,
+              25.5
+            ],
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.5,
+              25.725
+            ],
+            [
+              -80.5,
+              25.5
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "county": "Miami-Dade",
+        "county_fips": "12086",
+        "district_number": "3",
+        "member_name": null,
+        "source": "Miami-Dade County GIS (sample, simplified quadrant partition)",
+        "source_url": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.31,
+              25.5
+            ],
+            [
+              -80.12,
+              25.5
+            ],
+            [
+              -80.12,
+              25.725
+            ],
+            [
+              -80.31,
+              25.725
+            ],
+            [
+              -80.31,
+              25.5
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "county": "Miami-Dade",
+        "county_fips": "12086",
+        "district_number": "4",
+        "member_name": null,
+        "source": "Miami-Dade County GIS (sample, simplified quadrant partition)",
+        "source_url": null
+      }
+    }
+  ]
+}

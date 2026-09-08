@@ -1,0 +1,16 @@
+Orange County board-district assignment
+Sources: 7 OCPS district pages in scripts/sources/orange-board/
+Extracted school listings: 202
+Assigned tool MSIDs: 195
+Per district: {"1":21,"2":27,"3":30,"4":30,"5":28,"6":32,"7":27}
+Ambiguous / conflicts: 0
+Unmatched listings (not in tool dataset): 7
+
+UNMATCHED (listed by OCPS but absent from schools.sample.geojson - typically newer schools):
+  D2  Elementary  Luminary  (luminaryes.ocps.net)
+  D2  Middle      Luminary  (luminaryms.ocps.net)
+  D4  Elementary  Atwater Bay  (atwaterbayes.ocps.net)
+  D4  Elementary  Hamlin  (hamlines.ocps.net)
+  D4  Elementary  Panther Lake  (pantherlakees.ocps.net)
+  D5  Other       Orange County Virtual School  (ocvs.ocps.net)
+  D7  K-8         Kelly Park  (kellyparkk8.ocps.net)

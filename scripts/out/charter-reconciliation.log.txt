@@ -1,0 +1,74 @@
+Charter reconciliation against SchoolList.xls (FL DOE charter directory)
+Generated: 2026-09-06T18:47:50.670Z
+
+Authoritative charters (Miami-Dade + Broward + Orange): 282
+Authoritative charters matched to a school point: 249
+  already typed Charter: 248
+  promoted to Charter this run: 1
+Charter schools in the tool after reconciliation: 274
+
+PROMOTED (matched authoritative charter, was not typed Charter): 1
+  48-1331  Orange Center Elementary  [was Traditional]  ->  ORANGE CENTER STEAM ACADEMY
+
+KEPT app Charters with no match in the three-county authoritative list: 25
+  (real charters filed under statewide charter-management districts; not demoted)
+  06-5031  Charter School OF Excellence  (Broward)
+  06-5361  Championship Academy OF Distinction AT Hollywood  (Broward)
+  06-5001  Ben Gamla Charter School North Campus  (Broward)
+  06-5007  Somerset Academy Charter High School Miramar Campus  (Broward)
+  06-5422  Championship Academy OF Distinction AT Davie  (Broward)
+  06-5182  The Ben Gamla Preparatory Academy  (Broward)
+  06-5215  Championship Academy OF Distinction Middle School  (Broward)
+  06-5219  Championship Academy OF Distinction High School  (Broward)
+  06-5224  Somerset Academy Key Charter High School  (Broward)
+  06-5234  Championship Academy OF Distinction OF West Broward  (Broward)
+  13-6012  Mater Academy Charter Middle School  (Miami-Dade)
+  13-7014  Mater Performing Arts & Entertainment Academy  (Miami-Dade)
+  13-7037  Mater Academy East Preparatory  (Miami-Dade)
+  13-7060  Everglades Preparatory Academy High School  (Miami-Dade)
+  13-7032  Palm Glades Preparatory High School  (Miami-Dade)
+  13-6014  Imater Academy Middle School  (Miami-Dade)
+  13-4002  Beacon College Preparatory Elementary School  (Miami-Dade)
+  13-7039  True North Classical Academy High School  (Miami-Dade)
+  13-1002  True North Classical Academy AT Dadeland  (Miami-Dade)
+  13-2332  Kipp Miami-liberty City  (Miami-Dade)
+  48-0040  Prosperitas Leadership Academy Charter  (Orange)
+  48-0080  Legends Academy Charter  (Orange)
+  48-0206  Orange County Preparatory Academy Charter  (Orange)
+  48-0272  Innovation Montessori High School  (Orange)
+  73-0351  The Pembroke Pines Florida  (Broward)
+
+Authoritative charters with no school point in the tool data: 33
+  06-5017  AVANT GARDE ACADEMY FOUNDATION K8
+  06-5836  SUNED HIGH OF HOLLYWOOD
+  13-0422  ACADEMIR CHARTER SCHOOL EAST MIDDLE
+  13-4328  ACADEMIR CHARTER SCHOOL ELEMENTARY SOUTH
+  13-2032  ACADEMIR MIDDLE SCHOOL OF MATH AND SCIENCE
+  13-7672  ACADEMIR PREPARATORY HIGH SCHOOL
+  13-7221  BISCAYNE RIDGE HIGH SCHOOL
+  13-5038  BRIDGEPREP ACADEMY OF DORAL MIDDLE-HIGH SCHOOL
+  13-0026  BRIDGEPREP ACADEMY OF MIAMI GARDENS
+  13-3036  BRIDGEPREP ACADEMY OF VILLAGE GREEN MIDDLE HIGH SCHOOL
+  13-5219  DORAL ACADEMY NORTH CHARTER ELEMENTARY
+  13-7675  DORAL PARK HIGH SCHOOL
+  13-5416  MATER ACADEMY KIWANIS
+  13-5414  MATER ACADEMY SOLE MIA
+  13-5556  MATER BISCAYNE ACADEMY NORTH MIAMI HIGH SCHOOL
+  13-5555  MATER BISCAYNE ACADEMY NORTH MIAMI MIDDLE SCHOOL
+  13-5422  MATER BRICKELL ACADEMY HIGH
+  13-5412  MATER BRICKELL ACADEMY MIDDLE
+  13-5052  MATER LAKES COLLEGIATE ACADEMY HIGH SCHOOL
+  13-5057  MATER LAKES COLLEGIATE ACADEMY MIDDLE SCHOOL
+  13-5417  MIAMI TECH AT MATER INNOVATION ACADEMY
+  13-5119  MY CA.SA CHARTER SCHOOL
+  13-7079  PINECREST NORTH PREPARATORY HIGH SCHOOL
+  13-0405  PINECREST PREPARATORY ACADEMY MIDDLE SCHOOL
+  13-0402  SOMERSET ACADEMY CONTINENTAL
+  13-7078  SOMERSET COLLEGE PREPARATORY ACADEMY SOUTH HIGH SCHOOL
+  13-5841  SOUTH PREP SCHOLARS ACADEMY MIDDLE SCHOOL
+  13-1019  TRUE NORTH CLASSICAL ACADEMY AT PINECREST
+  48-1018  MATER ACADEMY NARCOOSSEE
+  48-1019  MATER ACADEMY NARCOOSSEE HIGH SCHOOL
+  48-1020  OLYMPUS ACADEMY CHARTER SCHOOL
+  48-0103  ORLANDO SCIENCE CHARTER SCHOOL K-8
+  48-1013  UCP IMMERSIVE LEARNING ACADEMY

@@ -1,0 +1,332 @@
+{
+  "$schema": "Config-driven layer + dataset definitions. The app builds its layer panel, legends, deck.gl layers, and inspector context rows from this file. Adding a rendered layer = new entry in `layers[]` with a matching adapter and (if applicable) sample file. Adding a non-rendered data source that feeds the inspector = new entry in `datasets[]`. See 03_DATA_CATALOG.md for full source detail and 04_SAMPLE_SCHEMAS.md for field-level schemas.",
+
+  "regions": ["Miami-Dade", "Broward", "Orange"],
+  "groups": ["Schools", "Demand", "Risk", "Boundaries", "Context"],
+
+  "renderTypes": {
+    "point": "deck.gl ScatterplotLayer or IconLayer; one feature per pin",
+    "polygon": "deck.gl GeoJsonLayer with fill and stroke",
+    "choropleth": "deck.gl GeoJsonLayer with fill driven by a data field, scaled by a legend ramp",
+    "isochrone": "deck.gl GeoJsonLayer for the polygon plus a stored population-within value"
+  },
+
+  "layers": [
+    {
+      "id": "school_locations",
+      "label": "School locations",
+      "legendCaption": "Colored and labeled by current letter grade",
+      "group": "Schools",
+      "phase": "MVP",
+      "renderType": "point",
+      "geometry": "point",
+      "defaultOn": true,
+      "colorBy": "current_grade",
+      "joinKey": "MSID",
+      "source": "FL DOE Master School ID + NCES EDGE geocodes",
+      "vintage": "MSID 2024-2025; NCES EDGE 2023-2024",
+      "unit": null,
+      "sample": "/data/schools.sample.geojson",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#schoolssamplegeojson",
+      "style": {
+        "pinSize": 24,
+        "pinSizeMinZoom": 18,
+        "pinSizeMaxZoom": 32,
+        "letterInsidePin": true,
+        "colorMap": {
+          "A": "#388E3C",
+          "B": "#1976D2",
+          "C": "#FF8F00",
+          "D": "#E64A19",
+          "F": "#D32F2F",
+          "I": "#757575",
+          "NR": { "fill": "#FFFFFF", "stroke": "#9E9E9E" },
+          "NG": { "fill": "#FFFFFF", "stroke": "#9E9E9E", "strokeDash": [4, 3] }
+        }
+      },
+      "zOrder": 100,
+      "minZoom": 9,
+      "maxZoom": 22,
+      "notes": "Rooftop-accurate points. Grade drives pin color and pin letter. Encoding is color + letter, never color alone. See 05_ACCURACY_STANDARDS.md section 3."
+    },
+
+    {
+      "id": "household_income",
+      "label": "Median household income",
+      "legendCaption": "USD, tract-level (ACS 2019-2023)",
+      "group": "Demand",
+      "phase": "MVP",
+      "renderType": "choropleth",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "colorBy": "median_household_income",
+      "joinKey": "GEOID",
+      "source": "U.S. Census Bureau ACS 5-year",
+      "vintage": "ACS 2019-2023",
+      "unit": "USD median",
+      "resolution": "tract (display) / block group (available at high zoom)",
+      "sample": "/data/income.sample.geojson",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#incomesamplegeojson",
+      "style": {
+        "colorRamp": {
+          "type": "sequential",
+          "domain": [25000, 150000],
+          "stops": ["#E8F5E9", "#A5D6A7", "#66BB6A", "#388E3C", "#1B5E20"]
+        },
+        "fillOpacity": 0.32,
+        "strokeColor": "#FFFFFF",
+        "strokeWidth": 0
+      },
+      "zOrder": 10,
+      "minZoom": 8,
+      "maxZoom": 22,
+      "notes": "Prefer tract for displayed values (inspector). Block-group MOE is high. Choropleth fill only, no labels on polygons."
+    },
+
+    {
+      "id": "board_districts",
+      "label": "School board member districts",
+      "legendCaption": "Sub-districts within each county",
+      "group": "Boundaries",
+      "phase": "MVP",
+      "renderType": "polygon",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "joinKey": "spatial",
+      "source": "County GIS / Supervisor of Elections (three separate county sources)",
+      "vintage": "As of 2022 redistricting",
+      "unit": null,
+      "sample": "/data/board_districts.sample.geojson",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#board_districtssamplegeojson",
+      "style": {
+        "fillOpacity": 0,
+        "strokeColor": "#7E57C2",
+        "strokeWidth": 1.5,
+        "showDistrictLabels": true,
+        "labelField": "district_number"
+      },
+      "zOrder": 30,
+      "minZoom": 8,
+      "maxZoom": 22,
+      "notes": "Three separate county sources means three per-county adapters, not one. See 03_DATA_CATALOG.md and 06_ARCHITECTURE.md."
+    },
+
+    {
+      "id": "flood_zones",
+      "label": "FEMA flood zones",
+      "legendCaption": "National Flood Hazard Layer (NFHL)",
+      "group": "Risk",
+      "phase": "P1",
+      "renderType": "polygon",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "joinKey": "spatial",
+      "source": "FEMA National Flood Hazard Layer",
+      "vintage": "Effective per county map date",
+      "unit": "zone code",
+      "sample": "/data/flood.sample.geojson",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#floodsamplegeojson",
+      "style": {
+        "fillByZone": {
+          "AE": "#FFCDD2",
+          "VE": "#EF9A9A",
+          "A": "#FFCDD2",
+          "AH": "#FFCDD2",
+          "AO": "#FFCDD2",
+          "X": "#E8F5E9",
+          "0.2 PCT ANNUAL CHANCE": "#FFE0B2"
+        },
+        "fillOpacity": 0.45,
+        "strokeColor": "#C62828",
+        "strokeWidth": 1,
+        "hatchPatternForZones": ["AE", "VE"]
+      },
+      "zOrder": 20,
+      "minZoom": 9,
+      "maxZoom": 22,
+      "notes": "AE, VE, and floodway are the high-risk zones and the ones most relevant to school siting. Coastal Miami-Dade and Broward carry the most exposure."
+    },
+
+    {
+      "id": "drive_time_reach",
+      "label": "Drive-time reach (15 min)",
+      "legendCaption": "OSM road network via OpenRouteService or Valhalla",
+      "group": "Context",
+      "phase": "P2",
+      "renderType": "isochrone",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "joinKey": "spatial",
+      "source": "OpenStreetMap via OpenRouteService (demo) or self-hosted Valhalla (production)",
+      "vintage": "OSM snapshot; refreshed per compute",
+      "unit": "minutes; also reports population within",
+      "sample": "/data/isochrone.sample.geojson",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#isochronesamplegeojson",
+      "style": {
+        "fillColor": "#00897B",
+        "fillOpacity": 0.15,
+        "strokeColor": "#00897B",
+        "strokeWidth": 1.5
+      },
+      "zOrder": 40,
+      "minZoom": 9,
+      "maxZoom": 22,
+      "notes": "Isochrones are ground-truth (real road network). Intersect with ACS school-age population (area-weighted) for the reach count. Precompute and cache. Free-tier ORS is insufficient at scale, see 03_DATA_CATALOG.md."
+    },
+
+    {
+      "id": "population_growth",
+      "label": "Population growth",
+      "legendCaption": "Births + net migration, county level",
+      "group": "Demand",
+      "phase": "P3",
+      "renderType": "choropleth",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "colorBy": "growth_rate",
+      "joinKey": "county FIPS",
+      "source": "U.S. Census Bureau Population Estimates Program (Vintage 2024) + ACS 2019-2023",
+      "vintage": "PEP Vintage 2024 (2023 to 2024); ACS 2019-2023 under-18",
+      "unit": "annual growth rate",
+      "sample": "/data/population_growth.geojson",
+      "sampleSchema": null,
+      "style": {
+        "colorRamp": {
+          "type": "diverging",
+          "domain": [-0.02, 0, 0.05],
+          "stops": ["#D32F2F", "#F5F5F5", "#388E3C"]
+        },
+        "fillOpacity": 0.5,
+        "strokeColor": "#FFFFFF",
+        "strokeWidth": 0.5
+      },
+      "zOrder": 15,
+      "minZoom": 7,
+      "maxZoom": 22,
+      "notes": "County-level and coarse. Toggle is present but disabled with 'sample not yet included' tooltip until sample ships or real data wires in."
+    },
+
+    {
+      "id": "opportunity_zones",
+      "label": "Opportunity zones",
+      "legendCaption": "Tract-level QOZ designations",
+      "group": "Context",
+      "phase": "P4",
+      "renderType": "polygon",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "joinKey": "GEOID",
+      "source": "HUD Opportunity Zones (Treasury/IRS designated QOZ tracts)",
+      "vintage": "2018 designations (in effect through 12/31/2028); swap when 2027 OBBBA refresh publishes",
+      "unit": "boolean (designated / not)",
+      "sample": "/data/opportunity_zones.geojson",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#opportunity-zones-opportunity_zonessamplegeojson-not-shipped-in-v1-sample",
+      "style": {
+        "fillColor": "#FFECB3",
+        "fillOpacity": 0.4,
+        "strokeColor": "#FF8F00",
+        "strokeWidth": 1
+      },
+      "zOrder": 25,
+      "minZoom": 8,
+      "maxZoom": 22,
+      "notes": "Small, mostly-static layer. Quick to add once verified. Verify 2018 vs 2027 designation status before shipping."
+    },
+
+    {
+      "id": "legislative_districts",
+      "label": "Legislative districts",
+      "legendCaption": "Congressional + FL state upper/lower",
+      "group": "Boundaries",
+      "phase": "P5",
+      "renderType": "polygon",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "joinKey": "spatial",
+      "source": "U.S. Census Bureau TIGERweb (CD 119th, SLDU/SLDL 2024)",
+      "vintage": "119th Congressional Districts; 2024 state legislative maps",
+      "unit": null,
+      "sample": "/data/legislative.geojson",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#legislative-districts-legislativesamplegeojson-not-shipped-in-v1-sample",
+      "style": {
+        "fillOpacity": 0,
+        "strokeColor": "#512DA8",
+        "strokeWidth": 1.5,
+        "chamberStyles": {
+          "CD": { "strokeDash": null },
+          "SLDU": { "strokeDash": [4, 3] },
+          "SLDL": { "strokeDash": [2, 2] }
+        }
+      },
+      "zOrder": 35,
+      "minZoom": 7,
+      "maxZoom": 22,
+      "notes": "Boundaries are free and easy. Representative names are a separate dataset (see datasets[])."
+    },
+
+    {
+      "id": "parcels",
+      "label": "Parcels (optional)",
+      "legendCaption": "County Property Appraiser data (three sources)",
+      "group": "Context",
+      "phase": "Optional",
+      "renderType": "polygon",
+      "geometry": "polygon",
+      "defaultOn": false,
+      "joinKey": "folio",
+      "source": "Miami-Dade, Broward, Orange Property Appraisers",
+      "vintage": "Varies per county",
+      "unit": null,
+      "sample": null,
+      "sampleSchema": null,
+      "style": {
+        "fillOpacity": 0,
+        "strokeColor": "#616161",
+        "strokeWidth": 0.5
+      },
+      "zOrder": 5,
+      "minZoom": 16,
+      "maxZoom": 22,
+      "notes": "Miami-Dade alone has ~800k parcels; this cannot be a committed GeoJSON. Requires PostGIS + vector tiles from day one. High minZoom prevents accidentally loading it at county view."
+    }
+  ],
+
+  "datasets": [
+    {
+      "id": "historic_grades",
+      "label": "Historic grades",
+      "purpose": "Feeds the inspector timeline",
+      "joinKey": "MSID",
+      "source": "FL DOE School Grades files (annual)",
+      "vintage": "1999-2000 through 2024-2025 (available years vary by school)",
+      "unit": "letter grade (A|B|C|D|F|I|NR|NG)",
+      "sample": "/data/grades.sample.json",
+      "sampleSchema": "04_SAMPLE_SCHEMAS.md#gradessamplejson",
+      "notes": "Not a map layer; consumed by SchoolInspector > GradeTimeline. Formula-change years marked at 2009-2010, 2011-2012, 2014-2015, 2021-2022. Never draw a continuous trend line across breaks."
+    },
+    {
+      "id": "representatives",
+      "label": "Current representatives",
+      "purpose": "Populates member_name in board_districts and legislative_districts inspector rows",
+      "joinKey": "district ID",
+      "source": "unitedstates/congress-legislators (federal, populated); OpenStates + county board rosters (state/board, pending)",
+      "vintage": "Current U.S. House + Senate for Florida",
+      "unit": null,
+      "sample": "/data/representatives.json",
+      "sampleSchema": null,
+      "notes": "Federal U.S. House members (by district overlapping a pilot county) and both FL U.S. Senators are populated from congress-legislators. State-legislative and county school-board member NAMES are carried as empty tables, not guessed: populate from OpenStates and each county's board/SOE roster after each election. Boundaries for all chambers are already real in the legislative_districts layer."
+    },
+    {
+      "id": "school_enrollment_history",
+      "label": "Enrollment history",
+      "purpose": "Feeds inspector enrollment trend",
+      "joinKey": "MSID",
+      "source": "NCES Common Core of Data via Urban Institute Education Data Portal",
+      "vintage": "2014-2015 through 2022-2023 (annual membership, all grades)",
+      "unit": "count of students",
+      "sample": "/data/enrollment_history.json",
+      "sampleSchema": null,
+      "notes": "Real annual PK-12 membership (all grades) keyed by MSID. Enriches the inspector Performance section with an enrollment trend. Not a rendered layer."
+    }
+  ]
+}

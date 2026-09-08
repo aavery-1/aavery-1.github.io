@@ -1,0 +1,248 @@
+{
+  "type": "FeatureCollection",
+  "vintage": "FL DOE Schools of Hope Revolving Loan Fund ledger (as reproduced in project resources PDF)",
+  "source": "F.S. 1001.292; https://www.fldoe.org/schools/school-choice/other-school-choice-options/schools-of-hope/loan-fund.stml",
+  "total_disbursed": 98930008,
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.399878291786,
+          27.963205118457
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "5050 E 10TH AVE, TAMPA, FL, 33619",
+        "reported_address": "5050 10th Avenue, Tampa, FL",
+        "amount": 7969479,
+        "date": "2020-09",
+        "note": "",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.451253817634,
+          28.053881077923
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "11612 N NEBRASKA AVE, TAMPA, FL, 33612",
+        "reported_address": "11612 N. Nebraska Avenue, Tampa, FL",
+        "amount": 8152777,
+        "date": "2021-03",
+        "note": "",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.686152994992,
+          30.410680802783
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "1845 BASSETT RD, JACKSONVILLE, FL, 32208",
+        "reported_address": "1845 Bassett Road, Jacksonville, FL",
+        "amount": 8155501,
+        "date": "2021-03",
+        "note": "",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.602809624398,
+          30.346617337946
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "2354 UNIVERSITY BLVD N, JACKSONVILLE, FL, 32211",
+        "reported_address": "2354 University Boulevard, Jacksonville, FL",
+        "amount": 8155501,
+        "date": "2021-05",
+        "note": "",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.751897219329,
+          30.299331250266
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "LENOX AVE & LANE AVE S, JACKSONVILLE, FL, 32205",
+        "reported_address": "Lenox Avenue and Lane Avenue, Jacksonville, FL",
+        "amount": 8155501,
+        "date": "2022-02",
+        "note": "Reported as 'Lenox and Lane avenues'.",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.24293451308,
+          25.877761841972
+        ]
+      },
+      "properties": {
+        "operator": "KIPP Miami",
+        "address": "11380 NW 27TH AVE, MIAMI, FL, 33147",
+        "reported_address": "11380 NW 27th Avenue, Miami, FL",
+        "amount": 9835470,
+        "date": "2022-03",
+        "note": "Miami-Dade College, North Campus.",
+        "county": "Miami-Dade",
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.315048229277,
+          28.048346475967
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "10414 HART POND RD, THONOTOSASSA, FL, 33592",
+        "reported_address": "10414 Hart Pond Road, Thonotosassa, FL",
+        "amount": 7715788,
+        "date": "2022-04",
+        "note": "Future location as reported.",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.891452104268,
+          28.036652144238
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "625 REYNOLDS RD, LAKELAND, FL, 33801",
+        "reported_address": "625 Reynolds Road, Lakeland, FL",
+        "amount": 9280594,
+        "date": "2022-06",
+        "note": "Future location as reported.",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.742985197548,
+          30.252988793623
+        ]
+      },
+      "properties": {
+        "operator": "IDEA Public Schools",
+        "address": "4949 BLANDING BLVD, JACKSONVILLE, FL, 32210",
+        "reported_address": "4949 Blanding Boulevard, Jacksonville, FL",
+        "amount": 9280594,
+        "date": "2022-07",
+        "note": "Future location as reported.",
+        "county": null,
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.197997951565,
+          25.767187871654
+        ]
+      },
+      "properties": {
+        "operator": "Mater Academy",
+        "address": "230 SW 7TH ST, MIAMI, FL, 33130",
+        "reported_address": "230 SW 7th Road, Miami, FL",
+        "amount": 9418258,
+        "date": "2022-12",
+        "note": "Reported as 230-260 SW 7th Road.",
+        "county": "Miami-Dade",
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.214274316707,
+          25.846831053141
+        ]
+      },
+      "properties": {
+        "operator": "KIPP Miami",
+        "address": "1080 NW 79TH ST, MIAMI, FL, 33150",
+        "reported_address": "1080 NW 79th Street, Miami, FL",
+        "amount": 10460997,
+        "date": "2024-01",
+        "note": "",
+        "county": "Miami-Dade",
+        "geocode_source": "census"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.9731,
+          27.8964
+        ]
+      },
+      "properties": {
+        "operator": "RCMA",
+        "address": "4440 Academy Drive, Mulberry, FL (approx.)",
+        "reported_address": "4440 Academy Drive, Mulberry, FL",
+        "amount": 2349548,
+        "date": "2024-07",
+        "note": "",
+        "county": null,
+        "geocode_source": "manual"
+      }
+    }
+  ]
+}

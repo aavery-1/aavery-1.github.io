@@ -1,0 +1,9 @@
+# Python data-prep / geospatial backend for the SOH site tool.
+# Install into a venv:  python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+geopandas>=1.0        # union_all(), sjoin; pulls shapely 2.x + pyogrio
+pandas>=2.0
+shapely>=2.0
+pyogrio>=0.7          # fast vector I/O (GPKG/SHP/GeoJSON)
+SQLAlchemy>=2.0       # optional: load DataFrames into PostGIS
+GeoAlchemy2>=0.14     # optional: geometry types for SQLAlchemy
+psycopg[binary]>=3.1  # optional: PostgreSQL driver

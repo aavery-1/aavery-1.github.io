@@ -1,0 +1,58 @@
+{
+  "name": "fl-school-facilities-explorer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Internal analyst tool for exploring school-facilities data across Miami-Dade, Broward, and Orange counties. Shows facts on a map. Never scores or ranks.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "data:layers": "node --env-file=.env scripts/fetch-real-layers.mjs",
+    "data:schools": "node scripts/fetch-real-data.mjs",
+    "data:fish": "node scripts/parse-fish-capacity.mjs",
+    "data:charters": "node scripts/reconcile-charters.mjs",
+    "data:legislators": "node scripts/parse-legislators.mjs",
+    "data:board": "node scripts/fetch-board-districts.mjs",
+    "data:orangeboard": "node scripts/parse-orange-board.mjs",
+    "data:titlei": "node scripts/fetch-title-i.mjs",
+    "data:flood": "node scripts/fetch-flood.mjs",
+    "data:income": "node --env-file=.env scripts/build-acs-income.mjs",
+    "data:soh": "node scripts/build-schools-of-hope.mjs"
+  },
+  "dependencies": {
+    "@carbon/icons-react": "^11.87.0",
+    "@deck.gl/core": "^9.0.38",
+    "@deck.gl/google-maps": "^9.0.38",
+    "@deck.gl/layers": "^9.0.38",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/material": "^6.5.0",
+    "@turf/turf": "^7.1.0",
+    "lucide-react": "^0.462.0",
+    "rbush": "^4.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@types/google.maps": "^3.58.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8",
+    "xlsx": "^0.18.5"
+  }
+}

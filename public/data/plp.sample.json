@@ -1,0 +1,403 @@
+{
+  "vintage": "FL DOE 2024-25 Persistently Low-Performing Schools list",
+  "source": "Florida Department of Education, PLP designations per F.S. 1002.333",
+  "designated_year": "2024-2025",
+  "schools": {
+    "06-0321": {
+      "district_name": "BROWARD",
+      "school_name": "WALKER ELEMENTARY SCHOOL",
+      "grade_2025": "B",
+      "grade_2024": "C",
+      "grade_2023": "F",
+      "grade_2022": "D",
+      "grade_2021": null
+    },
+    "06-0571": {
+      "district_name": "BROWARD",
+      "school_name": "TEDDER ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "06-1091": {
+      "district_name": "BROWARD",
+      "school_name": "LLOYD ESTATES ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "06-1671": {
+      "district_name": "BROWARD",
+      "school_name": "ROBERT C. MARKHAM ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "B",
+      "grade_2023": "D",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "06-1851": {
+      "district_name": "BROWARD",
+      "school_name": "ROYAL PALM ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "06-3221": {
+      "district_name": "BROWARD",
+      "school_name": "CHARLES DREW ELEMENTARY SCHOOL",
+      "grade_2025": "A",
+      "grade_2024": "B",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-0073": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "MANDARIN LAKES K-8 ACADEMY",
+      "grade_2025": "B",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-0081": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "LENORA BRAYNON SMITH ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-0111": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "MAYA ANGELOU ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-0521": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "BROADMOOR ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "D",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-0761": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "MIAMI BEACH FEINBERG/FISHER K-8",
+      "grade_2025": "B",
+      "grade_2024": "B",
+      "grade_2023": "B",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-0801": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "CITRUS GROVE K-8 CENTER",
+      "grade_2025": "D",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-1401": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "CHARLES R DREW K-8 CENTER",
+      "grade_2025": "C",
+      "grade_2024": "B",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-1441": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "PAUL LAURENCE DUNBAR K-8 CENTER",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-1681": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "LILLIE C. EVANS K-8 CENTER",
+      "grade_2025": "B",
+      "grade_2024": "B",
+      "grade_2023": "B",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-2001": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "FLORIDA CITY ELEMENTARY SCHOOL",
+      "grade_2025": "D",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-2161": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "GOLDEN GLADES ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "D",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-2501": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "HOLMES ELEMENTARY SCHOOL",
+      "grade_2025": "B",
+      "grade_2024": "B",
+      "grade_2023": "D",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-2901": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "LEISURE CITY K-8 CENTER",
+      "grade_2025": "B",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-2941": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "LAURA C. SAUNDERS ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-2981": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "LIBERTY CITY ELEMENTARY SCHOOL",
+      "grade_2025": "A",
+      "grade_2024": "B",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-3041": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "LORAH PARK ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-3181": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "MELROSE ELEMENTARY SCHOOL",
+      "grade_2025": "B",
+      "grade_2024": "B",
+      "grade_2023": "B",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-3621": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "COCONUT PALM K-8 ACADEMY",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-3821": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "NORTH COUNTY K-8 CENTER",
+      "grade_2025": "B",
+      "grade_2024": "B",
+      "grade_2023": "B",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-4031": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "GATEWAY ENVIRONMENTAL K-8 LEARNING CENTER",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-4391": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "IRVING & BEATRICE PESKOE K-8 CENTER",
+      "grade_2025": "B",
+      "grade_2024": "C",
+      "grade_2023": "B",
+      "grade_2022": "A",
+      "grade_2021": null
+    },
+    "13-4441": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "PINE LAKE ELEMENTARY SCHOOL",
+      "grade_2025": "B",
+      "grade_2024": "B",
+      "grade_2023": "B",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-4501": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "POINCIANA PARK ELEMENTARY SCHOOL",
+      "grade_2025": "B",
+      "grade_2024": "D",
+      "grade_2023": "B",
+      "grade_2022": "A",
+      "grade_2021": null
+    },
+    "13-4681": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "RIVERSIDE ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-4841": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "SANTA CLARA ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-5791": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "WEST HOMESTEAD K-8 CENTER",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-5861": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "DR. HENRY W. MACK/WEST LITTLE RIVER K-8 CENTER",
+      "grade_2025": "A",
+      "grade_2024": "B",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-5901": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "CARRIE P. MEEK/WESTVIEW K-8 CENTER",
+      "grade_2025": "A",
+      "grade_2024": "C",
+      "grade_2023": "B",
+      "grade_2022": "B",
+      "grade_2021": null
+    },
+    "13-5931": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "PHYLLIS WHEATLEY ELEMENTARY SCHOOL",
+      "grade_2025": "C",
+      "grade_2024": "B",
+      "grade_2023": "D",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "13-7004": {
+      "district_name": "MIAMI-DADE",
+      "school_name": "MIAMI-DADE VIRTUAL HIGH SCHOOL FRANCHISE",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": null,
+      "grade_2021": null
+    },
+    "48-0231": {
+      "district_name": "ORANGE",
+      "school_name": "PINELOCH ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "B",
+      "grade_2023": "C",
+      "grade_2022": "F",
+      "grade_2021": null
+    },
+    "48-0236": {
+      "district_name": "ORANGE",
+      "school_name": "EAGLES NEST ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "D",
+      "grade_2023": "C",
+      "grade_2022": "D",
+      "grade_2021": null
+    },
+    "48-0861": {
+      "district_name": "ORANGE",
+      "school_name": "ROLLING HILLS ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "D",
+      "grade_2021": null
+    },
+    "48-1014": {
+      "district_name": "ORANGE",
+      "school_name": "OCPS ACADEMIC CENTER FOR EXCELLENCE",
+      "grade_2025": "C",
+      "grade_2024": "D",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "48-1171": {
+      "district_name": "ORANGE",
+      "school_name": "WINEGARD ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "48-1261": {
+      "district_name": "ORANGE",
+      "school_name": "SADLER ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "B",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    },
+    "48-1361": {
+      "district_name": "ORANGE",
+      "school_name": "PHILLIS WHEATLEY ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "B",
+      "grade_2021": "C"
+    },
+    "48-5841": {
+      "district_name": "ORANGE",
+      "school_name": "ECCLESTON ELEMENTARY",
+      "grade_2025": "C",
+      "grade_2024": "C",
+      "grade_2023": "C",
+      "grade_2022": "C",
+      "grade_2021": null
+    }
+  }
+}
