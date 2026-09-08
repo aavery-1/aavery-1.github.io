@@ -1,0 +1,40 @@
+// Global IBM Carbon Design System styles: the app's single design language.
+//
+// This is the real Carbon foundation (replacing the former MUI theme engine): it
+// emits Carbon's CSS reset, the productive type set, and every Carbon component's
+// styles. Components import from "@carbon/react"; their look comes from here.
+//
+// Theme: g10 (Gray 10). Carbon's g10 maps $background to Gray 10 (#f4f4f4) and
+// $layer-01 to White, which is exactly the tool's established chrome (gray page
+// canvas, white cards and fields), so containers use Carbon Layer tokens with no
+// extra work.
+//
+// IBM Plex Sans + Mono already load from Google Fonts in index.html, so Carbon's
+// own @font-face emission is turned off ($css--font-face: false) to avoid shipping
+// the font files a second time. Carbon's type tokens still resolve to the
+// "IBM Plex Sans" / "IBM Plex Mono" families Google Fonts provides.
+// Configure the font-face flag at load (IBM Plex is served from Google Fonts),
+// then apply the built-in g10 theme to :root with Carbon's theme() mixin. Setting
+// the theme this way (rather than via `with ($theme: ...)`) avoids Sass's
+// "module already loaded" error, since @carbon/react's forwarded config module is
+// configured exactly once, here.
+@use '@carbon/react' with (
+  $css--font-face: false
+);
+@use '@carbon/react/scss/theme' as theme;
+@use '@carbon/react/scss/themes' as themes;
+
+:root {
+  @include theme.theme(themes.$g10);
+}
+
+// The app owns the full viewport; let Carbon's Gray 10 background fill it.
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}

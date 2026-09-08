@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@carbon/icons-react": "^11.87.0",
+    "@carbon/react": "^1.115.0",
     "@deck.gl/core": "^9.0.38",
     "@deck.gl/google-maps": "^9.0.38",
     "@deck.gl/layers": "^9.0.38",
@@ -41,6 +42,7 @@
     "rbush": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "sass": "^1.104.0",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
