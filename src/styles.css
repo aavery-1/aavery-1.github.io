@@ -277,6 +277,203 @@ code {
   background: var(--card);
 }
 
+/* App header (Carbon). A flex child at the top of the shell, composed from
+   Carbon components (ContentSwitcher, ComboBox, IconButton, Tag, Popover) and
+   colored with Carbon g10 theme tokens (--cds-*). */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  min-height: 48px;
+  padding: 0 12px;
+  background: var(--cds-layer-01, #fff);
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  z-index: 10;
+}
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.app-header__logo {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cds-background-inverse, #161616);
+  color: var(--cds-text-inverse, #fff);
+}
+.app-header__id {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.app-header__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cds-text-primary, #161616);
+}
+.app-header__subtitle {
+  font-size: 11px;
+  color: var(--cds-text-secondary, #525252);
+}
+.app-header__source-tag {
+  display: none;
+  cursor: help;
+}
+.app-header__spacer {
+  flex: 1;
+}
+.app-header__switch {
+  flex: none;
+}
+/* Size the switcher so the three equal-width segments each fit their label
+   (the default width clipped "Compare" to "Comp"); trim the segment padding a
+   little to keep the bar compact. */
+.app-header__switch .cds--content-switcher {
+  width: 336px;
+}
+.app-header__switch .cds--content-switcher-btn {
+  padding-inline: 10px;
+}
+.view-switch__inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.view-switch__badge {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  background: var(--cds-background-brand, #0f62fe);
+  color: var(--cds-text-on-color, #fff);
+}
+.cds--content-switcher--selected .view-switch__badge {
+  background: var(--cds-background-brand, #0f62fe);
+}
+.app-header__search {
+  width: 300px;
+  flex: none;
+}
+.app-header__search-popover {
+  width: min(360px, calc(100vw - 32px));
+  padding: 8px;
+}
+.app-header__avatar {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--cds-background-brand, #0f62fe);
+  color: var(--cds-text-on-color, #fff);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: default;
+}
+/* Custom two-line options in the search ComboBox menu */
+.school-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.school-option__grade {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 12px;
+}
+.school-option__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.school-option__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cds-text-primary, #161616);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.school-option__sub {
+  font-size: 11px;
+  color: var(--cds-text-secondary, #525252);
+}
+/* Info menu inside the header Popover */
+.hdr-menu {
+  width: 280px;
+  padding: 4px 0;
+}
+.hdr-menu__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 10px 16px;
+  color: var(--cds-text-primary, #161616);
+}
+.hdr-menu__item:not(.hdr-menu__item--static):hover {
+  background: var(--cds-layer-hover-01, #e8e8e8);
+}
+.hdr-menu__item--static {
+  cursor: default;
+}
+.hdr-menu__primary {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+.hdr-menu__secondary {
+  display: block;
+  font-size: 12px;
+  color: var(--cds-text-secondary, #525252);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.hdr-menu__divider {
+  height: 1px;
+  background: var(--cds-border-subtle-01, #e0e0e0);
+  margin: 4px 0;
+}
+.hdr-menu__about {
+  padding: 8px 16px 10px;
+}
+/* Show the source tag and inline search only where there is room. */
+@media (min-width: 1056px) {
+  .app-header__source-tag {
+    display: inline-flex;
+  }
+}
+@media (max-width: 899.95px) {
+  .app-header__search {
+    width: 100%;
+  }
+}
+
 /* Map */
 .map-root {
   position: absolute;

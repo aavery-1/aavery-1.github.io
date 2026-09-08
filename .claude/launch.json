@@ -21,6 +21,13 @@
       "runtimeArgs": ["vite", "preview", "--port", "5175"],
       "port": 5175,
       "autoPort": false
+    },
+    {
+      "name": "soh-carbon-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5176"],
+      "port": 5176,
+      "autoPort": false
     }
   ]
 }
