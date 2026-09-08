@@ -12,7 +12,8 @@
 // Every value derives from the SAME viewport-limited slice the map draws
 // (useFilteredSchools inViewFeatures), so the sheet and map never disagree.
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Box, Paper, Typography, Stack, Collapse, Button, TextField, InputAdornment, useMediaQuery, useTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { ChevronDown, ChevronUp, ArrowRight as ArrowForwardIcon, Search as SearchIcon, Close as CloseIcon } from "@carbon/icons-react";
@@ -109,6 +110,20 @@ export function OverviewDock() {
       return usage(b) - usage(a);
     });
   }, [inViewFeatures, ctx, query]);
+
+  // Virtualized: at full zoom-out "in view" can be every school (1,100+), and
+  // this list (with a scannable icon, two text lines, and an SVG usage donut
+  // per row) noticeably hitched the main thread on expand when every row
+  // mounted as a real element. Only rows in/near the visible scroll window
+  // mount; the container below is sized to the full virtual height so the
+  // scrollbar and row positions stay correct for the rest.
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => listContainerRef.current,
+    estimateSize: () => 58,
+    overscan: 8,
+  });
 
   if (!ready) return null;
   // When a school is selected on a smaller-than-lg screen the inspector claims the
@@ -257,14 +272,15 @@ export function OverviewDock() {
                 Facility use
               </Typography>
             </Box>
-            <Box sx={{ maxHeight: isMobile ? "46vh" : "38vh", overflowY: "auto", px: 1.5, py: 1 }}>
+            <Box ref={listContainerRef} sx={{ maxHeight: isMobile ? "46vh" : "38vh", overflowY: "auto", px: 1.5, py: 1 }}>
               {noMatches && (
                 <Typography sx={{ px: 1.5, py: 2, fontSize: 13, color: SHELL_DIM, textAlign: "center" }}>
                   No schools in view match &quot;{query}&quot;.
                 </Typography>
               )}
-              <Stack spacing={0.25}>
-                {rows.map((f) => {
+              <Box sx={{ position: "relative", height: rowVirtualizer.getTotalSize(), width: "100%" }}>
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const f = rows[virtualRow.index];
                   const p = f.properties;
                   const gs = resolveGradeStyle(p.current_grade);
                   const isPlp = ctx.plp.has(p.msid);
@@ -272,6 +288,8 @@ export function OverviewDock() {
                   return (
                     <Stack
                       key={p.msid} direction="row" alignItems="center" spacing={1.5}
+                      data-index={virtualRow.index}
+                      ref={(el) => rowVirtualizer.measureElement(el)}
                       onClick={() => focus(f)}
                       tabIndex={0}
                       role="button"
@@ -283,6 +301,8 @@ export function OverviewDock() {
                         }
                       }}
                       sx={{
+                        position: "absolute", top: 0, left: 0, width: "100%",
+                        transform: `translateY(${virtualRow.start}px)`,
                         px: 1.5, py: 1, borderRadius: 0, cursor: "pointer",
                         bgcolor: p.msid === selectedMsid ? alpha("#1976D2", 0.1) : "transparent",
                         transition: "background-color 120ms ease",
@@ -316,7 +336,7 @@ export function OverviewDock() {
                     </Stack>
                   );
                 })}
-              </Stack>
+              </Box>
             </Box>
             {/* Bridge to the full analytical table. */}
             <Box sx={{ borderTop: `1px solid ${SHELL_HAIRLINE}`, p: 1.5 }}>
