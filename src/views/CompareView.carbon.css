@@ -1,0 +1,358 @@
+/* Co-located styles for CompareView, the pinned-sites comparison matrix.
+   Every class is prefixed .compare- so nothing collides globally. Colors use
+   Carbon tokens (--cds-*) and the app vars; grade / pill colors are set inline
+   because they are data-encoding, not chrome. No em dashes anywhere. */
+
+.compare-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+}
+
+/* Toolbar */
+.compare-toolbar {
+  flex: none;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+.compare-toolbar__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.compare-titlebox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compare-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.compare-title__count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.compare-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+@media (max-width: 899.95px) {
+  .compare-note { display: none; }
+}
+
+.compare-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+.compare-add {
+  width: 210px;
+}
+/* Lay the Differences-only toggle out inline: switch first, then its label. */
+.compare-diff .cds--toggle__label {
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 8px;
+}
+.compare-diff .cds--toggle__label-text {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Scroll container: a single viewport for both sticky axes. */
+.compare-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.compare-empty-msg {
+  padding: 48px;
+  text-align: center;
+}
+.compare-empty-msg p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* The matrix table */
+.compare-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+/* Neutralize Carbon's header-label wrapper so our flex content sits directly
+   in the cell. */
+.compare-table thead .cds--table-header-label {
+  display: contents;
+}
+
+.compare-corner {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  width: 260px;
+  min-width: 260px;
+  background: var(--card);
+  border-bottom: 1px solid var(--hairline);
+  border-right: 1px solid var(--hairline);
+  vertical-align: bottom;
+  padding: 12px 16px;
+}
+.compare-corner__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.16px;
+}
+
+/* Section band: a full-width sticky-left label row. */
+.compare-section-cell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--text-primary) 3.5%, transparent);
+  border-bottom: 1px solid var(--hairline);
+  padding: 6px 16px;
+}
+.compare-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.32px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* Row label column: sticky left, with a neutral diff dot. */
+.compare-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 260px;
+  min-width: 260px;
+  background: var(--card);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+  padding: 8px 16px;
+}
+.compare-label__inner {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.compare-diff-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex: none;
+  background: transparent;
+}
+.compare-diff-dot--on {
+  background: var(--focus);
+}
+.compare-label-text {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+.compare-label-text--help {
+  cursor: help;
+  border-bottom: 1px dotted var(--hairline);
+}
+
+/* Value cells */
+.compare-value {
+  min-width: 210px;
+  vertical-align: top;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+}
+.compare-value--diff {
+  background: color-mix(in srgb, var(--focus) 2%, transparent);
+}
+.compare-value-text {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-primary);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.compare-value-text--diff {
+  font-weight: 600;
+}
+
+/* Row hover tint across the label and value cells. */
+.compare-row:hover .compare-value,
+.compare-row:hover .compare-label {
+  background: color-mix(in srgb, var(--focus) 4%, var(--card));
+}
+
+/* Site identity header */
+.compare-site-header {
+  top: 0;
+  min-width: 210px;
+  vertical-align: top;
+  background: var(--card);
+  border-bottom: 1px solid var(--hairline);
+  padding: 10px 16px;
+}
+.compare-site {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.compare-grade {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  border-width: 1.25px;
+  border-style: solid;
+}
+.compare-site-main {
+  flex: 1;
+  min-width: 0;
+}
+.compare-site-name {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+}
+.compare-site-name:hover {
+  color: #0043ce;
+}
+.compare-site-county {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.compare-site-pills {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.compare-remove {
+  flex: none;
+  margin-top: -4px;
+  margin-right: -4px;
+}
+
+/* Small semantic eligibility pill: colors are data-encoding, set inline. */
+.compare-pill {
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* Empty / building state */
+.compare-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  overflow: auto;
+}
+.compare-empty-card {
+  max-width: 560px;
+  width: 100%;
+  padding: 32px;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+}
+@media (min-width: 600px) {
+  .compare-empty-card { padding: 40px; }
+}
+.compare-empty-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+.compare-empty-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--focus) 10%, transparent);
+}
+.compare-empty-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.compare-empty-desc {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.compare-empty-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: 8px;
+}
+.compare-empty-add {
+  width: 100%;
+  max-width: 340px;
+}
+.compare-empty-footnote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

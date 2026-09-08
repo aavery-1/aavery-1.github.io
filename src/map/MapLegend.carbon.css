@@ -1,0 +1,156 @@
+/* MapLegend: the legend popover off a bare top-right icon button, mirroring the
+   sibling base-map control so the two read as one shared card. All classes are
+   prefixed .map-legend- so they never collide globally. Chrome colors use Carbon
+   tokens / app vars; every swatch color is a data-encoding literal set inline in
+   the TSX. */
+
+.map-legend-trigger {
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+}
+.map-legend-trigger--open,
+.map-legend-trigger--open:hover {
+  color: var(--focus);
+}
+
+.map-legend-panel {
+  padding: 12px 14px;
+  width: 256px;
+  max-width: calc(100vw - 16px);
+  max-height: min(66vh, 560px);
+  overflow-y: auto;
+}
+
+.map-legend-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.map-legend-section {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 5px;
+  align-items: flex-start;
+}
+.map-legend-section__label-col {
+  width: 40px;
+  flex: none;
+  padding-top: 2px;
+}
+.map-legend-section__label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+}
+.map-legend-section__label--info {
+  cursor: help;
+}
+.map-legend-section__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.map-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 3px;
+}
+.map-legend-row--info {
+  cursor: help;
+}
+.map-legend-row__swatch {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+}
+.map-legend-row__label {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.map-legend-grades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.map-legend-grade-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.14);
+}
+
+.map-legend-shapes {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 5px;
+  row-gap: 3px;
+}
+.map-legend-shape {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.map-legend-shape__swatch {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  display: inline-flex;
+}
+.map-legend-shape__label {
+  font-size: 11px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.map-legend-ramp__bar {
+  height: 7px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+}
+.map-legend-ramp__scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.map-legend-line {
+  width: 16px;
+  height: 0;
+  flex: none;
+}
+.map-legend-area {
+  width: 14px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.map-legend-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

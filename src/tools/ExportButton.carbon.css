@@ -1,0 +1,6 @@
+/* ExportButton: a Carbon secondary button used by the inspector, compare mode,
+   and the radius selection. Only presentation lives here; behavior stays in the
+   tsx. Class is prefixed so it never collides globally. */
+.export-button.cds--btn {
+  font-weight: 600;
+}

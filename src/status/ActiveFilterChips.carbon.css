@@ -1,0 +1,103 @@
+/* Active-filter breadcrumb strip that hovers over the top of the map. Carbon
+   DismissibleTag chips inside a floating white card. Section accent colors
+   (Geography purple, Schools blue) are preserved as literals - they distinguish
+   the two filter groups. No em dashes in this file. */
+
+.active-filter-chips {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  overflow-x: auto;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.active-filter-chips__label {
+  flex: none;
+  padding-left: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16px;
+  color: var(--text-secondary);
+}
+
+.active-filter-chips__list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+/* Base overrides on the Carbon DismissibleTag so it reads as a compact filter
+   chip rather than the default status tag. */
+.active-filter-chips__tag.cds--tag {
+  height: 28px;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.active-filter-chips__tag .cds--tag__label {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.active-filter-chips__tag--geo.cds--tag {
+  background: color-mix(in srgb, #7E57C2 12%, transparent);
+  border-color: color-mix(in srgb, #7E57C2 35%, transparent);
+  color: #5B21B6;
+}
+.active-filter-chips__tag--geo .cds--tag__label,
+.active-filter-chips__tag--geo .cds--tag__close-icon {
+  color: #5B21B6;
+}
+
+.active-filter-chips__tag--schools.cds--tag {
+  background: color-mix(in srgb, var(--focus) 12%, transparent);
+  border-color: color-mix(in srgb, var(--focus) 35%, transparent);
+  color: #0043CE;
+}
+.active-filter-chips__tag--schools .cds--tag__label,
+.active-filter-chips__tag--schools .cds--tag__close-icon {
+  color: #0043CE;
+}
+
+.active-filter-chips__divider {
+  flex: none;
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 0;
+  border: 0;
+  background: var(--hairline);
+}
+
+.active-filter-chips__clear {
+  flex: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--focus);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16px;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.active-filter-chips__clear:hover {
+  background: color-mix(in srgb, var(--focus) 8%, transparent);
+}
+
+@media (min-width: 900px) {
+  .active-filter-chips {
+    max-width: calc(100% - 220px);
+  }
+}

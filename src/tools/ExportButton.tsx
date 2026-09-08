@@ -3,9 +3,10 @@
 // scoring the analyst wants happens downstream in their own spreadsheet,
 // never in this tool.
 
-import { Button } from "@mui/material";
+import { Button } from "@carbon/react";
 import { Download as DownloadIcon } from "@carbon/icons-react";
 import { toCsv, downloadCsv, stamp } from "../data/csv";
+import "./ExportButton.carbon.css";
 
 export function ExportButton({
   filenameBase,
@@ -24,12 +25,12 @@ export function ExportButton({
   };
   return (
     <Button
-      size="small"
-      variant="outlined"
-      startIcon={<DownloadIcon size={16} />}
+      className="export-button"
+      size="sm"
+      kind="secondary"
+      renderIcon={DownloadIcon}
       onClick={onClick}
       aria-label={label}
-      sx={{ textTransform: "none", fontWeight: 600 }}
     >
       {label}
     </Button>

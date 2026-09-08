@@ -9,9 +9,8 @@
 // dependent on the inputs; a coverage figure means the field is not populated for
 // every school.
 
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Chip } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, ACCENT } from "../muiTheme";
+import { Modal, Tag } from "@carbon/react";
+import "./AttributionStrip.carbon.css";
 
 type Confidence = "Verified" | "Official" | "Derived" | "Coverage" | "Reference";
 
@@ -106,55 +105,59 @@ const GROUPS: Group[] = [
   },
 ];
 
+// Per-tag confidence colors carry meaning (not chrome), so they stay literal.
+// alpha() from MUI is inlined here as rgba() tints of the same source hues.
 const TAG_STYLE: Record<Confidence, { bg: string; fg: string }> = {
-  Verified: { bg: alpha("#0D9488", 0.14), fg: "#0F766E" },
-  Official: { bg: alpha(ACCENT, 0.12), fg: "#1E40AF" },
-  Derived: { bg: alpha("#D97706", 0.14), fg: "#B45309" },
-  Coverage: { bg: alpha("#D97706", 0.14), fg: "#B45309" },
-  Reference: { bg: alpha(SHELL_DIM, 0.14), fg: SHELL_DIM },
+  Verified: { bg: "rgba(13,148,136,0.14)", fg: "#0F766E" },
+  Official: { bg: "rgba(15,98,254,0.12)", fg: "#1E40AF" },
+  Derived: { bg: "rgba(217,119,6,0.14)", fg: "#B45309" },
+  Coverage: { bg: "rgba(217,119,6,0.14)", fg: "#B45309" },
+  Reference: { bg: "rgba(82,82,82,0.14)", fg: "var(--text-secondary)" },
 };
 
 export function AttributionStrip({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth aria-labelledby="attribution-title">
-      <DialogTitle id="attribution-title" sx={{ pb: 0.5 }}>
-        Data sources & accuracy
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Every value on the map traces to a named source. Tags say how far we can vouch for it:
-          {" "}<b>Verified</b> (checked against the source), <b>Official</b> (authoritative dataset),
-          {" "}<b>Derived</b> (computed by the tool), or a coverage figure.
-        </Typography>
-      </DialogTitle>
-      <DialogContent dividers>
-        {GROUPS.map((group) => (
-          <Box key={group.heading} sx={{ mb: 2.5, "&:last-of-type": { mb: 0.5 } }}>
-            <Typography sx={{ fontSize: 11, fontWeight: 700, color: SHELL_DIM, textTransform: "none", letterSpacing: "0.01em", mb: 1 }}>
-              {group.heading}
-            </Typography>
-            {group.entries.map((e) => {
-              const t = TAG_STYLE[e.tag];
-              return (
-                <Box key={e.label} sx={{ mb: 1.5, pb: 1.5, borderBottom: `1px solid ${SHELL_HAIRLINE}`, "&:last-of-type": { mb: 0, pb: 0, borderBottom: "none" } }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "space-between", mb: 0.3 }}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 700, color: SHELL_ON }}>{e.label}</Typography>
-                    <Chip label={e.tagText ?? e.tag} size="small" sx={{ height: 19, fontSize: 10, fontWeight: 700, bgcolor: t.bg, color: t.fg, flex: "none" }} />
-                  </Box>
-                  <Typography sx={{ fontSize: 12, color: SHELL_ON }}>
-                    {e.source}{e.vintage ? <Box component="span" sx={{ color: SHELL_DIM }}> · {e.vintage}</Box> : null}
-                  </Typography>
-                  {e.note && <Typography sx={{ fontSize: 12, color: SHELL_DIM, mt: 0.4, lineHeight: 1.45 }}>{e.note}</Typography>}
-                </Box>
-              );
-            })}
-          </Box>
-        ))}
-        <Typography sx={{ fontSize: 11, color: SHELL_DIM, mt: 2, fontStyle: "italic", lineHeight: 1.5 }}>
-          Base map imagery © Google. This tool supports siting analysis; confirm any specific eligibility determination against the primary FL DOE and county records before acting.
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="contained" disableElevation>Done</Button>
-      </DialogActions>
-    </Dialog>
+    <Modal
+      open={open}
+      onRequestClose={onClose}
+      onRequestSubmit={onClose}
+      modalHeading="Data sources & accuracy"
+      primaryButtonText="Done"
+      size="sm"
+      aria-label="Data sources and accuracy"
+    >
+      <p className="attribution-intro">
+        Every value on the map traces to a named source. Tags say how far we can vouch for it:
+        {" "}<b>Verified</b> (checked against the source), <b>Official</b> (authoritative dataset),
+        {" "}<b>Derived</b> (computed by the tool), or a coverage figure.
+      </p>
+
+      {GROUPS.map((group) => (
+        <section key={group.heading} className="attribution-group">
+          <h3 className="attribution-group__heading">{group.heading}</h3>
+          {group.entries.map((e) => {
+            const t = TAG_STYLE[e.tag];
+            return (
+              <div key={e.label} className="attribution-entry">
+                <div className="attribution-entry__head">
+                  <span className="attribution-entry__label">{e.label}</span>
+                  <Tag size="sm" className="attribution-tag" style={{ backgroundColor: t.bg, color: t.fg }}>
+                    {e.tagText ?? e.tag}
+                  </Tag>
+                </div>
+                <p className="attribution-entry__source">
+                  {e.source}{e.vintage ? <span className="attribution-entry__vintage"> · {e.vintage}</span> : null}
+                </p>
+                {e.note && <p className="attribution-entry__note">{e.note}</p>}
+              </div>
+            );
+          })}
+        </section>
+      ))}
+
+      <p className="attribution-footer">
+        Base map imagery © Google. This tool supports siting analysis; confirm any specific eligibility determination against the primary FL DOE and county records before acting.
+      </p>
+    </Modal>
   );
 }

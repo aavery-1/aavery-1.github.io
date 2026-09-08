@@ -1,0 +1,62 @@
+/* SchoolListView: scope bar above the shared SchoolTable. Real Carbon chrome;
+   the ContentSwitcher segments carry a name plus a tabular-nums count. */
+
+.school-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.school-list__scope-bar {
+  flex: none;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.school-list__scope-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.16px;
+}
+
+/* Keep the two-segment switcher compact; it sizes to its labels. */
+.school-list__scope-switch .cds--content-switcher {
+  width: auto;
+}
+
+.school-list__scope-inner {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.school-list__scope-count {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.cds--content-switcher-btn.cds--content-switcher--selected .school-list__scope-count {
+  color: #0043ce;
+}
+
+.school-list__scope-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.school-list__table {
+  flex: 1;
+  min-height: 0;
+}

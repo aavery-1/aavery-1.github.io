@@ -4,12 +4,14 @@
 // preview cards; the overlays are independent switches. The button is bare (no
 // card of its own) so it can sit inside the shared top-right control group next
 // to the legend, matching the bottom-right zoom cluster.
+//
+// Real IBM Carbon: Popover + IconButton + Toggle, no MUI. No em dashes.
 
 import { useState } from "react";
-import { Box, IconButton, Popover, FormControlLabel, Switch, Typography, Divider, Tooltip } from "@mui/material";
+import { IconButton, Popover, PopoverContent, Toggle } from "@carbon/react";
 import { Map as MapIcon, Satellite as SatelliteAltIcon, Mountain as TerrainIcon } from "@carbon/icons-react";
 import { useStore, type BaseMapType, type MapOverlays } from "../store";
-import { ACCENT, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE } from "../muiTheme";
+import "./MapLayersControl.carbon.css";
 
 const OVERLAYS: Array<{ key: keyof MapOverlays; label: string }> = [
   { key: "traffic", label: "Traffic" },
@@ -28,88 +30,73 @@ export function MapLayersControl() {
   const setBaseMapType = useStore((s) => s.setBaseMapType);
   const overlays = useStore((s) => s.overlays);
   const toggleOverlay = useStore((s) => s.toggleOverlay);
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const [open, setOpen] = useState(false);
 
   return (
-    <>
-      <Tooltip title="Base map & view" placement="left">
-        <IconButton
-          aria-label="Base map and view"
-          onClick={(e) => setAnchor(e.currentTarget)}
-          size="small"
-          sx={{ width: 40, height: 40, borderRadius: 0, color: anchor ? ACCENT : SHELL_DIM, "&:hover": { bgcolor: "#f4f5f7", color: SHELL_ON } }}
-        >
-          <MapIcon size={18} />
-        </IconButton>
-      </Tooltip>
-      <Popover
-        open={Boolean(anchor)}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        slotProps={{ paper: { sx: { mt: 1, borderRadius: 0, border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)", overflow: "hidden" } } }}
+    <Popover open={open} onRequestClose={() => setOpen(false)} align="bottom-right" dropShadow>
+      <IconButton
+        label="Base map and view"
+        aria-label="Base map and view"
+        kind="ghost"
+        size="md"
+        align="left"
+        className={`map-layers-trigger${open ? " map-layers-trigger--open" : ""}`}
+        onClick={() => setOpen((v) => !v)}
       >
-        <Box sx={{ p: 2, width: 268 }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 700, color: SHELL_ON, mb: 1.5 }}>Base map</Typography>
+        <MapIcon size={18} />
+      </IconButton>
+      <PopoverContent>
+        <div className="map-layers-panel">
+          <h3 className="map-layers-heading">Base map</h3>
 
-          <SectionLabel>Map view</SectionLabel>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, mt: 0.75, mb: 2 }}>
+          <span className="map-layers-section">Map view</span>
+          <div className="map-layers-views">
             {VIEWS.map((v) => {
               const selected = baseMapType === v.value;
               const Ico = v.icon;
               return (
-                <Box
+                <div
                   key={v.value}
                   role="button"
                   tabIndex={0}
                   onClick={() => setBaseMapType(v.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setBaseMapType(v.value); } }}
-                  sx={{ cursor: "pointer", textAlign: "center" }}
+                  className="map-layers-view"
                 >
-                  <Box
-                    sx={{
-                      height: 52, borderRadius: 2, background: v.bg,
-                      border: `2px solid ${selected ? ACCENT : "transparent"}`,
-                      outline: selected ? "none" : `1px solid ${SHELL_HAIRLINE}`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "border-color 120ms ease",
-                    }}
+                  <div
+                    className={`map-layers-view__swatch${selected ? " map-layers-view__swatch--selected" : ""}`}
+                    style={{ background: v.bg }}
                   >
                     <Ico size={20} style={{ color: v.fg }} />
-                  </Box>
-                  <Typography sx={{ fontSize: 12, fontWeight: selected ? 700 : 500, color: selected ? SHELL_ON : SHELL_DIM, mt: 0.5 }}>
+                  </div>
+                  <span className={`map-layers-view__label${selected ? " map-layers-view__label--selected" : ""}`}>
                     {v.label}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
               );
             })}
-          </Box>
+          </div>
 
-          <Divider sx={{ borderColor: SHELL_HAIRLINE }} />
+          <hr className="map-layers-rule" />
 
-          <SectionLabel sx={{ mt: 1.5 }}>Overlays</SectionLabel>
-          <Box sx={{ display: "flex", flexDirection: "column", mt: 0.25 }}>
+          <span className="map-layers-section map-layers-section--overlays">Overlays</span>
+          <div className="map-layers-overlays">
             {OVERLAYS.map((o) => (
-              <FormControlLabel
-                key={o.key}
-                control={<Switch size="small" checked={overlays[o.key]} onChange={() => toggleOverlay(o.key)} />}
-                label={o.label}
-                sx={{ mx: 0, justifyContent: "space-between", ml: 0, ".MuiFormControlLabel-label": { fontSize: 13, color: SHELL_ON } }}
-                labelPlacement="start"
-              />
+              <div key={o.key} className="map-layers-overlay">
+                <span className="map-layers-overlay__label">{o.label}</span>
+                <Toggle
+                  id={`map-overlay-${o.key}`}
+                  size="sm"
+                  hideLabel
+                  labelText={o.label}
+                  toggled={overlays[o.key]}
+                  onToggle={() => toggleOverlay(o.key)}
+                />
+              </div>
             ))}
-          </Box>
-        </Box>
-      </Popover>
-    </>
-  );
-}
-
-function SectionLabel({ children, sx }: { children: React.ReactNode; sx?: object }) {
-  return (
-    <Typography sx={{ fontSize: 11, fontWeight: 700, color: SHELL_DIM, textTransform: "none", letterSpacing: 0.16, ...sx }}>
-      {children}
-    </Typography>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

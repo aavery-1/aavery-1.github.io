@@ -1,0 +1,82 @@
+/* Co-located styles for AttributionStrip (Carbon Modal). Chrome colors come from
+   the app CSS vars / Carbon g10 tokens; the per-tag confidence colors are set
+   inline in the TSX because they carry meaning (Verified / Official / Derived). */
+
+.attribution-intro {
+  font-size: 14px;
+  line-height: 1.43;
+  color: var(--text-secondary);
+  margin: 4px 0 0;
+}
+
+.attribution-group {
+  margin-bottom: 20px;
+}
+.attribution-group:last-of-type {
+  margin-bottom: 4px;
+}
+
+.attribution-group__heading {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+  margin: 0 0 8px;
+}
+
+.attribution-entry {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+.attribution-entry:last-of-type {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.attribution-entry__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.attribution-entry__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.attribution-tag {
+  flex: none;
+  height: 19px;
+  min-height: 19px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.attribution-entry__source {
+  font-size: 12px;
+  color: var(--text-primary);
+  margin: 0;
+}
+.attribution-entry__vintage {
+  color: var(--text-secondary);
+}
+
+.attribution-entry__note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 3px 0 0;
+}
+
+.attribution-footer {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 16px 0 0;
+}

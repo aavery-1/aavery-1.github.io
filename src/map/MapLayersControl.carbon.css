@@ -1,0 +1,94 @@
+/* MapLayersControl: base-map picker + overlay toggles, in a Carbon Popover off a
+   bare top-right icon button. Classes are all prefixed .map-layers- so they never
+   collide globally. Colors use Carbon tokens / app vars; the view-card preview
+   gradients and icon colors are data-encoding literals set inline in the TSX. */
+
+.map-layers-trigger {
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+}
+.map-layers-trigger--open,
+.map-layers-trigger--open:hover {
+  color: var(--focus);
+}
+
+.map-layers-panel {
+  padding: 16px;
+  width: 268px;
+}
+.map-layers-heading {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.map-layers-section {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.16px;
+}
+.map-layers-section--overlays {
+  margin-top: 12px;
+}
+
+.map-layers-views {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 16px;
+}
+.map-layers-view {
+  cursor: pointer;
+  text-align: center;
+}
+.map-layers-view__swatch {
+  height: 52px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  outline: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 120ms ease;
+}
+.map-layers-view__swatch--selected {
+  border-color: var(--focus);
+  outline: none;
+}
+.map-layers-view__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.map-layers-view__label--selected {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.map-layers-rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--hairline);
+}
+
+.map-layers-overlays {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2px;
+}
+.map-layers-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+}
+.map-layers-overlay__label {
+  font-size: 13px;
+  color: var(--text-primary);
+}
