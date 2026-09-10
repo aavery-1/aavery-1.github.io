@@ -3,7 +3,7 @@
 // on success we remember it for the session so a refresh does not re-prompt.
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Button, PasswordInput } from "@carbon/react";
-import { ArrowRight, Locked } from "@carbon/icons-react";
+import { ArrowRight } from "@carbon/icons-react";
 import { gateConfigured, checkAccess } from "./supabaseClient";
 import "./PasswordGate.css";
 
@@ -50,16 +50,12 @@ export function PasswordGate({ children }: { children: ReactNode }) {
     <div className="pwgate" role="dialog" aria-modal="true" aria-label="Password required">
       <form className="pwgate__card" onSubmit={onSubmit}>
         <img className="pwgate__logo" src="/kipp-team-family.jpg" alt="KIPP Team and Family" />
-        <div className="pwgate__lockrow">
-          <Locked size={16} />
-          <span>Private tool</span>
-        </div>
         <h1 className="pwgate__title">Florida Facilities Tool</h1>
         <p className="pwgate__sub">Enter the access password to continue.</p>
         <PasswordInput
           id="pwgate-password"
           className="pwgate__input"
-          labelText="Access password"
+          labelText="Password"
           placeholder="Enter password"
           value={pw}
           invalid={invalid}
@@ -70,7 +66,6 @@ export function PasswordGate({ children }: { children: ReactNode }) {
         <Button type="submit" renderIcon={ArrowRight} disabled={status === "checking" || !pw.trim()} className="pwgate__submit">
           {status === "checking" ? "Checking..." : "Unlock"}
         </Button>
-        <p className="pwgate__note">Access is limited to KIPP team members.</p>
       </form>
     </div>
   );
