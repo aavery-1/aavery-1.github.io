@@ -25,6 +25,7 @@ import { Ruler as StraightenIcon, CenterCircle as RadioButtonUncheckedIcon, Undo
 import { useStore, type ActiveTool } from "../store";
 import { useData } from "../data/DataContext";
 import { pathDistanceMiles, distanceMiles, milesToMeters, type LngLat } from "../geo/measure";
+import { useDriveTime, type DriveTime } from "../map/useDriveTime";
 import { geodesicBufferMiles, areaSquareMiles } from "../geo/buffer";
 import { apportionByArea } from "../geo/intersect";
 import { ExportButton } from "./ExportButton";
@@ -66,6 +67,19 @@ function DoneButton({ label = "Done" }: { label?: string }) {
   );
 }
 
+// Second readout line under the geodesic distance: the on-road DRIVING time and
+// distance for the same path. Fails soft (see useDriveTime): if the key lacks the
+// Distance Matrix API it says so quietly rather than breaking the ruler.
+function DriveDetail({ drive }: { drive: DriveTime }) {
+  let text: string;
+  if (drive.status === "ok") text = `Driving ${Math.round(drive.minutes)} min / ${drive.miles.toFixed(1)} mi`;
+  else if (drive.status === "loading") text = "Driving time...";
+  else if (drive.status === "error") text = "No driving route";
+  else if (drive.status === "unavailable") text = "Driving time unavailable";
+  else return null;
+  return <span className="toolbar-detail toolbar-detail--mono toolbar-dim" style={{ display: "block", marginTop: 2 }}>{text}</span>;
+}
+
 function MeasureControls() {
   const measurePoints = useStore((s) => s.measurePoints);
   const clearMeasure = useStore((s) => s.clearMeasure);
@@ -73,13 +87,17 @@ function MeasureControls() {
   const pts: LngLat[] = measurePoints.map((p) => [p.lng, p.lat]);
   const miles = pathDistanceMiles(pts);
   const meters = milesToMeters(miles);
+  const drive = useDriveTime(measurePoints);
 
   return (
     <ToolBar
       icon={<StraightenIcon size={16} />}
       title="Measure distance"
       detail={measurePoints.length >= 2 ? (
-        <Detail mono>{miles.toFixed(2)} mi <span className="toolbar-dim">/ {(meters / 1000).toFixed(2)} km · geodesic</span></Detail>
+        <>
+          <Detail mono>{miles.toFixed(2)} mi <span className="toolbar-dim">/ {(meters / 1000).toFixed(2)} km · geodesic</span></Detail>
+          <DriveDetail drive={drive} />
+        </>
       ) : (
         <Detail>{measurePoints.length === 1 ? "Click another point to measure." : "Click points on the map to trace a path."}</Detail>
       )}
