@@ -71,28 +71,32 @@
   box-sizing: border-box;
   padding: 8px;
 }
-/* The results dropdown must clear the right-hand map controls and never run off
-   the screen. Anchored to the Search button (which sits mid-cluster), the 340px
-   field ran past the right edge and clipped every school name. Pin the popover to
-   the map's left margin instead and let it fill the map width. The component only
-   mounts on phone, so this needs no media query. The caret is turned off in the
-   JSX since the repositioned panel no longer points at the button. */
+/* The search field must open BELOW the Filters/Search cluster (not over it) and
+   fill the map width. Carbon anchors this content to the Search button, which
+   sits mid-cluster, so the 340px field both overlapped the buttons and ran off
+   the right edge. Instead of Carbon's viewport math (a fixed top guessed the
+   header height wrong and dropped the field up into the header, over the
+   buttons), anchor the content to the CLUSTER itself: neutralize the Carbon
+   wrappers' positioning so the content's offset parent becomes .map-quick-actions,
+   then place it just under the cluster row, flush to the map's left margin. This
+   tracks the header height automatically. Phone-only component, so no media query;
+   the caret is off in the JSX since the panel no longer points at the button. */
+.map-quick-actions .cds--popover-container,
+.map-quick-actions .cds--popover {
+  /* Static so the absolutely-positioned content below resolves against the
+     cluster (.map-quick-actions), not the Search button wrapper. The buttons stay
+     in the cluster's flex flow, unaffected. */
+  position: static !important;
+}
 .map-quick-actions .cds--popover-content {
-  /* !important: Carbon positions this content with a higher-specificity rule
-     (.cds--popover--bottom-left > .cds--popover > .cds--popover-content) that
-     translates it below the trigger. We deliberately take over its placement to
-     pin it to the map's left margin, so we must outrank that rule. */
-  position: fixed !important;
-  left: 12px !important;
-  top: 60px !important;
-  /* Carbon (via floating-ui) sets all four inset values, e.g.
-     inset: 60px 38px -4px 12px. We only override top/left, so its bottom/right
-     survive, and a fixed box with BOTH top and bottom pinned stretches to fill
-     the viewport height (a ~880px white panel over the map) no matter how short
-     its content is. Release bottom/right to auto so the panel sizes to the
-     field it holds. */
+  /* !important throughout: Carbon sets these with higher-specificity rules and
+     floating-ui inline styles (position, a translate transform, and all four
+     inset sides); we take over placement entirely, so we must outrank them. */
+  position: absolute !important;
+  top: calc(100% + 6px) !important;   /* just below the 42px cluster row */
+  left: 0 !important;                  /* flush to the cluster's left = map margin */
   right: auto !important;
-  bottom: auto !important;
+  bottom: auto !important;             /* content height, not a top+bottom stretch */
   height: auto !important;
   transform: none !important;
   width: calc(100vw - 24px);
