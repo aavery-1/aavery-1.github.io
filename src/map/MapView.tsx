@@ -145,25 +145,57 @@ export function MapView() {
     // re-runs when `layers` changes), and no pins would render on first load.
     setOverlayReady(true);
 
-    // The deck.gl 9.x GoogleMapsOverlay reads its canvas dimensions when the
-    // map fires idle/bounds_changed. When the map container resizes without
-    // the camera moving (inspector opens or closes, drawer toggles, DPR
-    // changes), deck's projection stays stuck on the previous viewport size
-    // and pins render at the wrong pixel positions. Watching the map div
-    // with ResizeObserver and nudging the camera by one pixel forces
-    // bounds_changed to fire so deck re-projects. The pan is reversed
-    // immediately so the visible camera does not move.
+    // A freshly created Google map occasionally fails to paint its FIRST frame:
+    // the container settled its size a beat after creation (behind the load
+    // splash, after the lazy map chunk resolved, or while tiles arrive over a
+    // slow connection), so the basemap stays blank AND deck's GoogleMapsOverlay
+    // canvas stays stuck at its 300x150 default, and neither the map nor a
+    // single pin ever draws. It does not self-heal. A real camera nudge forces a
+    // tile fetch and a repaint, and deck sizes its canvas on that repaint. The
+    // nudge pans a few pixels and restores the EXACT center on the NEXT frame,
+    // so the two moves are distinct camera events Google cannot coalesce into a
+    // no-op. (The old kick paired a same-tick panBy(1)/panBy(-1), which Google
+    // coalesced away, with trigger('resize'), a no-op on modern Maps JS, so the
+    // map could stay blank forever.) The same nudge also re-projects deck when
+    // the container later resizes (inspector or drawer toggles, DPR changes)
+    // without the camera moving.
     let ro: ResizeObserver | null = null;
-    let kickTimer: ReturnType<typeof setTimeout> | null = null;
+    let roTimer: ReturnType<typeof setTimeout> | null = null;
+    const kickTimers: ReturnType<typeof setTimeout>[] = [];
+    const nudge = () => {
+      const m = mapRef.current;
+      const c = m?.getCenter();
+      if (!m || !c) return;
+      m.panBy(3, 3);
+      requestAnimationFrame(() => {
+        if (mapRef.current === m) m.setCenter(c);
+      });
+    };
+    // The overlay canvas grows past its 300x150 default only once deck has drawn
+    // at least one frame at the real container size: our signal that the map is
+    // alive, so the first-paint retries can stop.
+    const painted = () =>
+      !!mapEl.current &&
+      Array.from(mapEl.current.querySelectorAll("canvas")).some(
+        (cv) => cv.width > 300 || cv.height > 150,
+      );
+    // Staggered first-paint attempts: keep nudging until the map has painted,
+    // then stop. Each nudge is invisible and the series is self-limiting.
+    for (const delay of [150, 450, 1000, 2000, 3500]) {
+      kickTimers.push(
+        setTimeout(() => {
+          if (!painted()) nudge();
+        }, delay),
+      );
+    }
     if (mapEl.current) {
-      const kick = () => {
-        google.maps.event.trigger(map, "resize");
-        map.panBy(1, 0);
-        map.panBy(-1, 0);
-      };
-      ro = new ResizeObserver(kick);
+      // Later container resizes (not first paint): debounce so a burst of
+      // ResizeObserver callbacks collapses into one nudge.
+      ro = new ResizeObserver(() => {
+        if (roTimer) clearTimeout(roTimer);
+        roTimer = setTimeout(nudge, 100);
+      });
       ro.observe(mapEl.current);
-      kickTimer = setTimeout(kick, 500);
     }
 
     const syncView = () => {
@@ -205,7 +237,8 @@ export function MapView() {
     // path, so this also fixes leaking a live overlay + WebGL context there.
     return () => {
       if (ro) ro.disconnect();
-      if (kickTimer !== null) clearTimeout(kickTimer);
+      if (roTimer !== null) clearTimeout(roTimer);
+      for (const t of kickTimers) clearTimeout(t);
       google.maps.event.clearInstanceListeners(map);
       overlay.finalize();
       overlayRef.current = null;

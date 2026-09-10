@@ -10,9 +10,10 @@
 //   Broward     bcgishub.broward.org SOE/SchoolBoardMunicpalDistricts2022 layer 17
 //               (7 single-member districts; the 2 at-large seats are countywide and
 //               have no polygon; member names from the Broward SOE roster)
-//   Orange      OCPS publishes board-member districts only as a PDF map, with no
-//               open GeoJSON/FeatureServer, so Orange boundaries are not included.
-//               This is recorded as a known gap rather than approximated.
+//   Orange      services8.arcgis.com/KROpZDerJ9MICPIU School_Board_Districts
+//               layer 1 (Orange County Supervisor of Elections GIS; 7 single-
+//               member districts; member names from the OCPS board roster). The
+//               at-large chair is countywide and has no polygon.
 //
 // OUTPUT: public/data/board_districts.geojson
 //
@@ -32,6 +33,9 @@ const MD_URL =
   "?where=1%3D1&outFields=ID,BRDMBR&returnGeometry=true&outSR=4326&maxAllowableOffset=0.0004&f=geojson";
 const BW_URL =
   "https://bcgishub.broward.org/hbm/rest/services/SOE/SchoolBoardMunicpalDistricts2022/FeatureServer/17/query" +
+  "?where=1%3D1&outFields=DISTRICT&returnGeometry=true&outSR=4326&maxAllowableOffset=0.0004&f=geojson";
+const OR_URL =
+  "https://services8.arcgis.com/KROpZDerJ9MICPIU/arcgis/rest/services/School_Board_Districts/FeatureServer/1/query" +
   "?where=1%3D1&outFields=DISTRICT&returnGeometry=true&outSR=4326&maxAllowableOffset=0.0004&f=geojson";
 
 // Current members by district. The county GIS boundaries are current, but its
@@ -61,6 +65,18 @@ const BROWARD_MEMBERS = {
   5: "Jeff Holness",
   6: "Adam Cervera",
   7: "Nora Rupert",
+};
+
+// Orange single-member seats (current OCPS board roster / OCPS "School Map by
+// Board Member"). The at-large chair is countywide and has no polygon.
+const ORANGE_MEMBERS = {
+  1: "Angie Gallo",
+  2: "Maria Salamanca",
+  3: "Alicia Farrant",
+  4: "Anne Douglas",
+  5: "Vicki-Elaine Felder",
+  6: "Stephanie Vanos",
+  7: "Melissa Byrd",
 };
 
 async function getGeoJSON(url) {
@@ -120,9 +136,25 @@ async function main() {
     out.push(...toPolygons(f.geometry, props));
   }
 
+  // Orange
+  const or = await getGeoJSON(OR_URL);
+  for (const f of or.features) {
+    const p = f.properties || {};
+    const d = Number(String(p.DISTRICT).trim());
+    const props = {
+      county: "Orange",
+      county_fips: "12095",
+      district_number: String(d),
+      member_name: ORANGE_MEMBERS[d] ?? null,
+      source: "Orange County Supervisor of Elections GIS (School Board Districts); member names from OCPS board roster",
+      source_url: "https://services8.arcgis.com/KROpZDerJ9MICPIU/arcgis/rest/services/School_Board_Districts/FeatureServer/1",
+    };
+    out.push(...toPolygons(f.geometry, props));
+  }
+
   const fc = {
     type: "FeatureCollection",
-    vintage: "Miami-Dade + Broward, current board members (Orange boundaries unavailable as open GIS)",
+    vintage: "Miami-Dade + Broward + Orange, current board members (Orange from OCSOE School Board Districts GIS)",
     features: out,
   };
   writeFileSync(OUT, JSON.stringify(fc));
