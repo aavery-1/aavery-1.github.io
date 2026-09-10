@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="KIPP">
+  <rect width="64" height="64" rx="12" fill="#20275d"/>
+  <text x="26" y="33" text-anchor="middle" dominant-baseline="central"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-weight="700" font-size="40" fill="#ffffff">K</text>
+  <circle cx="47" cy="25" r="4" fill="#52c3ed"/>
+  <circle cx="47" cy="39" r="4" fill="#52c3ed"/>
+</svg>
