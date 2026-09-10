@@ -10,6 +10,19 @@ body,
   height: 100%;
   margin: 0;
 }
+/* iOS Safari horizontal-overflow guard. The app shell relies on `overflow: clip`
+   on its root Box, but `overflow: clip` is unsupported / unreliable on older iOS
+   WebKit, so a wide descendant (the map canvas, a `100vw` panel) can make the
+   document scroll sideways and shove the right-edge map controls off-screen. A
+   universally supported `overflow-x: hidden` here is the backstop: the document
+   can never be wider than the viewport, so the fixed chrome stays on screen.
+   Vertical scrolling is untouched. */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 body {
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -292,7 +305,7 @@ code {
   flex: none;
   /* 1.5x the prior 56px bar; elements stay vertically centered (align-items). */
   min-height: 84px;
-  padding: 0 28px;
+  padding: 0 max(28px, env(safe-area-inset-right)) 0 max(28px, env(safe-area-inset-left));
   background: #fff;
   color: var(--kipp-navy);
   z-index: 10;
@@ -768,6 +781,9 @@ code {
 .map-root {
   position: absolute;
   inset: 0;
+  /* Clip the Google/deck.gl canvas and tiles to the map box so they can never
+     establish document-level horizontal overflow on iOS WebKit. */
+  overflow: hidden;
 }
 .map-canvas {
   position: absolute;
@@ -794,7 +810,7 @@ code {
 }
 .map-furniture {
   position: absolute;
-  left: 12px;
+  left: max(12px, env(safe-area-inset-left));
   /* Lifted well clear of Google's bottom-left logo + attribution row (~40px), which
      the Maps terms require to stay visible, so the scale bar and coordinate readout
      give the Google logo real breathing room instead of crowding it. */
@@ -1453,7 +1469,7 @@ code {
    with a hairline divider; full screen and reset sit below as solo squares. */
 .map-controls {
   position: absolute;
-  right: 16px;
+  right: max(16px, env(safe-area-inset-right));
   /* One shared bottom baseline with the bottom-left furniture (scale bar) and the
      bottom-right dock, so all of the map's bottom chrome aligns on one line and
      clears Google's logo + attribution row at every width. */
@@ -1569,7 +1585,7 @@ code {
 .map-topright {
   position: absolute;
   top: 12px;
-  right: 12px;
+  right: max(12px, env(safe-area-inset-right));
   z-index: 6;
   display: flex;
   flex-direction: column;

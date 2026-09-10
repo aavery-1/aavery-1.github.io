@@ -229,7 +229,7 @@
    columns and at least one site column are all reachable. */
 @media (max-width: 600px) {
   .shortlist-fulltable { align-items: stretch; justify-content: stretch; }
-  .shortlist-fulltable__panel { width: 100vw; height: 100dvh; max-height: 100dvh; }
+  .shortlist-fulltable__panel { width: 100%; height: 100dvh; max-height: 100dvh; }
 }
 .shortlist-fulltable__head {
   flex: none;
