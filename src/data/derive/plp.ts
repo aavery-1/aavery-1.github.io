@@ -42,7 +42,7 @@ export function evaluatePlp(history: GradeHistoryEntry[]): PlpResult {
     .sort((a, b) => b.year.localeCompare(a.year));
 
   if (graded.length === 0) {
-    return { isPlp: false, reason: "No graded years on record.", belowCInLast5: 0, recent2: [] };
+    return { isPlp: false, reason: "No letter grades on record yet.", belowCInLast5: 0, recent2: [] };
   }
 
   const last5 = graded.slice(0, 5);
@@ -55,21 +55,23 @@ export function evaluatePlp(history: GradeHistoryEntry[]): PlpResult {
   if (enoughLowYears && noBOrHigherRecent2) {
     return {
       isPlp: true,
-      reason: `${belowCInLast5} of the last ${last5.length} graded years were below C, and the most recent ${recent2.length} graded years are not B or higher (${recent2.join(", ")}).`,
+      // Plain-language verdict first, then the evidence (see 07_CONTENT_STYLE.md).
+      reason: `${belowCInLast5} of its last ${last5.length} grades were below C, and neither of its 2 most recent grades reached B (${recent2.join(", ")}). Those are the two tests for persistently low-performing.`,
       belowCInLast5,
       recent2,
     };
   }
 
+  // Not PLP: say plainly which test it fails to meet, in everyday words.
   const reasons: string[] = [];
-  if (!enoughLowYears) reasons.push(`only ${belowCInLast5} of last ${last5.length} graded years below C (need 3)`);
+  if (!enoughLowYears) reasons.push(`only ${belowCInLast5} of its last ${last5.length} grades were below C (it takes 3)`);
   if (!noBOrHigherRecent2) {
     const recentB = recent2.filter((g) => B_OR_HIGHER.has(g));
-    reasons.push(`recent 2 include B or higher (${recentB.join(", ")})`);
+    reasons.push(`its recent grades are B or higher (${recentB.join(", ")})`);
   }
   return {
     isPlp: false,
-    reason: `Not PLP: ${reasons.join("; ")}.`,
+    reason: `${reasons.join(", and ").replace(/^./, (c) => c.toUpperCase())}.`,
     belowCInLast5,
     recent2,
   };

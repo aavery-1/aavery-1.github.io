@@ -17,21 +17,29 @@
 
 import {
   Box, Typography, Divider, Button, Tooltip, Chip, Collapse, IconButton, Stack,
-  Checkbox, Badge, Select, MenuItem, ToggleButton, ToggleButtonGroup,
+  Checkbox, Badge, Select, MenuItem, ToggleButton, ToggleButtonGroup, TextField, InputAdornment,
 } from "@mui/material";
 import { useMemo, useRef, useState, type RefObject } from "react";
+import {
+  Close as CloseIcon, Location as LocationIcon, Star as StarIcon,
+  Building as BuildingIcon, Money as MoneyIcon, Categories as CategoriesIcon,
+  Education as EducationIcon, Report as ReportIcon, MapBoundary as MapBoundaryIcon,
+  ZoomIn as ZoomToIcon, Filter as FilterFunnelIcon, Reset as ResetIcon,
+} from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useStore, ALL_COUNTIES, FACILITY_USE_TIERS, utilizationStyle, type FacilityUseKey, type LatLng } from "../store";
+import { DEFAULT_ACTIVE_LAYER_IDS } from "../config/mapLayers";
 import { COUNTY_BBOX } from "../geo/countyBounds";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss, type Grade } from "../map/gradeEncoding";
 import { mapLayersByGroup, type MapLayerDef, type MapLayerGroup } from "../config/mapLayers";
-import { TEAL, ACCENT, ACCENT_TEXT, SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE } from "../muiTheme";
+import { TEAL, ACCENT, ACCENT_TEXT, SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, STATUS } from "../muiTheme";
 import { Icon } from "../ui/icons";
 import { useData } from "../data/DataContext";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { passesFilters, type SchoolFilterInput } from "../data/derive/filters";
 import { useActiveFilters } from "../status/useActiveFilters";
+import { AccountMenu } from "./AccountMenu";
 import { DISTRICT_KINDS, type DistrictKind } from "../data/derive/districts";
 import {
   SCHOOL_LEVELS, SCHOOL_TYPES, TITLE_I_STATES, schoolTypeLabel, titleILabel,
@@ -101,36 +109,17 @@ function useFacetCounts(): FacetCounts {
 // ---------------------------------------------------------------------------
 // Main panel
 // ---------------------------------------------------------------------------
-export function LeftRail({ onNavigate }: { onNavigate?: () => void } = {}) {
+export function LeftRail({ onNavigate, onOpenAttribution }: { onNavigate?: () => void; onOpenAttribution?: () => void } = {}) {
   const collapsed = useStore((s) => s.panelCollapsed);
   const setCollapsed = useStore((s) => s.setPanelCollapsed);
 
-  const geoRef = useRef<HTMLDivElement | null>(null);
   const layersRef = useRef<HTMLDivElement | null>(null);
-  const schoolsRef = useRef<HTMLDivElement | null>(null);
 
-  const countySelection = useStore((s) => s.countySelection);
-  const gradeSelection = useStore((s) => s.gradeSelection);
-  const levelSelection = useStore((s) => s.levelSelection);
-  const typeSelection = useStore((s) => s.typeSelection);
-  const titleISelection = useStore((s) => s.titleISelection);
-  const plpOnly = useStore((s) => s.plpOnly);
-  const coLocationOnly = useStore((s) => s.coLocationOnly);
-  const facilityUseSelection = useStore((s) => s.facilityUseSelection);
-  const districtFilter = useStore((s) => s.districtFilter);
   const activeLayerIds = useStore((s) => s.activeLayerIds);
-
   const activeLayerCount = activeLayerIds.size;
-  const schoolFilterCount =
-    (gradeSelection.size > 0 ? 1 : 0) +
-    (levelSelection.size > 0 ? 1 : 0) +
-    (typeSelection.size > 0 ? 1 : 0) +
-    (titleISelection.size > 0 ? 1 : 0) +
-    (facilityUseSelection.size > 0 ? 1 : 0) +
-    (plpOnly ? 1 : 0) +
-    (coLocationOnly ? 1 : 0) +
-    (districtFilter ? 1 : 0);
-  const geoActive = countySelection.size !== ALL_COUNTIES.length;
+  // One canonical count of active filters (same source as the applied-filter
+  // chips), shown on the rail's Filters button.
+  const filterCount = useActiveFilters().length;
 
   const expandTo = (ref: RefObject<HTMLDivElement | null>) => {
     setCollapsed(false);
@@ -139,6 +128,38 @@ export function LeftRail({ onNavigate }: { onNavigate?: () => void } = {}) {
 
   const inDrawer = Boolean(onNavigate);
 
+  // The panel body, shared by the desktop rail and the phone drawer so the two
+  // never drift apart.
+  const panelContent = (
+    <>
+      <PanelHeader inDrawer={inDrawer} onClose={onNavigate} />
+      <AppliedFilters />
+
+      {/* Filters: geography first (where), then the school facets (which). */}
+      <GeographyFacet onNavigate={onNavigate} />
+      <FacetDivider />
+      <SchoolFacets />
+
+      {/* Map layers: display overlays, kept visually apart from the filters
+          above by a heavier separator and its own reset. */}
+      <Box ref={layersRef} sx={{ borderTop: `1px solid ${SHELL_HAIRLINE}`, mt: 1, px: 2.5, pt: 2, pb: inDrawer ? 2 : 3 }}>
+        <SectionHeader
+          title="Map layers"
+          activeCount={activeLayerCount}
+          onReset={activeLayerCount !== DEFAULT_ACTIVE_LAYER_IDS.length || [...activeLayerIds].some((id) => !DEFAULT_ACTIVE_LAYER_IDS.includes(id))
+            ? () => useStore.getState().setActiveLayers(DEFAULT_ACTIVE_LAYER_IDS)
+            : undefined}
+        />
+        <MapLayersSection />
+      </Box>
+
+      {/* In the phone drawer, a sticky primary action doubles as the obvious exit:
+          apply-and-return to the map. Filters already apply live, so this simply
+          closes the drawer onto the updated results. */}
+      {inDrawer && <DrawerDone onDone={onNavigate} />}
+    </>
+  );
+
   return (
     <Box sx={{ display: "flex", height: "100%" }}>
       {!inDrawer && (
@@ -146,48 +167,65 @@ export function LeftRail({ onNavigate }: { onNavigate?: () => void } = {}) {
           width: RAIL_COLLAPSED, flex: "none", bgcolor: SHELL_BG, borderRight: `1px solid ${SHELL_HAIRLINE}`,
           display: "flex", flexDirection: "column", alignItems: "stretch", py: 1, zIndex: 1,
         }}>
-          <Tooltip title={collapsed ? "Expand filters" : "Collapse filters"} placement="right">
-            <IconButton onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? "Expand filters" : "Collapse filters"} sx={{ color: SHELL_ON, alignSelf: "center", mb: 1, width: 40, height: 40 }}>
-              {collapsed ? <Icon.ExpandPanel size={20} /> : <Icon.CollapsePanel size={20} />}
-            </IconButton>
-          </Tooltip>
-          <Divider sx={{ borderColor: SHELL_HAIRLINE, mb: 1 }} />
-          <RailIcon label="Geography" icon={<Icon.Pin size={22} />} onClick={() => expandTo(geoRef)} active={geoActive} />
-          <RailIcon label="Schools" icon={<Icon.Schools size={22} />} onClick={() => expandTo(schoolsRef)} active={schoolFilterCount > 0} badge={schoolFilterCount} />
-          <RailIcon label="Layers" icon={<Icon.Layers size={22} />} onClick={() => expandTo(layersRef)} active={activeLayerCount > 0} badge={activeLayerCount} />
+          {/* Two entries only: Filters (the whole filter panel) and Map layers.
+              The Filters button is also the panel's open/close toggle, so there is
+              no separate, redundant collapse control. Reset lives in the panel as
+              a single "Clear all". */}
+          <RailIcon
+            label="Filters"
+            icon={<FilterFunnelIcon size={22} />}
+            onClick={() => setCollapsed(!collapsed)}
+            active={!collapsed || filterCount > 0}
+            badge={filterCount}
+            expanded={!collapsed}
+          />
+          <RailIcon
+            label="Layers"
+            icon={<Icon.Layers size={22} />}
+            onClick={() => expandTo(layersRef)}
+            active={activeLayerCount > 0}
+            badge={activeLayerCount}
+          />
           <Box sx={{ flex: 1 }} />
-          <RailIcon label="Reset" icon={<Icon.Retry size={20} />} onClick={() => useStore.getState().resetAll()} />
+          {/* Reset lives at the foot of the rail: one click restores the filters
+              AND the map layers to their defaults (store.resetAll), a clean slate
+              without moving the map. Enabled only when something differs. */}
+          <RailIcon
+            label="Reset"
+            icon={<ResetIcon size={22} />}
+            onClick={() => useStore.getState().resetAll()}
+            active={filterCount > 0 || activeLayerCount !== DEFAULT_ACTIVE_LAYER_IDS.length || [...activeLayerIds].some((id) => !DEFAULT_ACTIVE_LAYER_IDS.includes(id))}
+          />
+          {/* Account is a low-frequency global utility, parked at the foot of the
+              rail so the header stays uncluttered. */}
+          {onOpenAttribution && (
+            <Box sx={{ borderTop: `1px solid ${SHELL_HAIRLINE}`, mt: 0.5, pt: 0.5, display: "flex", justifyContent: "center" }}>
+              <AccountMenu variant="rail" onOpenAttribution={onOpenAttribution} />
+            </Box>
+          )}
         </Box>
       )}
 
-      <Collapse in={inDrawer || !collapsed} orientation="horizontal" timeout={260} easing="cubic-bezier(0.4, 0, 0.2, 1)" sx={{ height: "100%" }}>
-        <Box sx={{
-          width: inDrawer ? "100%" : PANEL_WIDTH, minWidth: inDrawer ? undefined : PANEL_WIDTH,
-          height: "100%", overflowY: "auto", bgcolor: SHELL_BG,
-          borderRight: inDrawer ? "none" : `1px solid ${SHELL_HAIRLINE}`,
-        }}>
-          <PanelHeader inDrawer={inDrawer} onCollapse={() => setCollapsed(true)} />
-          <AppliedFilters />
-
-          {/* 1. Geography */}
-          <Box ref={geoRef}>
-            <GeographyFacet onNavigate={onNavigate} />
-          </Box>
-          <Divider sx={{ borderColor: SHELL_HAIRLINE }} />
-
-          {/* 2. School facets */}
-          <Box ref={schoolsRef}>
-            <SchoolFacets />
-          </Box>
-          <Divider sx={{ borderColor: SHELL_HAIRLINE }} />
-
-          {/* 3. Map layers (display overlays, not filters) */}
-          <Box ref={layersRef} sx={{ px: 2.5, pt: 2, pb: 3 }}>
-            <SectionHeader title="Map layers" caption="Visual overlays, not filters." badge={`${activeLayerCount} on`} />
-            <MapLayersSection />
-          </Box>
+      {/* In the phone drawer the content fills the drawer at 100% width. On the
+          desktop rail it is wrapped in a horizontal Collapse for the expand
+          animation; that Collapse must NOT wrap the drawer content, because a
+          horizontal Collapse sizes to the content's intrinsic width and would
+          overflow the fixed-width drawer. */}
+      {inDrawer ? (
+        <Box sx={{ width: "100%", minWidth: 0, height: "100%", overflowY: "auto", bgcolor: SHELL_BG, display: "flex", flexDirection: "column" }}>
+          {panelContent}
         </Box>
-      </Collapse>
+      ) : (
+        <Collapse in={!collapsed} orientation="horizontal" timeout={260} easing="cubic-bezier(0.4, 0, 0.2, 1)" sx={{ height: "100%" }}>
+          <Box sx={{
+            width: PANEL_WIDTH, minWidth: PANEL_WIDTH,
+            height: "100%", overflowY: "auto", bgcolor: SHELL_BG,
+            borderRight: `1px solid ${SHELL_HAIRLINE}`,
+          }}>
+            {panelContent}
+          </Box>
+        </Collapse>
+      )}
     </Box>
   );
 }
@@ -195,33 +233,59 @@ export function LeftRail({ onNavigate }: { onNavigate?: () => void } = {}) {
 // ---------------------------------------------------------------------------
 // Panel header + applied filters
 // ---------------------------------------------------------------------------
-function PanelHeader({ inDrawer, onCollapse }: { inDrawer: boolean; onCollapse: () => void }) {
+function PanelHeader({ inDrawer, onClose }: { inDrawer: boolean; onClose?: () => void }) {
   const { total } = useFilteredSchools();
   const active = useActiveFilters();
+  const setCollapsed = useStore((s) => s.setPanelCollapsed);
   return (
     <Box sx={{
       position: "sticky", top: 0, zIndex: 3, bgcolor: SHELL_BG,
       px: 2.5, py: 1.75, display: "flex", alignItems: "center", justifyContent: "space-between",
       borderBottom: `1px solid ${SHELL_HAIRLINE}`,
     }}>
-      <Box>
-        <Typography sx={{ fontSize: 14, fontWeight: 700, color: SHELL_ON, lineHeight: 1.2 }}>Filters</Typography>
-        <Typography sx={{ fontSize: 12, color: total === 0 ? "#B71C1C" : TEAL, fontWeight: 600, mt: 0.25, fontVariantNumeric: "tabular-nums" }}>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography sx={{ fontSize: 16, fontWeight: 600, color: SHELL_ON, lineHeight: 1.2 }}>Filters</Typography>
+        <Typography sx={{ fontSize: 13, color: total === 0 ? STATUS.error : SHELL_DIM, fontWeight: 400, mt: 0.25, fontVariantNumeric: "tabular-nums" }}>
           {total.toLocaleString("en-US")} school{total === 1 ? "" : "s"}{active.length ? ` · ${active.length} filter${active.length === 1 ? "" : "s"}` : ""}
         </Typography>
       </Box>
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        <Button size="small" disabled={active.length === 0} onClick={() => useStore.getState().resetAll()} sx={{ color: TEAL, textTransform: "none", fontWeight: 600, minWidth: 0, px: 1, "&.Mui-disabled": { color: SHELL_DIM } }}>
+      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flex: "none" }}>
+        <Button size="small" disabled={active.length === 0} onClick={() => useStore.getState().clearAllFilters()} sx={{ color: TEAL, textTransform: "none", fontWeight: 600, minWidth: 0, px: 1, "&.Mui-disabled": { color: SHELL_DIM } }}>
           Clear all
         </Button>
+        {/* One close control: the drawer gets an X, the desktop panel closes from
+            the same rail Filters button that opened it (so no redundant chevron). */}
+        {inDrawer && onClose && (
+          <IconButton size="small" onClick={onClose} aria-label="Close filters" sx={{ color: SHELL_ON }}>
+            <CloseIcon size={20} />
+          </IconButton>
+        )}
         {!inDrawer && (
-          <Tooltip title="Collapse" placement="bottom">
-            <IconButton size="small" onClick={onCollapse} aria-label="Collapse" sx={{ color: SHELL_DIM }}>
-              <Icon.CollapsePanel size={18} />
-            </IconButton>
-          </Tooltip>
+          <IconButton size="small" onClick={() => setCollapsed(true)} aria-label="Close filters" sx={{ color: SHELL_DIM }}>
+            <CloseIcon size={18} />
+          </IconButton>
         )}
       </Stack>
+    </Box>
+  );
+}
+
+// Phone drawer footer: a sticky primary action that applies-and-returns. Reads
+// the live filtered total so the label previews the result set.
+function DrawerDone({ onDone }: { onDone?: () => void }) {
+  const { total } = useFilteredSchools();
+  return (
+    <Box sx={{
+      position: "sticky", bottom: 0, zIndex: 4, bgcolor: SHELL_BG,
+      borderTop: `1px solid ${SHELL_HAIRLINE}`, px: 2.5, py: 1.5,
+    }}>
+      <Button
+        fullWidth variant="contained" onClick={onDone} disableElevation
+        disabled={total === 0}
+        sx={{ textTransform: "none", fontWeight: 700, py: 1.15, fontSize: 14 }}
+      >
+        Show {total.toLocaleString("en-US")} school{total === 1 ? "" : "s"}
+      </Button>
     </Box>
   );
 }
@@ -273,13 +337,13 @@ function GeographyFacet({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <Box sx={{ px: 2.5, pt: 2, pb: 1.5 }}>
-      <FilterLabel
-        title="County"
-        onClear={allSelected ? undefined : () => setCounties(ALL_COUNTIES)}
-        clearLabel="All"
-      />
-      <Stack sx={{ mt: 0.5 }}>
+    <FacetSection
+      title="County"
+      icon={<LocationIcon size={15} />}
+      onClear={allSelected ? undefined : () => setCounties(ALL_COUNTIES)}
+      clearLabel="All"
+    >
+      <Stack>
         {ALL_COUNTIES.map((c) => (
           <Box key={c} sx={{ display: "flex", alignItems: "center" }}>
             <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -291,19 +355,19 @@ function GeographyFacet({ onNavigate }: { onNavigate?: () => void }) {
               />
             </Box>
             <Tooltip title={`Zoom to ${c}`} placement="left">
-              <IconButton size="small" onClick={() => focus(c)} aria-label={`Zoom to ${c}`} sx={{ color: SHELL_DIM, ml: 0.5 }}>
-                <Icon.ZoomIn size={15} />
+              <IconButton size="small" onClick={() => focus(c)} aria-label={`Zoom to ${c}`} sx={{ color: SHELL_DIM, ml: 0.5, "&:hover": { color: TEAL } }}>
+                <ZoomToIcon size={15} />
               </IconButton>
             </Tooltip>
           </Box>
         ))}
       </Stack>
       {countySelection.size === 0 && (
-        <Typography sx={{ fontSize: 12, color: "#B71C1C", bgcolor: alpha("#D32F2F", 0.06), border: `1px solid ${alpha("#D32F2F", 0.25)}`, borderRadius: 1, px: 1, py: 0.75, mt: 1, lineHeight: 1.5 }}>
+        <Typography sx={{ fontSize: 12, color: STATUS.error, bgcolor: alpha(STATUS.error, 0.06), border: `1px solid ${alpha(STATUS.error, 0.25)}`, borderRadius: 1, px: 1, py: 0.75, mt: 1, lineHeight: 1.5 }}>
           No counties selected, so the map is empty. Pick at least one county.
         </Typography>
       )}
-    </Box>
+    </FacetSection>
   );
 }
 
@@ -333,6 +397,10 @@ function SchoolFacets() {
   const facilityUseSelection = useStore((s) => s.facilityUseSelection);
   const toggleFacilityUse = useStore((s) => s.toggleFacilityUse);
   const clearFacilityUse = useStore((s) => s.clearFacilityUse);
+  const utilMin = useStore((s) => s.utilMin);
+  const utilMax = useStore((s) => s.utilMax);
+  const setUtilRange = useStore((s) => s.setUtilRange);
+  const utilRangeActive = utilMin != null || utilMax != null;
 
   // Only offer options that actually occur in the loaded data.
   const presentLevels = SCHOOL_LEVELS.filter((l) => all.some((f) => f.properties.level === l));
@@ -346,10 +414,12 @@ function SchoolFacets() {
 
   return (
     <>
-      {/* Designation: the primary siting cut */}
+      {/* Eligibility facets first (the tool's purpose): designation, then the
+          facility-use and Title I tests that drive co-location and SoH siting. */}
       <FacetSection
         title="Designation"
-        info="Persistently low-performing (PLP) schools and co-location candidates. See the map's schools panel for the same sets."
+        icon={<StarIcon size={15} />}
+        info="Persistently low-performing schools and co-location candidates."
         activeCount={designationActive}
         onClear={designationActive ? () => { setPlpOnly(false); setCoLocationOnly(false); } : undefined}
       >
@@ -365,8 +435,68 @@ function SchoolFacets() {
           checked={coLocationOnly}
           count={counts.coloc}
           onToggle={() => setCoLocationOnly(!coLocationOnly)}
-          swatch={<Dot color="#1D4ED8" hollow />}
+          swatch={<Dot color="#0D9488" hollow />}
         />
+      </FacetSection>
+
+      <FacetDivider />
+
+      {/* Facility use: the statutory tiers as quick presets, plus a CUSTOM % band
+          for precise thresholds the tiers cannot express (e.g. "below 55%"). */}
+      <FacetSection
+        title="Facility use"
+        icon={<BuildingIcon size={15} />}
+        info="Enrollment against the state's student-station capacity."
+        activeCount={facilityUseSelection.size + (utilRangeActive ? 1 : 0)}
+        onClear={(facilityUseSelection.size || utilRangeActive) ? () => { clearFacilityUse(); setUtilRange(null, null); } : undefined}
+      >
+        {FACILITY_USE_TIERS.map((tier) => (
+          <CheckboxRow
+            key={tier.key}
+            label={<Box component="span">{tier.label} <Box component="span" sx={{ color: SHELL_DIM, fontWeight: 400 }}>· {tier.hint}</Box></Box>}
+            checked={facilityUseSelection.has(tier.key)}
+            count={counts.facility[tier.key] ?? 0}
+            onToggle={() => toggleFacilityUse(tier.key)}
+            swatch={<Dot color={tier.color} />}
+          />
+        ))}
+        <Box sx={{ mt: 1, pl: 0.25 }}>
+          <Typography sx={{ fontSize: 12, color: SHELL_DIM, mb: 0.5 }}>Custom range (% of capacity)</Typography>
+          <Stack direction="row" spacing={0.75} alignItems="center">
+            <TextField
+              size="small" type="number" placeholder="Min"
+              value={utilMin ?? ""}
+              onChange={(e) => { const v = e.target.value; setUtilRange(v === "" ? null : Math.max(0, Number(v)), utilMax); }}
+              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
+              inputProps={{ min: 0, "aria-label": "Minimum utilization percent", style: { fontSize: 13, padding: "6px 8px" } }}
+              sx={{ width: 92 }}
+            />
+            <Typography sx={{ fontSize: 13, color: SHELL_DIM }}>to</Typography>
+            <TextField
+              size="small" type="number" placeholder="Max"
+              value={utilMax ?? ""}
+              onChange={(e) => { const v = e.target.value; setUtilRange(utilMin, v === "" ? null : Math.max(0, Number(v))); }}
+              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
+              inputProps={{ min: 0, "aria-label": "Maximum utilization percent", style: { fontSize: 13, padding: "6px 8px" } }}
+              sx={{ width: 92 }}
+            />
+          </Stack>
+        </Box>
+      </FacetSection>
+
+      <FacetDivider />
+
+      {/* Title I */}
+      <FacetSection
+        title="Title I"
+        icon={<MoneyIcon size={15} />}
+        info="Federal Title I eligibility (NCES CCD)."
+        activeCount={titleISelection.size}
+        onClear={titleISelection.size ? clearTitleI : undefined}
+      >
+        {TITLE_I_STATES.map((t) => (
+          <CheckboxRow key={t} label={titleILabel(t)} checked={titleISelection.has(t)} count={counts.titleI[t] ?? 0} onToggle={() => toggleTitleI(t)} />
+        ))}
       </FacetSection>
 
       <FacetDivider />
@@ -374,7 +504,8 @@ function SchoolFacets() {
       {/* Letter grade */}
       <FacetSection
         title="Letter grade"
-        info="Florida DOE A-F school grade. PLP status is a separate filter under Designation."
+        icon={<ReportIcon size={15} />}
+        info="Florida DOE A-F school grade."
         activeCount={gradeSelection.size}
         onClear={gradeSelection.size ? clearGrades : undefined}
       >
@@ -408,7 +539,7 @@ function SchoolFacets() {
       <FacetDivider />
 
       {/* School level */}
-      <FacetSection title="School level" activeCount={levelSelection.size} onClear={levelSelection.size ? clearLevels : undefined}>
+      <FacetSection title="School level" icon={<EducationIcon size={15} />} activeCount={levelSelection.size} onClear={levelSelection.size ? clearLevels : undefined}>
         {presentLevels.map((l) => (
           <CheckboxRow key={l} label={l} checked={levelSelection.has(l)} count={counts.level[l] ?? 0} onToggle={() => toggleLevel(l)} />
         ))}
@@ -417,44 +548,9 @@ function SchoolFacets() {
       <FacetDivider />
 
       {/* School type */}
-      <FacetSection title="School type" activeCount={typeSelection.size} onClear={typeSelection.size ? clearTypes : undefined}>
+      <FacetSection title="School type" icon={<CategoriesIcon size={15} />} activeCount={typeSelection.size} onClear={typeSelection.size ? clearTypes : undefined}>
         {presentTypes.map((t) => (
           <CheckboxRow key={t} label={schoolTypeLabel(t)} checked={typeSelection.has(t)} count={counts.type[t] ?? 0} onToggle={() => toggleType(t)} />
-        ))}
-      </FacetSection>
-
-      <FacetDivider />
-
-      {/* Facility use (statutory tiers) */}
-      <FacetSection
-        title="Facility use"
-        info="Enrollment vs. FISH student stations, in the statutory tiers. Selecting any tier excludes schools with no reported capacity."
-        activeCount={facilityUseSelection.size}
-        onClear={facilityUseSelection.size ? clearFacilityUse : undefined}
-      >
-        {FACILITY_USE_TIERS.map((tier) => (
-          <CheckboxRow
-            key={tier.key}
-            label={<Box component="span">{tier.label} <Box component="span" sx={{ color: SHELL_DIM, fontWeight: 400 }}>· {tier.hint}</Box></Box>}
-            checked={facilityUseSelection.has(tier.key)}
-            count={counts.facility[tier.key] ?? 0}
-            onToggle={() => toggleFacilityUse(tier.key)}
-            swatch={<Dot color={tier.color} />}
-          />
-        ))}
-      </FacetSection>
-
-      <FacetDivider />
-
-      {/* Title I */}
-      <FacetSection
-        title="Title I"
-        info="Federal Title I eligibility (NCES CCD), the available proxy for economic disadvantage and a School of Hope requirement."
-        activeCount={titleISelection.size}
-        onClear={titleISelection.size ? clearTitleI : undefined}
-      >
-        {TITLE_I_STATES.map((t) => (
-          <CheckboxRow key={t} label={titleILabel(t)} checked={titleISelection.has(t)} count={counts.titleI[t] ?? 0} onToggle={() => toggleTitleI(t)} />
         ))}
       </FacetSection>
 
@@ -482,10 +578,11 @@ function DistrictFacet() {
       <Button
         fullWidth
         onClick={() => setOpen((v) => !v)}
-        startIcon={open ? <Icon.ChevronDown size={16} /> : <Icon.ChevronRight size={16} />}
-        sx={{ justifyContent: "flex-start", textTransform: "none", fontWeight: 700, fontSize: 12, color: SHELL_DIM, px: 0.25, py: 0.25, letterSpacing: 0.16 }}
+        sx={{ justifyContent: "flex-start", textTransform: "none", fontWeight: 600, fontSize: 13, color: SHELL_ON, px: 0.25, py: 0.25, letterSpacing: 0, gap: 0.75, "& .MuiButton-startIcon": { m: 0 } }}
+        startIcon={<Box sx={{ color: SHELL_DIM, display: "flex" }}><MapBoundaryIcon size={15} /></Box>}
       >
-        District{districtFilter ? " (1)" : ""}
+        <Box component="span" sx={{ flex: 1, textAlign: "left" }}>Board &amp; legislative districts{districtFilter ? " (1)" : ""}</Box>
+        {open ? <Icon.ChevronDown size={16} /> : <Icon.ChevronRight size={16} />}
       </Button>
       <Collapse in={open}>
         <Box sx={{ pt: 1 }}>
@@ -632,13 +729,20 @@ function GradeSwatch({ grade }: { grade: Grade }) {
   );
 }
 
-function FacetSection({ title, info, activeCount, onClear, children }: {
-  title: string; info?: string; activeCount?: number; onClear?: () => void; children: React.ReactNode;
+// A collapsible filter facet. The header row toggles the body open/closed so the
+// analyst can fold facets they are done with and keep the drawer scannable; an
+// active facet stays visibly counted in its header even when collapsed. Defaults
+// to open. `onClear` and the info tooltip are independent of the toggle.
+function FacetSection({ title, icon, info, activeCount, onClear, clearLabel, children, defaultOpen = true }: {
+  title: string; icon?: React.ReactNode; info?: string; activeCount?: number; onClear?: () => void; clearLabel?: string; children: React.ReactNode; defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <Box sx={{ px: 2.5, py: 1.75 }}>
-      <FilterLabel title={title} info={info} activeCount={activeCount} onClear={onClear} />
-      <Stack sx={{ mt: 0.25 }}>{children}</Stack>
+      <FilterLabel title={title} icon={icon} info={info} activeCount={activeCount} onClear={onClear} clearLabel={clearLabel} open={open} onToggle={() => setOpen((v) => !v)} />
+      <Collapse in={open} timeout={200}>
+        <Stack sx={{ mt: 0.5 }}>{children}</Stack>
+      </Collapse>
     </Box>
   );
 }
@@ -647,24 +751,46 @@ function FacetDivider() {
   return <Divider sx={{ borderColor: alpha(SHELL_ON, 0.06), mx: 2.5 }} />;
 }
 
-function FilterLabel({ title, onClear, activeCount, info, clearLabel = "Clear" }: {
-  title: string; onClear?: () => void; activeCount?: number; info?: string; clearLabel?: string;
+// A section header for a filter facet. Hierarchy comes from weight + color (a
+// SHELL_ON 600 title over SHELL_ON 400 rows), not font-size games; the leading
+// icon aids scanning. See 07_CONTENT_STYLE.md.
+function FilterLabel({ title, icon, onClear, activeCount, info, clearLabel = "Clear", open, onToggle }: {
+  title: string; icon?: React.ReactNode; onClear?: () => void; activeCount?: number; info?: string; clearLabel?: string; open?: boolean; onToggle?: () => void;
 }) {
+  const collapsible = Boolean(onToggle);
+  const head = (
+    <>
+      {collapsible && (
+        <Box sx={{ color: SHELL_DIM, display: "flex", flex: "none", mr: -0.25 }}>
+          {open ? <Icon.ChevronDown size={16} /> : <Icon.ChevronRight size={16} />}
+        </Box>
+      )}
+      {icon && <Box sx={{ color: SHELL_DIM, display: "flex", flex: "none" }}>{icon}</Box>}
+      <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, letterSpacing: 0 }}>
+        {title}
+      </Typography>
+    </>
+  );
   return (
-    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
-      <Stack direction="row" alignItems="center" spacing={0.5}>
-        <Typography sx={{ fontSize: 12, fontWeight: 700, color: SHELL_DIM, textTransform: "none", letterSpacing: 0.16 }}>
-          {title}
-        </Typography>
+    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.25 }}>
+      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+        {collapsible ? (
+          <Box component="button" type="button" onClick={onToggle} aria-expanded={open}
+            sx={{ appearance: "none", font: "inherit", border: "none", bgcolor: "transparent", p: 0, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 0.75, minWidth: 0, color: SHELL_ON,
+              "&:focus-visible": { outline: `2px solid ${TEAL}`, outlineOffset: 2 } }}>
+            {head}
+          </Box>
+        ) : head}
         {info && (
           <Tooltip title={info} placement="right">
             <Box sx={{ color: SHELL_DIM, display: "flex", cursor: "help" }}><Icon.Info size={13} /></Box>
           </Tooltip>
         )}
-        {activeCount ? <Chip label={activeCount} size="small" sx={{ height: 16, fontSize: 10, fontWeight: 700, bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT }} /> : null}
+        {activeCount ? <Chip label={activeCount} size="small" sx={{ height: 16, fontSize: 11, fontWeight: 600, bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT, "& .MuiChip-label": { px: 0.75 } }} /> : null}
       </Stack>
       {onClear && (
-        <Button size="small" onClick={onClear} sx={{ color: TEAL, minWidth: 0, p: 0, fontSize: 12, textTransform: "none", fontWeight: 600 }}>
+        <Button size="small" onClick={onClear} sx={{ color: TEAL, minWidth: 0, p: 0, fontSize: 12, textTransform: "none", fontWeight: 600, flex: "none" }}>
           {clearLabel}
         </Button>
       )}
@@ -672,29 +798,39 @@ function FilterLabel({ title, onClear, activeCount, info, clearLabel = "Clear" }
   );
 }
 
-function SectionHeader({ title, caption, badge }: { title: string; caption?: string; badge?: string }) {
+function SectionHeader({ title, activeCount, onReset }: { title: string; activeCount?: number; onReset?: () => void }) {
   return (
     <Box sx={{ mb: 0.5 }}>
-      <Stack direction="row" alignItems="baseline" justifyContent="space-between">
-        <Typography sx={{ fontSize: 12, fontWeight: 800, color: SHELL_ON, textTransform: "none", letterSpacing: 0.16 }}>
-          {title}
-        </Typography>
-        {badge && <Typography sx={{ fontSize: 11, color: SHELL_DIM, fontVariantNumeric: "tabular-nums" }}>{badge}</Typography>}
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack direction="row" alignItems="center" spacing={0.75}>
+          <Box sx={{ color: SHELL_DIM, display: "flex" }}><Icon.Layers size={15} /></Box>
+          <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, letterSpacing: 0 }}>
+            {title}
+          </Typography>
+          {/* Count as the same small chip every facet header uses, so the map-layers
+              tally reads consistently with Designation, Facility use, etc. */}
+          {activeCount ? <Chip label={activeCount} size="small" sx={{ height: 16, fontSize: 11, fontWeight: 600, bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT, "& .MuiChip-label": { px: 0.75 } }} /> : null}
+        </Stack>
+        {onReset && (
+          <Button size="small" onClick={onReset} sx={{ color: TEAL, minWidth: 0, p: 0, fontSize: 12, textTransform: "none", fontWeight: 600 }}>
+            Reset
+          </Button>
+        )}
       </Stack>
-      {caption && <Typography sx={{ fontSize: 12, color: SHELL_DIM, mt: 0.25, lineHeight: 1.4 }}>{caption}</Typography>}
     </Box>
   );
 }
 
 // A Carbon-style side-nav rail item: icon over a short label, with a left accent
 // bar and tinted surface when active.
-function RailIcon({ label, icon, onClick, active, badge }: { label: string; icon: React.ReactNode; onClick: () => void; active?: boolean; badge?: number }) {
+function RailIcon({ label, icon, onClick, active, badge, expanded }: { label: string; icon: React.ReactNode; onClick: () => void; active?: boolean; badge?: number; expanded?: boolean }) {
   return (
     <Box
       component="button"
       onClick={onClick}
       aria-label={label}
       aria-current={active ? "true" : undefined}
+      aria-expanded={expanded}
       sx={{
         position: "relative", appearance: "none", font: "inherit", cursor: "pointer",
         display: "flex", flexDirection: "column", alignItems: "center", gap: 0.4,

@@ -37,7 +37,7 @@ export interface MapBounds {
   north: number;
 }
 
-export type ActiveTool = "none" | "measure" | "radius" | "draw";
+export type ActiveTool = "none" | "measure" | "radius";
 
 // Google base imagery. "satellite" maps to hybrid (imagery plus labels) in the
 // map view so street and place names stay readable over the imagery.
@@ -52,12 +52,15 @@ export interface MapOverlays {
 
 export const ALL_COUNTIES: CountyName[] = ["Miami-Dade", "Broward", "Orange"];
 
-// The three primary views, surfaced as one switcher in the app bar:
+// The two primary views, surfaced as one switcher in the app bar:
 //   "map"     - the primary console (map plus a compact "schools in view" dock),
-//   "list"    - the full-width analytical school table,
-//   "compare" - a side-by-side matrix of the pinned sites (2 to 4).
-// Map answers WHERE, List answers WHICH, Compare answers WHICH OF THESE FEW.
-export type ViewMode = "map" | "list" | "compare";
+//   "list"    - the full-width analytical school table.
+// Map answers WHERE, List answers WHICH. "Which of these few" is no longer a
+// third full-screen view: a scouting operator lives on the map, so the pinned
+// sites are a SHORTLIST that rides the map (a collapsible bottom tray plus
+// numbered markers in place), never a separate destination. See shortlistOpen
+// and the comparePinnedMsids set (kept for continuity, incl. the URL "cmp" key).
+export type ViewMode = "map" | "list";
 
 // The List view can show every filtered school or just those in the current map
 // bounds (the set the map dock hands off). See listScope.
@@ -188,23 +191,33 @@ export interface AppState {
   coLocationOnly: boolean;      // show only co-location targets (underused district buildings)
   districtFilter: DistrictFilter | null; // limit to one board/legislative district
   facilityUseSelection: Set<FacilityUseKey>; // utilization tiers to show; empty = all
+  // Custom utilization band (enrollment / capacity, %), for precise thresholds the
+  // statutory tiers cannot express (e.g. "below 55%"). null bound = open on that end;
+  // both null = no constraint. Composes (AND) with everything else.
+  utilMin: number | null;
+  utilMax: number | null;
 
   // ---- Selection / tools / view ----
   selectedSchoolMsid: string | null;
-  comparePinnedMsids: string[]; // up to 4
+  comparePinnedMsids: string[]; // the shortlist, up to 4
+  shortlistOpen: boolean;       // whether the map's shortlist tray is expanded
+  shortlistFullTableOpen: boolean; // the tray's "Full table" matrix modal
   activeTool: ActiveTool;
   measurePoints: LatLng[];
   radiusCenter: LatLng | null;
   radiusMiles: number;
-  // Freehand boundary drawing: drawPoints is the in-progress polygon (vertices
-  // clicked so far); drawnBoundary is the committed closed polygon that filters
-  // the school set to points inside it. Session-only (not persisted in the URL).
-  drawPoints: LatLng[];
+  // Committed map-area filter: a closed polygon ring (a geodesic circle from the
+  // radius tool's "Filter to this area") that limits the school set to points
+  // inside it. Session-only (not persisted in the URL). Kept as a generic ring so
+  // the filter (pointInPolygon) and rendering stay shape-agnostic.
   drawnBoundary: LatLng[] | null;
   mapCenter: LatLng;
   mapZoom: number;
   mapBounds: MapBounds | null;
   panelCollapsed: boolean;
+  // Phone-only: whether the filters drawer is open. Lifted to the store so both
+  // the app-bar menu button and the results sheet's Filters entry can open it.
+  mobileRailOpen: boolean;
   baseMapType: BaseMapType;
   overlays: MapOverlays;
   viewMode: ViewMode;
@@ -234,26 +247,29 @@ export interface AppState {
   toggleFacilityUse: (k: FacilityUseKey) => void;
   setFacilityUse: (keys: FacilityUseKey[]) => void;
   clearFacilityUse: () => void;
+  setUtilRange: (min: number | null, max: number | null) => void;
   resetSchoolFilters: () => void;
+  clearAllFilters: () => void;
   resetAll: () => void;
 
   setViewMode: (mode: ViewMode) => void;
   setListScope: (scope: ListScope) => void;
   setPanelCollapsed: (collapsed: boolean) => void;
+  setMobileRailOpen: (open: boolean) => void;
   setBaseMapType: (type: BaseMapType) => void;
   toggleOverlay: (key: keyof MapOverlays) => void;
   selectSchool: (msid: string | null) => void;
   toggleComparePin: (msid: string) => void;
   clearCompare: () => void;
+  setShortlistOpen: (open: boolean) => void;
+  setShortlistFullTableOpen: (open: boolean) => void;
   setTool: (tool: ActiveTool) => void;
   addMeasurePoint: (p: LatLng) => void;
   undoMeasurePoint: () => void;
   clearMeasure: () => void;
   setRadius: (center: LatLng | null, miles?: number) => void;
   setRadiusMiles: (miles: number) => void;
-  addDrawPoint: (p: LatLng) => void;
-  undoDrawPoint: () => void;
-  finishDraw: () => void;
+  setDrawnBoundary: (ring: LatLng[] | null) => void;
   clearDrawnBoundary: () => void;
   setMapView: (center: LatLng, zoom: number) => void;
   setMapBounds: (bounds: MapBounds) => void;
@@ -279,19 +295,23 @@ export const useStore = create<AppState>((set) => ({
   coLocationOnly: false,
   districtFilter: null,
   facilityUseSelection: new Set<FacilityUseKey>(),
+  utilMin: null,
+  utilMax: null,
 
   selectedSchoolMsid: null,
   comparePinnedMsids: [],
+  shortlistOpen: false,
+  shortlistFullTableOpen: false,
   activeTool: "none",
   measurePoints: [],
   radiusCenter: null,
   radiusMiles: 3,
-  drawPoints: [],
   drawnBoundary: null,
   mapCenter: DEFAULT_CENTER,
   mapZoom: DEFAULT_ZOOM,
   mapBounds: null,
   panelCollapsed: true,
+  mobileRailOpen: false,
   baseMapType: "roadmap",
   overlays: { traffic: false, transit: false, bicycling: false },
   viewMode: "map",
@@ -366,6 +386,7 @@ export const useStore = create<AppState>((set) => ({
     }),
   setFacilityUse: (keys) => set({ facilityUseSelection: new Set(keys) }),
   clearFacilityUse: () => set({ facilityUseSelection: new Set<FacilityUseKey>() }),
+  setUtilRange: (min, max) => set({ utilMin: min, utilMax: max }),
 
   resetSchoolFilters: () =>
     set({
@@ -378,7 +399,30 @@ export const useStore = create<AppState>((set) => ({
       districtFilter: null,
       facilityUseSelection: new Set<FacilityUseKey>(),
       drawnBoundary: null,
-      drawPoints: [],
+    }),
+
+  // Clear every FILTER (geography, all school facets, the district and the
+  // drawn map-area filter) back to "show everything", and drop the tool that
+  // draws the area circle so no overlay lingers. Map layers are display, not
+  // filters, so they are deliberately left untouched: this is what the panel's
+  // single "Clear all" runs. resetAll (below) additionally resets layers.
+  clearAllFilters: () =>
+    set({
+      countySelection: new Set(ALL_COUNTIES),
+      gradeSelection: new Set<Grade>(),
+      levelSelection: new Set<SchoolLevel>(),
+      typeSelection: new Set<SchoolType>(),
+      titleISelection: new Set<TitleIState>(),
+      plpOnly: false,
+      coLocationOnly: false,
+      districtFilter: null,
+      facilityUseSelection: new Set<FacilityUseKey>(),
+      utilMin: null,
+      utilMax: null,
+      drawnBoundary: null,
+      activeTool: "none",
+      radiusCenter: null,
+      radiusMiles: 3,
     }),
 
   resetAll: () =>
@@ -393,13 +437,21 @@ export const useStore = create<AppState>((set) => ({
       coLocationOnly: false,
       districtFilter: null,
       facilityUseSelection: new Set<FacilityUseKey>(),
+      utilMin: null,
+      utilMax: null,
+      // Clear the spatial filter AND the tool that draws it, so "Clear all" is a
+      // true clean slate: no lingering measurement circle or drawn-area overlay
+      // left on the map after the filter behind it is gone.
       drawnBoundary: null,
-      drawPoints: [],
+      activeTool: "none",
+      radiusCenter: null,
+      radiusMiles: 3,
     }),
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setListScope: (scope) => set({ listScope: scope }),
   setPanelCollapsed: (collapsed) => set({ panelCollapsed: collapsed }),
+  setMobileRailOpen: (open) => set({ mobileRailOpen: open }),
   setBaseMapType: (type) => set({ baseMapType: type }),
   toggleOverlay: (key) => set((s) => ({ overlays: { ...s.overlays, [key]: !s.overlays[key] } })),
 
@@ -410,19 +462,31 @@ export const useStore = create<AppState>((set) => ({
       const has = s.comparePinnedMsids.includes(msid);
       if (has) return { comparePinnedMsids: s.comparePinnedMsids.filter((m) => m !== msid) };
       if (s.comparePinnedMsids.length >= MAX_COMPARE) return s;
+      // Adding a site does NOT auto-open the tray (that yanked the map out from
+      // under the operator mid-scan). Feedback is quieter: the shortlist button
+      // pops and its counter ticks up; the operator opens the tray when ready.
       return { comparePinnedMsids: [...s.comparePinnedMsids, msid] };
     }),
 
-  clearCompare: () => set({ comparePinnedMsids: [] }),
+  clearCompare: () => set({ comparePinnedMsids: [], shortlistOpen: false, shortlistFullTableOpen: false }),
+
+  // Opening the tray closes the inspector: the two both claim the bottom/side of
+  // the map, so the shortlist takes focus cleanly instead of overlapping. Closing
+  // the tray also closes its full-table modal so it never lingers over the map.
+  setShortlistOpen: (open) =>
+    set(open
+      ? { shortlistOpen: true, selectedSchoolMsid: null }
+      : { shortlistOpen: false, shortlistFullTableOpen: false }),
+
+  setShortlistFullTableOpen: (open) => set({ shortlistFullTableOpen: open }),
 
   setTool: (tool) =>
     set((s) => ({
       activeTool: tool,
-      // switching tools clears the other tool's in-progress drawing (a committed
-      // drawnBoundary persists; only the in-progress drawPoints buffer clears)
+      // Switching or closing a tool drops that tool's in-progress input; the
+      // committed drawnBoundary (the area filter) persists independently.
       measurePoints: tool === "measure" ? s.measurePoints : [],
       radiusCenter: tool === "radius" ? s.radiusCenter : null,
-      drawPoints: tool === "draw" ? s.drawPoints : [],
     })),
 
   addMeasurePoint: (p) => set((s) => ({ measurePoints: [...s.measurePoints, p] })),
@@ -432,15 +496,8 @@ export const useStore = create<AppState>((set) => ({
   setRadius: (center, miles) => set((s) => ({ radiusCenter: center, radiusMiles: miles ?? s.radiusMiles })),
   setRadiusMiles: (miles) => set({ radiusMiles: miles }),
 
-  addDrawPoint: (p) => set((s) => ({ drawPoints: [...s.drawPoints, p] })),
-  undoDrawPoint: () => set((s) => ({ drawPoints: s.drawPoints.slice(0, -1) })),
-  finishDraw: () =>
-    set((s) => {
-      // A polygon needs at least 3 vertices; commit it and leave draw mode.
-      if (s.drawPoints.length < 3) return s;
-      return { drawnBoundary: s.drawPoints, drawPoints: [], activeTool: "none" };
-    }),
-  clearDrawnBoundary: () => set({ drawnBoundary: null, drawPoints: [] }),
+  setDrawnBoundary: (ring) => set({ drawnBoundary: ring }),
+  clearDrawnBoundary: () => set({ drawnBoundary: null }),
 
   setMapView: (center, zoom) => set({ mapCenter: center, mapZoom: zoom }),
   setMapBounds: (bounds) => set({ mapBounds: bounds }),

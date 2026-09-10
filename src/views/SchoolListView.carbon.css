@@ -32,10 +32,28 @@
   width: auto;
 }
 
+/* Carbon clips the segment label (overflow: hidden + ellipsis), which cut the
+   count to "1,15". Let the label show in full and the button grow to fit it. */
+.school-list__scope-switch .cds--content-switcher-btn {
+  max-width: none;
+}
+.school-list__scope-switch .cds--content-switcher-btn .cds--content-switcher__label {
+  overflow: visible;
+  text-overflow: clip;
+  max-width: none;
+}
+
 .school-list__scope-inner {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
+}
+
+/* Phone: tighten the scope bar so the shortened labels and both counts fit. */
+@media (max-width: 599.95px) {
+  .school-list__scope-bar { padding: 8px 12px; gap: 8px; }
+  .school-list__scope-switch { flex: 1; min-width: 0; }
+  .school-list__scope-switch .cds--content-switcher { width: 100%; }
 }
 
 .school-list__scope-count {
@@ -46,8 +64,12 @@
   color: var(--text-primary);
 }
 
+/* On the SELECTED segment (dark background) the count must be light to stay
+   legible; #0043ce (dark blue) failed contrast there. KIPP light-blue reads
+   clearly on the dark segment (>10:1) and still pops next to the white label.
+   The unselected count keeps text-primary on white (also high contrast). */
 .cds--content-switcher-btn.cds--content-switcher--selected .school-list__scope-count {
-  color: #0043ce;
+  color: #52c3ed;
 }
 
 .school-list__scope-note {

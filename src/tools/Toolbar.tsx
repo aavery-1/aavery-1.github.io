@@ -1,5 +1,10 @@
-// Map tools: measure distance, radius-from-a-point, and draw-a-boundary. All are
-// geodesically correct (WGS84 ellipsoidal distance; a true geodesic buffer ring).
+// Map tools: measure distance and radius-from-a-point. Both are geodesically
+// correct (WGS84 ellipsoidal distance; a true geodesic buffer ring). The radius
+// tool doubles as the map's area FILTER: "Filter to this area" commits its circle
+// as the drawnBoundary ring, so one circle both measures and filters (the old
+// freehand draw-a-boundary tool was removed; a hand-clicked polygon self-
+// intersected and was fiddly). The committed filter clears from the active-filter
+// chip strip as well as the tool.
 //
 // The tool BUTTONS live bottom-right with the other map controls. When a tool is
 // active its control appears as a SLIM HORIZONTAL BAR pinned to the top-center
@@ -14,9 +19,9 @@
 // only and would not match the map-control look), preserving aria-pressed and the
 // exact click-to-toggle behavior.
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Button, IconButton, SelectableTag, Tooltip } from "@carbon/react";
-import { Ruler as StraightenIcon, CenterCircle as RadioButtonUncheckedIcon, Draw as GestureIcon, Undo as UndoIcon } from "@carbon/icons-react";
+import { Ruler as StraightenIcon, CenterCircle as RadioButtonUncheckedIcon, Undo as UndoIcon } from "@carbon/icons-react";
 import { useStore, type ActiveTool } from "../store";
 import { useData } from "../data/DataContext";
 import { pathDistanceMiles, distanceMiles, milesToMeters, type LngLat } from "../geo/measure";
@@ -89,12 +94,34 @@ function MeasureControls() {
   );
 }
 
+// The current radius circle as a closed LatLng ring, for committing as the area
+// filter. geodesicBufferMiles returns a GeoJSON polygon; take its outer ring.
+function circleRing(center: LngLat, miles: number): { lat: number; lng: number }[] {
+  return geodesicBufferMiles(center, miles).geometry.coordinates[0].map(([lng, lat]) => ({ lat, lng }));
+}
+
 function RadiusControls() {
   const radiusCenter = useStore((s) => s.radiusCenter);
   const radiusMiles = useStore((s) => s.radiusMiles);
   const setRadiusMiles = useStore((s) => s.setRadiusMiles);
   const setRadius = useStore((s) => s.setRadius);
+  const drawnBoundary = useStore((s) => s.drawnBoundary);
+  const setDrawnBoundary = useStore((s) => s.setDrawnBoundary);
+  const clearDrawnBoundary = useStore((s) => s.clearDrawnBoundary);
   const { schools, income } = useData();
+
+  const filtering = Boolean(drawnBoundary && drawnBoundary.length >= 3);
+
+  // Keep a committed filter in sync while the circle is edited: moving the center
+  // or changing the radius re-commits the ring. Reads the live flag so it never
+  // resurrects a filter the user just cleared, and never loops (deps exclude the
+  // boundary it writes).
+  useEffect(() => {
+    if (!radiusCenter) return;
+    if (useStore.getState().drawnBoundary) {
+      setDrawnBoundary(circleRing([radiusCenter.lng, radiusCenter.lat], radiusMiles));
+    }
+  }, [radiusCenter, radiusMiles, setDrawnBoundary]);
 
   const analysis = useMemo(() => {
     if (!radiusCenter) return null;
@@ -132,6 +159,17 @@ function RadiusControls() {
         </div>
       }
       actions={<>
+        {radiusCenter && (
+          <Button
+            kind={filtering ? "tertiary" : "primary"}
+            size="sm"
+            onClick={() => filtering
+              ? clearDrawnBoundary()
+              : setDrawnBoundary(circleRing([radiusCenter.lng, radiusCenter.lat], radiusMiles))}
+          >
+            {filtering ? "Stop filtering" : "Filter to this area"}
+          </Button>
+        )}
         {radiusCenter && analysis && (
           <ExportButton
             filenameBase="radius_selection"
@@ -150,76 +188,53 @@ function RadiusControls() {
   );
 }
 
-function DrawControls() {
-  const drawPoints = useStore((s) => s.drawPoints);
-  const undoDrawPoint = useStore((s) => s.undoDrawPoint);
-  const finishDraw = useStore((s) => s.finishDraw);
-  const clearDrawnBoundary = useStore((s) => s.clearDrawnBoundary);
-  const setTool = useStore((s) => s.setTool);
-  const n = drawPoints.length;
+export function Toolbar() {
+  const activeTool = useStore((s) => s.activeTool);
+  const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
+  const viewMode = useStore((s) => s.viewMode);
 
+  // The inspector floats over the map's right edge; when it is open the active
+  // bar insets its right boundary so its actions never slide behind the panel.
+  const inspectorOnMap = Boolean(selectedSchoolMsid) && viewMode === "map";
+
+  // Active-tool control only: a slim bar at the top EDGE, centered within the map
+  // minus the top-right controls (and the inspector when it is open), so it never
+  // sits over the map surface the tool needs you to click. The tool BUTTONS now
+  // live in the top-right control cluster (see MapToolButtons), grouped with the
+  // legend and base-map controls instead of a separate floating stack.
+  if (activeTool === "none") return null;
   return (
-    <ToolBar
-      icon={<GestureIcon size={16} />}
-      title="Draw a boundary"
-      detail={<Detail>{n === 0 ? "Click points on the map to outline an area." : `${n} point${n === 1 ? "" : "s"}${n < 3 ? " · need at least 3" : " · ready to finish"}`}</Detail>}
-      actions={<>
-        <IconButton label="Undo last point" kind="ghost" size="sm" align="bottom" onClick={undoDrawPoint} disabled={n === 0}>
-          <UndoIcon size={16} />
-        </IconButton>
-        <Button kind="ghost" size="sm" className="toolbar-btn-muted" onClick={clearDrawnBoundary}>Clear</Button>
-        <Button kind="ghost" size="sm" className="toolbar-btn-muted" onClick={() => setTool("none")}>Cancel</Button>
-        <Button kind="primary" size="sm" onClick={finishDraw} disabled={n < 3}>Finish</Button>
-      </>}
-    />
+    <div className={`toolbar-active${inspectorOnMap ? " toolbar-active--inspector" : ""}`}>
+      {activeTool === "measure" && <MeasureControls />}
+      {activeTool === "radius" && <RadiusControls />}
+    </div>
   );
 }
 
-export function Toolbar() {
+// The Distance / Radius tool buttons, placed by App INSIDE the top-right
+// map-controls group so they read as part of the same Carbon control cluster as
+// the legend and base-map buttons, rather than a separate, less-elegant floating
+// menu. Icon-only (label in the tooltip) to match the neighbours; the active tool
+// gets a filled state.
+export function MapToolButtons() {
   const activeTool = useStore((s) => s.activeTool);
   const setTool = useStore((s) => s.setTool);
-
   const toggle = (tool: ActiveTool) => setTool(activeTool === tool ? "none" : tool);
-
   return (
     <>
-      {/* Active-tool control: a slim bar at the top-center EDGE, so it never sits
-          over the map surface the tool needs you to click. */}
-      {activeTool !== "none" && (
-        <div className="toolbar-active">
-          {activeTool === "measure" && <MeasureControls />}
-          {activeTool === "radius" && <RadiusControls />}
-          {activeTool === "draw" && <DrawControls />}
-        </div>
-      )}
-
-      {/* Tool buttons: vertical white rounded-square stack, bottom-right, matching
-          the zoom / full-screen / compass controls below it. */}
-      <div className="toolbar-stack">
-        <div className="toolbar-group">
-          <Tooltip label="Measure distance (geodesic)" align="left">
-            <button type="button" className={`toolbar-tool${activeTool === "measure" ? " toolbar-tool--active" : ""}`}
-              aria-label="Measure distance" aria-pressed={activeTool === "measure"}
-              onClick={() => toggle("measure")}>
-              <StraightenIcon size={18} />
-            </button>
-          </Tooltip>
-          <Tooltip label="Radius from a point (geodesic buffer)" align="left">
-            <button type="button" className={`toolbar-tool${activeTool === "radius" ? " toolbar-tool--active" : ""}`}
-              aria-label="Radius from a point" aria-pressed={activeTool === "radius"}
-              onClick={() => toggle("radius")}>
-              <RadioButtonUncheckedIcon size={18} />
-            </button>
-          </Tooltip>
-          <Tooltip label="Draw a boundary (filter to the area)" align="left">
-            <button type="button" className={`toolbar-tool${activeTool === "draw" ? " toolbar-tool--active" : ""}`}
-              aria-label="Draw a boundary" aria-pressed={activeTool === "draw"}
-              onClick={() => toggle("draw")}>
-              <GestureIcon size={18} />
-            </button>
-          </Tooltip>
-        </div>
-      </div>
+      <Tooltip label="Measure distance" align="left">
+        <button type="button" className={`map-ctrl-btn${activeTool === "measure" ? " map-ctrl-btn--active" : ""}`}
+          aria-label="Measure distance: trace a path (geodesic)" aria-pressed={activeTool === "measure"} onClick={() => toggle("measure")}>
+          <StraightenIcon size={18} />
+        </button>
+      </Tooltip>
+      <span className="map-ctrl-sep" aria-hidden />
+      <Tooltip label="Radius tool" align="left">
+        <button type="button" className={`map-ctrl-btn${activeTool === "radius" ? " map-ctrl-btn--active" : ""}`}
+          aria-label="Radius from a point: measure its area, or filter to inside it" aria-pressed={activeTool === "radius"} onClick={() => toggle("radius")}>
+          <RadioButtonUncheckedIcon size={18} />
+        </button>
+      </Tooltip>
     </>
   );
 }

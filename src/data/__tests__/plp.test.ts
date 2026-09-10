@@ -34,7 +34,7 @@ describe("evaluatePlp: F.S. 1002.333", () => {
     ]);
     const r = evaluatePlp(history);
     expect(r.isPlp).toBe(false);
-    expect(r.reason).toMatch(/recent 2 include B or higher/);
+    expect(r.reason).toMatch(/recent grades are B or higher/);
   });
 
   it("is NOT PLP when fewer than 3 of the last 5 graded years are below C", () => {
@@ -48,7 +48,7 @@ describe("evaluatePlp: F.S. 1002.333", () => {
     const r = evaluatePlp(history);
     expect(r.isPlp).toBe(false);
     expect(r.belowCInLast5).toBe(2);
-    expect(r.reason).toMatch(/only 2 of last 5/);
+    expect(r.reason).toMatch(/only 2 of its last 5/i);
   });
 
   it("skips non-standard grades (I, NR, NG) when picking the last 5 graded years", () => {
@@ -76,7 +76,7 @@ describe("evaluatePlp: F.S. 1002.333", () => {
   it("returns not-PLP with a clear reason when the school has no graded years", () => {
     const r = evaluatePlp(H([["2019-2020", "NG"], ["2020-2021", "NG"]]));
     expect(r.isPlp).toBe(false);
-    expect(r.reason).toMatch(/No graded years/);
+    expect(r.reason).toMatch(/No letter grades/);
   });
 
   it("handles fewer than 5 graded years (uses whatever is available)", () => {

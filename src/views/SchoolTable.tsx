@@ -1,28 +1,36 @@
 // The school table for the List view, the tool's analytical surface. Reads the
 // same useFilteredSchools source of truth as the map, so the rows always match
 // what the map draws; the scope prop chooses all filtered schools or just those
-// in the current map view. Sortable columns, a "search by"
-// field selector, decision flags (PLP, SoH-eligible), and per-row actions
-// (zoom-to, compare). Clicking a row selects the school (opens the inspector)
-// and pans the map; when the selection changes elsewhere (a pin click), the
-// matching row scrolls into view and highlights. No em dashes in this file.
+// in the current map view. Sortable columns, ONE keyword search (name or MSID;
+// structured facets are the left filter drawer, keeping keyword search and
+// faceted filtering separate per search-UX guidance), decision flags (PLP,
+// co-location), and per-row actions (Show on map, Add to shortlist). The school
+// name is the row's primary button (opens the inspector); the whole row is also
+// clickable for the mouse. When the selection changes elsewhere (a pin click),
+// the matching row scrolls into view and highlights. No em dashes in this file.
+//
+// Terminology: "shortlist" (Bookmark) is used everywhere for the pin-to-compare
+// set, matching the map tray and the inspector; the old "compare" wording/icon
+// was retired here for consistency.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   TableSortLabel, Chip, Typography, TextField, InputAdornment, Stack, Skeleton,
-  Select, MenuItem, IconButton, Tooltip, Button,
+  IconButton, Tooltip, Button, Select, MenuItem,
 } from "@mui/material";
-import { Search as SearchIcon, Location as MyLocationIcon, Compare as CompareArrowsIcon } from "@carbon/icons-react";
+import { Search as SearchIcon, Location as MyLocationIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Close as CloseIcon, ArrowUp as ArrowUpIcon, ArrowDown as ArrowDownIcon, Filter as FilterIcon } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
 import { useStore, utilizationBucket, MAX_COMPARE } from "../store";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
-import { ACCENT_TEXT } from "../muiTheme";
+import { useActiveFilters } from "../status/useActiveFilters";
+import { ACCENT_TEXT, TEAL } from "../muiTheme";
 import { schoolTypeLabel, titleILabel, type SchoolFeature } from "../data/types";
+import "./SchoolTable.carbon.css";
 
 const RED_STRONG = "#B71C1C";  // PLP
 const CO_LOC_BLUE = "#1D4ED8";  // co-location target
@@ -30,7 +38,6 @@ const TITLE_I_PURPLE = "#7C3AED"; // economic-disadvantage proxy (Title I)
 
 type Order = "asc" | "desc";
 type SortKey = "name" | "type" | "county" | "level" | "titleI" | "enrollment" | "capacity" | "utilization";
-type SearchField = "name" | "county" | "grade" | "type";
 
 interface Row {
   feature: SchoolFeature;
@@ -74,11 +81,19 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   const setViewMode = useStore((s) => s.setViewMode);
   const comparePinned = useStore((s) => s.comparePinnedMsids);
   const toggleComparePin = useStore((s) => s.toggleComparePin);
+  const setShortlistOpen = useStore((s) => s.setShortlistOpen);
+  const setPanelCollapsed = useStore((s) => s.setPanelCollapsed);
+  const setMobileRailOpen = useStore((s) => s.setMobileRailOpen);
+  // The compound facet filters (county, grade, type, Title I, level, utilization,
+  // designation) live in the left drawer; surface them here so the List is not a
+  // dead end. Opening works on both desktop (expand the rail panel) and phone
+  // (open the drawer). Active facets show as removable chips below the header.
+  const activeFilters = useActiveFilters();
+  const openFilters = () => { setPanelCollapsed(false); setMobileRailOpen(true); };
 
   const [orderBy, setOrderBy] = useState<SortKey>("utilization");
   const [order, setOrder] = useState<Order>("desc");
   const [query, setQuery] = useState("");
-  const [searchField, setSearchField] = useState<SearchField>("name");
 
   // Choose the column set from the table's own measured width, not the window, so
   // the list stays uncramped when the inspector or a narrow window shrinks the
@@ -103,8 +118,14 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   // ~375px screen, cutting off the utilization bar and hiding the row actions.
   // Here the name column goes flexible (absorbs the remainder) and utilization +
   // actions tighten, so the three essentials fit without horizontal scroll.
+  // Phone tier: a multi-column table cannot stay legible on a ~375px screen (names
+  // truncate to a few letters and the row bleeds off the right), so below 560px the
+  // table collapses to a single-column CARD list: grade + full wrapping name +
+  // MSID/flags + a facts block (utilization, county/level/type, Title I) + the row
+  // actions. Column headers are hidden and replaced by a compact sort control.
   const phone = availWidth < 560;
   const columns = COLUMNS.filter((c) => {
+    if (phone) return c.key === "name" || c.key === "actions";
     if (c.tier === "full") return !compact;
     if (c.tier === "mid") return !ultraCompact;
     return true;
@@ -120,15 +141,14 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   const rows: Row[] = useMemo(() => {
     const q = query.trim().toLowerCase();
     return features
+      // Keyword search finds a specific school by its identity (name or MSID).
+      // Structured dimensions (county, grade, level, type, Title I, facility use)
+      // are the left filter drawer's job, so this stays a single, unscoped box
+      // (leading products keep keyword search and faceted filtering separate).
       .filter((f) => {
         if (!q) return true;
         const p = f.properties;
-        switch (searchField) {
-          case "county": return p.county.toLowerCase().includes(q);
-          case "grade": return p.current_grade.toLowerCase().includes(q);
-          case "type": return schoolTypeLabel(p.type).toLowerCase().includes(q) || p.type.toLowerCase().includes(q);
-          default: return p.name.toLowerCase().includes(q) || p.msid.toLowerCase().includes(q);
-        }
+        return p.name.toLowerCase().includes(q) || p.msid.toLowerCase().includes(q);
       })
       .map((f) => {
         const p = f.properties;
@@ -150,16 +170,19 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           isCoLocation: ctx.coLocationMsids.has(p.msid),
         };
       });
-  }, [features, ctx, query, searchField]);
+  }, [features, ctx, query]);
 
   const sorted = useMemo(() => [...rows].sort((a, b) => compareRows(a, b, orderBy, order)), [rows, orderBy, order]);
 
+  // Text columns default to A->Z, numeric to high->low, so a fresh sort lands the
+  // "most" first. Shared by the column headers and the phone sort control.
+  const applySort = (key: SortKey) => {
+    setOrderBy(key);
+    setOrder(key === "name" || key === "type" || key === "county" || key === "level" || key === "titleI" ? "asc" : "desc");
+  };
   const handleSort = (key: SortKey) => {
     if (orderBy === key) setOrder(order === "asc" ? "desc" : "asc");
-    else {
-      setOrderBy(key);
-      setOrder(key === "name" || key === "type" || key === "county" || key === "level" || key === "titleI" ? "asc" : "desc");
-    }
+    else applySort(key);
   };
 
   // The table body is virtualized: with no filters active this list holds every
@@ -172,7 +195,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   const rowVirtualizer = useVirtualizer({
     count: sorted.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => (dense ? 44 : 56),
+    estimateSize: () => (dense ? 44 : phone ? 188 : 56),
     overscan: 12,
   });
 
@@ -217,69 +240,142 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           <Typography variant={dense ? "subtitle2" : "h6"} sx={{ fontWeight: 700 }}>
             {schools == null ? <Skeleton width={120} /> : `${sorted.length.toLocaleString("en-US")} ${sorted.length === 1 ? "school" : "schools"}`}
           </Typography>
-          {!dense && (
-            <Stack spacing={0}>
-              <Typography variant="caption" color="text.secondary">
-                {schools == null ? "Loading schools..." : `Sorted by ${LABEL[orderBy]}, ${order === "asc" ? "ascending" : "descending"}`}
-              </Typography>
-              {schools != null && (
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
-                  Enrollment: NCES CCD 2023-24. Capacity: FL DOE FISH. Grades: FL DOE. Hover a column header for details.
-                </Typography>
-              )}
-            </Stack>
+          {!dense && schools == null && (
+            <Typography variant="caption" color="text.secondary">
+              Loading schools...
+            </Typography>
           )}
         </Box>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: "1 1 auto", minWidth: 0, justifyContent: "flex-end", flexWrap: "wrap", rowGap: 1 }}>
-          <Select
+        <Stack direction="row" spacing={1.25} alignItems="center" sx={{ flex: "1 1 auto", minWidth: 0, justifyContent: "flex-end", flexWrap: "wrap", rowGap: 1 }}>
+          {/* Compound filtering (county, grade, type, Title I, utilization, ...) lives
+              in the left drawer; this opens it and shows how many are active. */}
+          <Button
             size="small"
-            value={searchField}
-            onChange={(e) => setSearchField(e.target.value as SearchField)}
-            sx={{ fontSize: 13, minWidth: 118, flex: "0 0 auto", bgcolor: "background.paper" }}
-            aria-label="Search by field"
+            variant={activeFilters.length > 0 ? "contained" : "outlined"}
+            disableElevation
+            startIcon={<FilterIcon size={16} />}
+            onClick={openFilters}
+            sx={{ textTransform: "none", fontWeight: 600, flex: "0 0 auto", whiteSpace: "nowrap" }}
           >
-            <MenuItem value="name" sx={{ fontSize: 13 }}>Name / MSID</MenuItem>
-            <MenuItem value="county" sx={{ fontSize: 13 }}>County</MenuItem>
-            <MenuItem value="grade" sx={{ fontSize: 13 }}>Grade</MenuItem>
-            <MenuItem value="type" sx={{ fontSize: 13 }}>Type</MenuItem>
-          </Select>
+            Filters{activeFilters.length > 0 ? ` (${activeFilters.length})` : ""}
+          </Button>
+          {/* Reach the shortlist from the list (it otherwise lives only on the map),
+              so pinned sites are never a dead end. */}
+          {comparePinned.length > 0 && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<BookmarkIcon size={16} />}
+              onClick={() => { setViewMode("map"); setShortlistOpen(true); }}
+              sx={{ textTransform: "none", fontWeight: 600, flex: "0 0 auto", whiteSpace: "nowrap" }}
+            >
+              Shortlist ({comparePinned.length})
+            </Button>
+          )}
+          {/* One keyword box (name or MSID); structured filters live in the left
+              drawer. Clearable, with a visible label per search-UX guidance. */}
           <TextField
             size="small"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={SEARCH_PLACEHOLDER[searchField]}
-            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon size={16} /></InputAdornment> }}
-            sx={{ flex: "1 1 160px", minWidth: 130, maxWidth: dense ? 240 : 280 }}
+            placeholder="Search by name or MSID"
+            inputProps={{ "aria-label": "Search schools by name or MSID" }}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><SearchIcon size={16} /></InputAdornment>,
+              endAdornment: query ? (
+                <InputAdornment position="end">
+                  <IconButton size="small" aria-label="Clear search" onClick={() => setQuery("")} edge="end">
+                    <CloseIcon size={14} />
+                  </IconButton>
+                </InputAdornment>
+              ) : undefined,
+            }}
+            sx={{ flex: "1 1 220px", minWidth: 160, maxWidth: dense ? 260 : 320 }}
           />
         </Stack>
       </Box>
 
-      <TableContainer ref={containerRef} component={Paper} elevation={0} square sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>
+      {/* Applied filters, visible on the List so the current compound query is never
+          hidden in the drawer. Each chip removes its own facet; "Clear all" resets. */}
+      {activeFilters.length > 0 && (
+        <Box sx={{ px: dense ? 2 : 2.5, py: 1, display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap", rowGap: 0.75, borderBottom: 1, borderColor: "divider", bgcolor: "background.paper" }}>
+          {activeFilters.map((f) => (
+            <Chip
+              key={f.key}
+              size="small"
+              label={f.label}
+              onDelete={f.onClear}
+              deleteIcon={<Box component="span" sx={{ fontSize: 14, lineHeight: 1, pr: 0.25 }}>×</Box>}
+              sx={{
+                height: 24, fontSize: 12, fontWeight: 600, maxWidth: "100%",
+                color: ACCENT_TEXT, bgcolor: alpha(TEAL, 0.1), border: `1px solid ${alpha(TEAL, 0.3)}`,
+                "& .MuiChip-label": { px: 1 },
+                "& .MuiChip-deleteIcon": { color: "inherit", opacity: 0.7, "&:hover": { opacity: 1 } },
+              }}
+            />
+          ))}
+          <Button size="small" onClick={() => useStore.getState().clearAllFilters()} sx={{ textTransform: "none", fontWeight: 600, minWidth: 0, px: 1, ml: 0.5 }}>
+            Clear all
+          </Button>
+        </Box>
+      )}
+
+      {/* Phone: card mode has no sortable column headers, so surface sorting here. */}
+      {phone && schools != null && (
+        <Box sx={{ px: 2, py: 1, display: "flex", alignItems: "center", gap: 1, borderBottom: 1, borderColor: "divider", bgcolor: "background.paper" }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary", flex: "0 0 auto" }}>Sort</Typography>
+          <Select
+            size="small"
+            value={orderBy}
+            onChange={(e) => applySort(e.target.value as SortKey)}
+            aria-label="Sort schools by"
+            sx={{ flex: 1, fontSize: 13, bgcolor: "background.paper" }}
+          >
+            <MenuItem value="utilization" sx={{ fontSize: 13 }}>Utilization</MenuItem>
+            <MenuItem value="name" sx={{ fontSize: 13 }}>Name</MenuItem>
+            <MenuItem value="county" sx={{ fontSize: 13 }}>County</MenuItem>
+            <MenuItem value="titleI" sx={{ fontSize: 13 }}>Title I</MenuItem>
+            <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
+            <MenuItem value="capacity" sx={{ fontSize: 13 }}>Capacity</MenuItem>
+            <MenuItem value="level" sx={{ fontSize: 13 }}>Level</MenuItem>
+            <MenuItem value="type" sx={{ fontSize: 13 }}>Type</MenuItem>
+          </Select>
+          <Tooltip title={order === "asc" ? "Ascending" : "Descending"}>
+            <IconButton size="small" onClick={() => setOrder((o) => (o === "asc" ? "desc" : "asc"))} aria-label={`Sort direction ${order === "asc" ? "ascending" : "descending"}, toggle`}>
+              {order === "asc" ? <ArrowUpIcon size={16} /> : <ArrowDownIcon size={16} />}
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
+
+      <TableContainer ref={containerRef} component={Paper} elevation={0} square sx={{ flex: 1, overflow: "auto", overflowX: "hidden", minHeight: 0 }}>
         <Table stickyHeader size="small" sx={{ tableLayout: "fixed", width: "100%", "& .MuiTableCell-root": { px: 1.25 } }}>
           <TableHead>
-            <TableRow>
-              {columns.map((c) => (
-                <TableCell
-                  key={c.key}
-                  align={c.numeric ? "right" : "left"}
-                  title={c.help}
-                  sortDirection={c.key !== "actions" && c.key !== "flags" && orderBy === c.key ? order : false}
-                  sx={{ width: colWidth(c), fontWeight: 700, fontSize: 12, textTransform: "none", letterSpacing: 0.16, color: "text.secondary", bgcolor: "background.paper", py: 1.25, whiteSpace: "nowrap", cursor: c.help ? "help" : undefined }}
-                >
-                  {c.key === "actions" || c.key === "flags" ? (
-                    c.label
-                  ) : (
-                    <TableSortLabel
-                      active={orderBy === c.key}
-                      direction={orderBy === c.key ? order : "asc"}
-                      onClick={() => handleSort(c.key as SortKey)}
-                    >
-                      {c.label}
-                    </TableSortLabel>
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
+            {!phone && (
+              <TableRow>
+                {columns.map((c) => (
+                  <TableCell
+                    key={c.key}
+                    align={c.numeric ? "right" : "left"}
+                    title={c.help}
+                    sortDirection={c.key !== "actions" && c.key !== "flags" && orderBy === c.key ? order : false}
+                    sx={{ width: colWidth(c), fontWeight: 700, fontSize: 12, textTransform: "none", letterSpacing: 0.16, color: "text.secondary", bgcolor: "background.paper", py: 1.25, whiteSpace: "nowrap", cursor: c.help ? "help" : undefined }}
+                  >
+                    {c.key === "actions" || c.key === "flags" ? (
+                      c.label
+                    ) : (
+                      <TableSortLabel
+                        active={orderBy === c.key}
+                        direction={orderBy === c.key ? order : "asc"}
+                        onClick={() => handleSort(c.key as SortKey)}
+                      >
+                        {c.label}
+                      </TableSortLabel>
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            )}
           </TableHead>
           <TableBody>
             {schools == null &&
@@ -307,34 +403,103 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                   key={r.msid}
                   data-index={virtualRow.index}
                   ref={(el) => rowVirtualizer.measureElement(el)}
-                  hover
+                  hover={!phone}
                   selected={selected}
                   onClick={() => openSchool(r)}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Open details for ${r.name}`}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openSchool(r);
-                    }
-                  }}
                   sx={{
                     cursor: "pointer",
-                    "&.Mui-selected": { bgcolor: alpha("#2563EB", 0.08) },
-                    "&.Mui-selected:hover": { bgcolor: alpha("#2563EB", 0.14) },
-                    "&:focus-visible": { outline: `2px solid ${ACCENT_TEXT}`, outlineOffset: -2 },
+                    // On phone the card carries its own selected treatment, so the
+                    // row itself stays transparent (a tinted row behind the card,
+                    // showing through the gap, looked broken).
+                    ...(phone
+                      ? { "&.Mui-selected": { bgcolor: "transparent" }, "&:hover": { bgcolor: "transparent" } }
+                      : {
+                          "&.Mui-selected": { bgcolor: alpha("#2563EB", 0.08) },
+                          "&.Mui-selected:hover": { bgcolor: alpha("#2563EB", 0.14) },
+                        }),
                   }}
                 >
-                  {/* School: grade badge + name + MSID + decision flags, one column */}
-                  <TableCell>
-                    <Stack direction="row" spacing={1.25} alignItems="center">
+                  {phone ? (
+                    /* Phone: the entire row is a single distinct CARD. Header line
+                       (grade + full name + actions), a sub line (MSID + flags), then
+                       a labelled facts block. Full-width via colSpan; the card's own
+                       border and the cell padding separate it from its neighbours. */
+                    <TableCell colSpan={columns.length} className="school-card-cell">
+                      <div className={`school-card${selected ? " school-card--selected" : ""}`}>
+                        <div className="school-card__head">
+                          <span
+                            className="school-card__grade"
+                            title={gs.description}
+                            style={{ background: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor), borderColor: rgbaToCss(gs.stroke), borderStyle: gs.dashed ? "dashed" : "solid" }}
+                          >
+                            {gs.letter}
+                          </span>
+                          <div className="school-card__namewrap">
+                            <button
+                              type="button"
+                              className="school-card__name"
+                              title={r.name}
+                              aria-label={`Open details for ${r.name}`}
+                              onClick={(e) => { e.stopPropagation(); openSchool(r); }}
+                            >
+                              {r.name}
+                            </button>
+                            <div className="school-card__meta">
+                              {[r.county, r.level, schoolTypeLabel(r.type)].filter(Boolean).join(" · ")}
+                              <span className="school-card__msid">{r.msid}</span>
+                            </div>
+                          </div>
+                          <div className="school-card__actions">
+                            <Tooltip title="Show on map" placement="top">
+                              <IconButton size="medium" onClick={(e) => showOnMap(e, r)} aria-label={`Show ${r.name} on the map`} sx={{ p: "14px" }}>
+                                <MyLocationIcon size={16} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title={pinned ? "Remove from shortlist" : comparePinned.length >= MAX_COMPARE ? `Shortlist is full (max ${MAX_COMPARE})` : "Add to shortlist"} placement="top">
+                              <span>
+                                <IconButton
+                                  size="medium"
+                                  onClick={(e) => { e.stopPropagation(); toggleComparePin(r.msid); }}
+                                  disabled={!pinned && comparePinned.length >= MAX_COMPARE}
+                                  aria-label={pinned ? `Remove ${r.name} from your shortlist` : `Add ${r.name} to your shortlist`}
+                                  aria-pressed={pinned}
+                                  sx={{ p: "14px", color: pinned ? ACCENT_TEXT : undefined }}
+                                >
+                                  {pinned ? <BookmarkFilledIcon size={16} /> : <BookmarkIcon size={16} />}
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </div>
+                        </div>
+                        {(r.isPlp || r.isCoLocation) && (
+                          <div className="school-card__flags">
+                            {r.isPlp && <FlagChip label="PLP" color={RED_STRONG} title="Persistently low-performing (F.S. 1002.333). A hope operator may open to serve this school's students." />}
+                            {r.isCoLocation && <FlagChip label="Co-loc" color={CO_LOC_BLUE} title="Co-location candidate: an underused district building in a School of Hope siting area. The building-age rule is checked in a school's details." />}
+                          </div>
+                        )}
+                        <div className="school-card__facts">
+                          <div className="school-card__fact">
+                            <span className="school-card__fact-label">Utilization</span>
+                            <span className="school-card__fact-value"><UtilizationCell util={r.utilization} bucket={r.bucket} dense={false} fill /></span>
+                          </div>
+                          <div className="school-card__fact">
+                            <span className="school-card__fact-label">Title I</span>
+                            <span className="school-card__fact-value"><TitleICell value={r.titleI} /></span>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+                  ) : (
+                  <>
+                  {/* School: grade badge + name + MSID + decision flags. */}
+                  <TableCell sx={{ verticalAlign: undefined, py: undefined }}>
+                    <Stack direction="row" spacing={1.25} alignItems={phone ? "flex-start" : "center"}>
                       <Box
                         title={gs.description}
                         sx={{
                           width: 30, height: 30, borderRadius: 1, flex: "none",
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 12.5, fontWeight: 800,
+                          fontSize: 13, fontWeight: 800,
                           bgcolor: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor),
                           border: `1.25px ${gs.dashed ? "dashed" : "solid"} ${rgbaToCss(gs.stroke)}`,
                         }}
@@ -342,12 +507,49 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                         {gs.letter}
                       </Box>
                       <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography variant="body2" title={r.name} sx={{ fontWeight: 600, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</Typography>
+                        {/* The name is the row's primary control: a real button, so
+                            keyboard users tab name -> show-on-map -> shortlist per
+                            row (no interactive controls nested inside a button row).
+                            On phone it wraps to two lines instead of truncating. */}
+                        <Box
+                          component="button"
+                          type="button"
+                          title={r.name}
+                          aria-label={`Open details for ${r.name}`}
+                          onClick={(e) => { e.stopPropagation(); openSchool(r); }}
+                          sx={{
+                            appearance: "none", border: "none", background: "none", p: 0, m: 0, font: "inherit",
+                            width: "100%", minWidth: 0, textAlign: "left", cursor: "pointer",
+                            fontWeight: 600, lineHeight: 1.3, color: "text.primary", overflow: "hidden",
+                            ...(phone
+                              ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", whiteSpace: "normal" }
+                              : { display: "block", whiteSpace: "nowrap", textOverflow: "ellipsis" }),
+                            "&:hover": { textDecoration: "underline" },
+                            "&:focus-visible": { outline: `2px solid ${ACCENT_TEXT}`, outlineOffset: 2, borderRadius: 1 },
+                          }}
+                        >
+                          {r.name}
+                        </Box>
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.25, flexWrap: "wrap", rowGap: 0.25 }}>
                           <Typography variant="caption" color="text.secondary" sx={{ fontFamily: "var(--font-mono)" }}>{r.msid}</Typography>
                           {r.isPlp && <FlagChip label="PLP" color={RED_STRONG} title="Persistently low-performing (F.S. 1002.333). A hope operator may open to serve this school's students." />}
                           {r.isCoLocation && <FlagChip label="Co-loc" color={CO_LOC_BLUE} title="Co-location candidate: an underused district building (utilization at or below 75%, or 400+ surplus stations) in a School of Hope siting area. Rent-free co-location is possible under Rule 6A-1.0998271; the rule's exclusion of buildings under 4 years old is not checked here." />}
                         </Stack>
+                        {phone && (
+                          <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 0.75 }}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ flex: "0 0 auto", width: 62 }}>Utilization</Typography>
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <UtilizationCell util={r.utilization} bucket={r.bucket} dense={false} fill />
+                              </Box>
+                            </Box>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ flex: "0 0 auto", width: 62 }}>Title I</Typography>
+                              <TitleICell value={r.titleI} />
+                            </Box>
+                            <Typography variant="caption" color="text.secondary">{[r.county, r.level, schoolTypeLabel(r.type)].filter(Boolean).join(" · ")}</Typography>
+                          </Box>
+                        )}
                       </Box>
                     </Stack>
                   </TableCell>
@@ -363,9 +565,11 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                   {!ultraCompact && (
                     <TableCell><TitleICell value={r.titleI} /></TableCell>
                   )}
-                  <TableCell align="right">
-                    <UtilizationCell util={r.utilization} bucket={r.bucket} dense={compact} />
-                  </TableCell>
+                  {!phone && (
+                    <TableCell align="right">
+                      <UtilizationCell util={r.utilization} bucket={r.bucket} dense={compact} />
+                    </TableCell>
+                  )}
                   {!ultraCompact && (
                     <TableCell align="right">
                       <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
@@ -380,26 +584,33 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                       </Typography>
                     </TableCell>
                   )}
-                  <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
-                    <Tooltip title="Show on map" placement="top">
-                      <IconButton size="small" onClick={(e) => showOnMap(e, r)} aria-label={`Show ${r.name} on map`}>
-                        <MyLocationIcon size={16} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={pinned ? "Remove from compare" : comparePinned.length >= MAX_COMPARE ? `Compare holds up to ${MAX_COMPARE} sites` : "Add to compare"} placement="top">
-                      <span>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => { e.stopPropagation(); toggleComparePin(r.msid); }}
-                          disabled={!pinned && comparePinned.length >= MAX_COMPARE}
-                          aria-label={pinned ? `Remove ${r.name} from compare` : `Add ${r.name} to compare`}
-                          sx={{ color: pinned ? ACCENT_TEXT : undefined }}
-                        >
-                          <CompareArrowsIcon size={16} />
+                  {/* On phone the actions stack and use a 44px touch target (Fluent
+                      minimum); on desktop they stay compact inline icons. */}
+                  <TableCell align="right" sx={{ whiteSpace: "nowrap", verticalAlign: phone ? "top" : undefined, py: phone ? 1.25 : undefined }}>
+                    <Stack direction={phone ? "column" : "row"} spacing={phone ? 0.5 : 0} alignItems="center" sx={{ float: phone ? "right" : undefined }}>
+                      <Tooltip title="Show on map" placement="top">
+                        <IconButton size={phone ? "medium" : "small"} onClick={(e) => showOnMap(e, r)} aria-label={`Show ${r.name} on the map`} sx={{ p: phone ? "14px" : undefined }}>
+                          <MyLocationIcon size={16} />
                         </IconButton>
-                      </span>
-                    </Tooltip>
+                      </Tooltip>
+                      <Tooltip title={pinned ? "Remove from shortlist" : comparePinned.length >= MAX_COMPARE ? `Shortlist is full (max ${MAX_COMPARE})` : "Add to shortlist"} placement="top">
+                        <span>
+                          <IconButton
+                            size={phone ? "medium" : "small"}
+                            onClick={(e) => { e.stopPropagation(); toggleComparePin(r.msid); }}
+                            disabled={!pinned && comparePinned.length >= MAX_COMPARE}
+                            aria-label={pinned ? `Remove ${r.name} from your shortlist` : `Add ${r.name} to your shortlist`}
+                            aria-pressed={pinned}
+                            sx={{ p: phone ? "14px" : undefined, color: pinned ? ACCENT_TEXT : undefined }}
+                          >
+                            {pinned ? <BookmarkFilledIcon size={16} /> : <BookmarkIcon size={16} />}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Stack>
                   </TableCell>
+                  </>
+                  )}
                 </TableRow>
               );
             })}
@@ -425,7 +636,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                     </Box>
                     <Button
                       size="small"
-                      onClick={() => (query.trim() ? setQuery("") : useStore.getState().resetAll())}
+                      onClick={() => (query.trim() ? setQuery("") : useStore.getState().clearAllFilters())}
                       sx={{ textTransform: "none", fontWeight: 600 }}
                     >
                       {query.trim() ? "Clear search" : "Clear all filters"}
@@ -470,7 +681,9 @@ function TitleICell({ value }: { value: string }) {
   );
 }
 
-function UtilizationCell({ util, bucket, dense }: { util: number | null; bucket: Row["bucket"]; dense: boolean }) {
+// `fill` (phone card) makes the bar flex to fill its container instead of a fixed
+// right-aligned width, so it never overflows a tight row and collides with a label.
+function UtilizationCell({ util, bucket, dense, fill }: { util: number | null; bucket: Row["bucket"]; dense: boolean; fill?: boolean }) {
   if (util == null) return <Typography variant="body2" color="text.secondary">n/a</Typography>;
   const pct = Math.round(util * 100);
   const mark = bucket === "over" ? "▲" : bucket === "under" ? "▼" : "";
@@ -482,11 +695,11 @@ function UtilizationCell({ util, bucket, dense }: { util: number | null; bucket:
   // their own columns, so this cell shows just the rate and its bar.
   const fillPct = util > 0 ? Math.max(2, Math.min(100, util * 100)) : 0;
   return (
-    <Stack direction="row" alignItems="center" spacing={1} justifyContent="flex-end">
-      <Box sx={{ width: dense ? 56 : 88, height: 6, bgcolor: "action.hover", borderRadius: 3, overflow: "hidden", flex: "none" }}>
+    <Stack direction="row" alignItems="center" spacing={1} justifyContent={fill ? "flex-start" : "flex-end"} sx={fill ? { width: "100%" } : undefined}>
+      <Box sx={{ width: fill ? "auto" : dense ? 56 : 88, flex: fill ? 1 : "none", minWidth: fill ? 40 : undefined, height: 6, bgcolor: "action.hover", borderRadius: 3, overflow: "hidden" }}>
         <Box sx={{ width: `${fillPct}%`, height: "100%", bgcolor: color, borderRadius: 3 }} />
       </Box>
-      <Typography variant="body2" sx={{ fontWeight: 700, color, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "right" }}>
+      <Typography variant="body2" sx={{ fontWeight: 700, color, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "right", flex: "0 0 auto" }}>
         {mark ? `${mark} ` : ""}{pct}%
       </Typography>
     </Stack>
@@ -505,27 +718,9 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "county", label: "County", tier: "mid", width: 100 },
   { key: "level", label: "Level", tier: "full", width: 90 },
   { key: "type", label: "Type", tier: "full", width: 92 },
-  { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Federal Title I eligibility (NCES CCD), the available proxy for economic disadvantage. Schoolwide programs serve 40%+ low-income enrollment. A per-school free / reduced-price-lunch rate is a planned data addition." },
-  { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations), so it reconciles with the Enrollment and Capacity columns. A school's inspector shows the statutory COFTE-based Facility Utilization Rate, with its own disclosure." },
+  { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Federal Title I eligibility (NCES CCD)." },
+  { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
   { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "Membership enrollment (NCES CCD, 2023-24)." },
   { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Permanent FISH student stations (FL DOE)." },
   { key: "actions", label: "", numeric: true, width: 86 },
 ];
-
-const LABEL: Record<SortKey, string> = {
-  name: "school name",
-  type: "type",
-  county: "county",
-  level: "level",
-  titleI: "Title I",
-  enrollment: "enrollment",
-  capacity: "capacity",
-  utilization: "utilization",
-};
-
-const SEARCH_PLACEHOLDER: Record<SearchField, string> = {
-  name: "Search name or MSID",
-  county: "Search county",
-  grade: "Search grade (A, B, ...)",
-  type: "Search type",
-};

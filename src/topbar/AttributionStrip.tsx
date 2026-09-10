@@ -32,15 +32,15 @@ const GROUPS: Group[] = [
       { label: "School directory & MSID", tag: "Official",
         source: "NCES Common Core of Data, via Urban Institute Education Data Portal",
         vintage: "2023-2024 directory",
-        note: "1,136 schools, each with a unique MSID (district-school, e.g. 13-0801), rebuilt from the 2023-24 CCD directory (open and operating schools in Miami-Dade, Broward, and Orange). Closed and consolidated schools are excluded; any school with a current A-F grade is retained even if the directory lags. 2 charters that opened too recently to appear in the directory are still pending coordinates." },
+        note: "1,149 schools, each with a unique MSID (district-school, e.g. 13-0801), rebuilt from the 2023-24 CCD directory (open and operating schools in Miami-Dade, Broward, and Orange). Closed and consolidated schools are excluded; any school with a current A-F grade is retained even if the directory lags. 13 K-8 schools missing from the directory but present in the FL DOE county school lists (new campuses and charters) were reconciled in and geocoded to their street address." },
       { label: "Letter grades (current & history)", tag: "Verified",
         source: "Florida Department of Education, School Grades files",
         vintage: "1999-2000 through 2025-2026",
-        note: "Cross-checked cell-for-cell against the FL DOE spreadsheet: 992 graded schools, every year, 0 discrepancies. 'Current grade' is the most recent A-F year. 990 schools carry a current A-F grade; 146 (charter/alternative/virtual/ESE centers) are ungraded and show NR." },
+        note: "Cross-checked cell-for-cell against the FL DOE spreadsheet: 992 graded schools, every year, 0 discrepancies. 'Current grade' is the most recent A-F year. 992 schools carry a current A-F grade; 157 (charter/alternative/virtual/ESE centers) are ungraded and show NR." },
       { label: "Persistently Low-Performing (PLP)", tag: "Official",
         source: "FL DOE PLP designations list per F.S. 1002.333",
         vintage: "2024-2025",
-        note: "The official DOE list is used directly (not inferred). It captures all three statutory criteria." },
+        note: "We use the official DOE list directly, not inferred. It captures all three statutory criteria." },
       { label: "Title I eligibility", tag: "Official",
         source: "NCES Common Core of Data (Title I eligibility flag)",
         vintage: "2023-2024 directory",
@@ -59,11 +59,11 @@ const GROUPS: Group[] = [
     entries: [
       { label: "Congressional / State House / State Senate", tag: "Derived",
         source: "U.S. Census Bureau TIGERweb (119th Congress; 2024 state legislative districts)",
-        note: "Each school is assigned by a point-in-polygon spatial join against the official district boundaries. A school within a few hundred feet of a district line should be confirmed against its address." },
+        note: "Each school is assigned by a spatial join against the official district boundaries. Confirm any school within a few hundred feet of a district line against its address." },
       { label: "Representatives", tag: "Reference",
         source: "unitedstates/congress-legislators (U.S. House) + Florida House & Senate chamber rosters",
         vintage: "retrieved 2026-09-06",
-        note: "Names reflect the roster at retrieval; verify after any election or appointment." },
+        note: "Names reflect the roster at retrieval. Verify after any election or appointment." },
       { label: "School board districts", tag: "Derived",
         source: "Miami-Dade & Broward county GIS boundaries + Supervisor-of-Elections rosters; Orange from OCPS per-district school lists",
         note: "Miami-Dade and Broward are assigned by spatial join against official polygons. Orange has no open boundary GIS, so its schools are matched to a board district by the district's own school list (195 of 202 matched); Orange has no boundary overlay." },
@@ -79,7 +79,7 @@ const GROUPS: Group[] = [
       { label: "Median household income", tag: "Official",
         source: "U.S. Census Bureau ACS 5-year (B19013) + TIGERweb tracts",
         vintage: "2019-2023",
-        note: "Tract-level estimate; respect the ACS margin of error for small tracts." },
+        note: "Tract-level estimate. Respect the ACS margin of error for small tracts." },
       { label: "Population growth", tag: "Official",
         source: "U.S. Census Bureau Population Estimates Program (Vintage 2024) + ACS 5-year",
         vintage: "2023 to 2024",
@@ -156,7 +156,7 @@ export function AttributionStrip({ open, onClose }: { open: boolean; onClose: ()
       ))}
 
       <p className="attribution-footer">
-        Base map imagery © Google. This tool supports siting analysis; confirm any specific eligibility determination against the primary FL DOE and county records before acting.
+        Base map imagery © Google. This tool supports siting analysis. Confirm any specific eligibility determination against the primary FL DOE and county records before acting.
       </p>
     </Modal>
   );

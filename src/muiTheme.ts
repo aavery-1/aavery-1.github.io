@@ -21,12 +21,15 @@ export const SHELL_MUTED = "#6F6F6F";    // Gray 60, text-helper
 export const SHELL_HAIRLINE = "#E0E0E0"; // Gray 20, border-subtle
 export const BORDER_STRONG = "#8D8D8D";  // Gray 50, border-strong (field underlines)
 
-// The one interactive color: Carbon Blue 60, with Blue 70 for hover/active and
-// as text on a light blue tint. TEAL / TEAL_DARK are retained as aliases so the
-// components that import them do not change; they now resolve to Carbon Blue.
-export const ACCENT = "#0F62FE";      // Blue 60, interactive
-export const ACCENT_DARK = "#0043CE"; // Blue 70, hover / active
-export const ACCENT_TEXT = "#0043CE"; // Blue 70, text on a blue tint
+// The one interactive color: KIPP navy, with a darker navy for hover/active and
+// as text on a light navy tint. TEAL / TEAL_DARK are retained as aliases so the
+// components that import them do not change; they now resolve to KIPP navy.
+// (This is the single knob for the brand color across MUI + the dock; the Carbon
+// components read the matching --cds-* overrides in carbon-styles.scss, and plain
+// CSS reads --focus from theme.ts. Keep all three in sync.)
+export const ACCENT = "#001E62";      // KIPP navy (brand indigo), interactive
+export const ACCENT_DARK = "#001541"; // Darker navy, hover / active
+export const ACCENT_TEXT = "#001541"; // Darker navy, text on a navy tint
 export const TEAL = ACCENT;
 export const TEAL_DARK = ACCENT_DARK;
 
@@ -103,7 +106,7 @@ export const muiTheme = createTheme({
     body2: { letterSpacing: 0.16 },
     button: { textTransform: "none", fontWeight: 400, letterSpacing: 0.16 },
     caption: { letterSpacing: 0.32 },
-    overline: { letterSpacing: 0.32, fontWeight: 600, textTransform: "uppercase" },
+    overline: { letterSpacing: 0.16, fontWeight: 600, textTransform: "none" },
   },
   shadows: [
     "none",

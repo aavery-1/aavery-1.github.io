@@ -12,7 +12,7 @@ import "./ActiveFilterChips.carbon.css";
 
 export function ActiveFilterChips() {
   const filters = useActiveFilters();
-  const resetAll = useStore((s) => s.resetAll);
+  const clearAllFilters = useStore((s) => s.clearAllFilters);
 
   if (filters.length === 0) return null;
 
@@ -33,7 +33,7 @@ export function ActiveFilterChips() {
       {filters.length > 1 && (
         <>
           <hr className="active-filter-chips__divider" />
-          <button className="active-filter-chips__clear" onClick={resetAll}>
+          <button className="active-filter-chips__clear" onClick={clearAllFilters}>
             Clear all
           </button>
         </>

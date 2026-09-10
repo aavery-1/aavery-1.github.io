@@ -1,40 +1,44 @@
-// The "schools in view" bottom sheet: the map's results surface, in the pattern
-// people already know from Redfin, Zillow, and Google Maps. A grabber handle and
-// a count-forward header ("1,136 schools in view") peek at the bottom of the map;
-// pulling it up reveals a scannable list of those schools (grade, name, district,
-// facility-usage donut) that flies to and selects a school on tap, plus a single
-// "Open in List" that hands the exact on-screen set to the full List table. Its
-// job is glance-and-jump; sorting, search, compare and export live in List, so
-// the sheet never becomes a spreadsheet.
+// The "schools in view" results surface, in the pattern people know from Redfin,
+// Zillow, and Google/Apple Maps. Its job is glance-and-jump; sorting, search,
+// compare and export live in List, so it never becomes a spreadsheet. Every value
+// derives from the SAME viewport-limited slice the map draws (useFilteredSchools
+// inViewFeatures), so the sheet and map never disagree.
 //
-// Responsive: a centered, capped-width sheet on desktop (clearing the inspector
-// and the corner map controls); a full-width sheet flush to the bottom on phones.
-// Every value derives from the SAME viewport-limited slice the map draws
-// (useFilteredSchools inViewFeatures), so the sheet and map never disagree.
+// Strictly Carbon: plain elements styled by OverviewDock.css with --cds tokens (no
+// MUI). Two responsive forms, one source of truth for the content:
+//   - Desktop/tablet: a centered, capped-width floating card; a count-forward peek
+//     expands into the list on demand.
+//   - Phone: a floating DRAGGABLE sheet with three snap points (peek / half /
+//     full), a grabber handle, and the PLP / Underused / Co-location filters as a
+//     horizontal chip row. The grabber is the only drag surface so it never fights
+//     the list's own scroll. No em dashes in this file.
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Box, Paper, Typography, Stack, Collapse, Button, TextField, InputAdornment, useMediaQuery, useTheme } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { ChevronDown, ChevronUp, ArrowRight as ArrowForwardIcon, Search as SearchIcon, Close as CloseIcon } from "@carbon/icons-react";
+import { Search as CarbonSearch } from "@carbon/react";
+import { ChevronDown, ChevronUp, ArrowRight as ArrowForwardIcon, Close as CloseIcon } from "@carbon/icons-react";
 import { useStore, utilizationStyle, isUnderutilizedFacility, UTIL_COLORS } from "../store";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { schoolTypeLabel } from "../data/types";
-import { SHELL_ON, SHELL_DIM, SHELL_MUTED, SHELL_HAIRLINE, TEAL } from "../muiTheme";
+import { usePhone, useMediaQuery } from "../ui/useMediaQuery";
 import type { SchoolFeature } from "../data/types";
+import "./OverviewDock.css";
 
 const SLATE = "#334155";
 const TRACK = "#E2E8F0";
+const MUTED = "#94A3B8";
 const PLP_RED = "#D32F2F";
 const CO_LOC_TEAL = "#0D9488"; // matches the teal co-location dot on the map
-const COL_LABEL = { fontSize: 11, fontWeight: 600, letterSpacing: "0.01em", textTransform: "none" as const, color: SHELL_DIM };
 
-// Small facility-usage donut: a ring filled to the facility utilization rate
-// (COFTE / student stations when reported, else enrollment / capacity), with the
-// rate in the center and the ring tinted by the utilization tier (under / in use
-// / full) from the shared utilizationStyle helper. Dashed empty ring when
-// capacity is unreported.
+// Phone sheet detents, as a fraction of the map area height (peek is a fixed px).
+const PEEK_PX = 96;
+const HALF_FRAC = 0.55;
+const FULL_FRAC = 0.92;
+
+// Small facility-usage donut: a ring filled to the utilization rate, tinted by the
+// utilization tier, with the rate in the center. Dashed empty ring when capacity is
+// unreported.
 function UsageDonut({ enrollment, capacity, cofte, surplus }: { enrollment: number | null; capacity: number | null; cofte?: number | null; surplus?: number | null }) {
   const size = 34, stroke = 4;
   const r = (size - stroke) / 2;
@@ -45,8 +49,9 @@ function UsageDonut({ enrollment, capacity, cofte, surplus }: { enrollment: numb
   const frac = known ? Math.max(0, Math.min(1, pct / 100)) : 0;
   const basisLabel = u.basis === "cofte" ? "COFTE / student stations" : "enrollment / capacity";
   return (
-    <Box
-      sx={{ position: "relative", width: size, height: size, flex: "none" }}
+    <div
+      className="dock-donut"
+      style={{ width: size, height: size }}
       title={known ? `${u.label}: ${pct}% utilized (${basisLabel})` : "No reported capacity"}
       aria-label={known ? `${u.label}, ${pct} percent utilized` : "Facility utilization not reported"}
     >
@@ -61,10 +66,10 @@ function UsageDonut({ enrollment, capacity, cofte, surplus }: { enrollment: numb
           />
         )}
       </svg>
-      <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: pct != null && pct >= 100 ? 8.5 : 9.5, fontWeight: 800, color: known ? u.color : SHELL_MUTED, fontVariantNumeric: "tabular-nums" }}>
+      <span className="dock-donut__pct" style={{ fontSize: pct != null && pct >= 100 ? 8.5 : 9.5, color: known ? u.color : MUTED }}>
         {pct != null ? pct : "–"}
-      </Box>
-    </Box>
+      </span>
+    </div>
   );
 }
 
@@ -73,10 +78,13 @@ export function OverviewDock() {
   const selectedMsid = useStore((s) => s.selectedSchoolMsid);
   const selectSchool = useStore((s) => s.selectSchool);
   const setViewMode = useStore((s) => s.setViewMode);
+  // The shortlist tray claims the same bottom band; when it is open the "schools
+  // in view" peek stands down, the way it already does for the inspector.
+  const shortlistOpen = useStore((s) => s.shortlistOpen);
   const setListScope = useStore((s) => s.setListScope);
-  // The ribbon counts double as filters: clicking one isolates that set across
-  // the whole view (map + list + dock), reading the same store flags the filter
-  // panel uses, so the two can never disagree.
+  // The ribbon counts double as filters: clicking one isolates that set across the
+  // whole view (map + list + dock), reading the same store flags the filter panel
+  // uses, so the two can never disagree.
   const plpOnly = useStore((s) => s.plpOnly);
   const coLocationOnly = useStore((s) => s.coLocationOnly);
   const facilityUseSelection = useStore((s) => s.facilityUseSelection);
@@ -85,15 +93,37 @@ export function OverviewDock() {
   const toggleFacilityUse = useStore((s) => s.toggleFacilityUse);
   const underusedActive = facilityUseSelection.has("under");
   const [query, setQuery] = useState("");
-  const theme = useTheme();
-  const isLarge = useMediaQuery(theme.breakpoints.up("lg"));
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  // Collapsed to the peek by default so the map stays clear; the list pulls up on
-  // demand with a smooth animation.
+  const isLarge = useMediaQuery("(min-width: 1200px)");
+  const isMobile = usePhone();
+  // Desktop: collapsed to the peek by default so the map stays clear.
   const [open, setOpen] = useState(false);
 
-  // Schools in view, PLP first, then by descending usage so the most-relevant
-  // rows are at the top of the list.
+  // Phone sheet state: snap index (0 peek / 1 half / 2 full) and a transient drag
+  // height in px. The map area height is tracked so the fractional detents stay
+  // correct across rotation / resize.
+  const [snap, setSnap] = useState<0 | 1 | 2>(0);
+  const [dragH, setDragH] = useState<number | null>(null);
+  const [areaH, setAreaH] = useState<number>(() => (typeof window !== "undefined" ? window.innerHeight - 48 : 640));
+  const dragRef = useRef<{ startY: number; startH: number; moved: boolean; curH: number } | null>(null);
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+
+  useEffect(() => {
+    const onResize = () => setAreaH(window.innerHeight - 48);
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, []);
+
+  const detents = useMemo(
+    () => [PEEK_PX, Math.round(areaH * HALF_FRAC), Math.round(areaH * FULL_FRAC)] as const,
+    [areaH],
+  );
+
+  // Schools in view, PLP first, then by descending usage so the most-relevant rows
+  // are at the top of the list.
   const rows = useMemo(() => {
     const usage = (f: SchoolFeature) => {
       const { enrollment, capacity } = f.properties;
@@ -111,12 +141,9 @@ export function OverviewDock() {
     });
   }, [inViewFeatures, ctx, query]);
 
-  // Virtualized: at full zoom-out "in view" can be every school (1,100+), and
-  // this list (with a scannable icon, two text lines, and an SVG usage donut
-  // per row) noticeably hitched the main thread on expand when every row
-  // mounted as a real element. Only rows in/near the visible scroll window
-  // mount; the container below is sized to the full virtual height so the
-  // scrollbar and row positions stay correct for the rest.
+  // Virtualized: at full zoom-out "in view" can be every school (1,100+); only rows
+  // in/near the visible scroll window mount, and the container below is sized to the
+  // full virtual height so the scrollbar and row positions stay correct.
   const listContainerRef = useRef<HTMLDivElement | null>(null);
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
@@ -129,15 +156,12 @@ export function OverviewDock() {
   // When a school is selected on a smaller-than-lg screen the inspector claims the
   // bottom, so the sheet stands down (large screens fit both).
   if (selectedMsid && !isLarge) return null;
+  // The shortlist tray owns the bottom band when open (including its empty state).
+  if (shortlistOpen) return null;
 
-  const focus = (f: SchoolFeature) => {
-    // Selecting drives MapView's fly-to effect, which smoothly pans + zooms the
-    // map to the school. Keeping the animation in one place avoids double moves.
-    selectSchool(f.properties.msid);
-  };
+  const focus = (f: SchoolFeature) => selectSchool(f.properties.msid);
 
-  // Hand the exact on-screen set off to the full List table: scope it to the map
-  // view, then switch. The bridge from spatial browsing to tabular analysis.
+  // Hand the exact on-screen set off to the full List table.
   const openInList = () => {
     setListScope("inView");
     setViewMode("list");
@@ -148,242 +172,286 @@ export function OverviewDock() {
   const empty = inViewTotal === 0;
   const noMatches = rows.length === 0;
 
-  return (
-    <Box
-      sx={{
-        position: "absolute", zIndex: 8, pointerEvents: "none",
-        // The dock stays on the SAME bottom baseline as the scale/coordinate
-        // readout (bottom-left) and the zoom controls (bottom-right), and never
-        // covers them: it is a positioned band inset past the readout on the left
-        // and the controls on the right, with a compact card centred inside. The
-        // card is narrow (a stacked count + three equal stats), so it fits that
-        // clear middle space at every width. Below lg the readout sits close to
-        // screen centre, so the left inset must clear it; at lg the map is wide
-        // enough for a near-centred card to clear both, so the insets shrink.
-        display: "flex", justifyContent: "center",
-        bottom: isMobile ? 22 : 28,
-        left: isMobile ? 0 : { sm: 284, lg: 24 },
-        right: isMobile ? 0 : { sm: 68, lg: 24 },
-        // Animate the position so crossing a breakpoint glides instead of jumping.
-        transition: "left 220ms cubic-bezier(0.4,0,0.2,1), right 220ms cubic-bezier(0.4,0,0.2,1), bottom 220ms cubic-bezier(0.4,0,0.2,1)",
-        "@media (prefers-reduced-motion: reduce)": { transition: "none" },
-      }}
-    >
-      <Paper
-        elevation={0}
-        sx={{
-          pointerEvents: "auto", overflow: "hidden", display: "flex", flexDirection: "column",
-          bgcolor: alpha("#ffffff", 0.97), backdropFilter: "saturate(140%) blur(8px)",
-          border: `1px solid ${SHELL_HAIRLINE}`,
-          borderRadius: 0, flex: "0 1 auto",
-          boxShadow: "0 2px 24px rgba(15,23,42,0.14)",
-          // Animate width so collapse/expand and breakpoint changes glide.
-          transition: "width 240ms cubic-bezier(0.4,0,0.2,1)",
-          "@media (prefers-reduced-motion: reduce)": { transition: "none" },
-          // Compact when collapsed (a narrow stacked card); wider when expanded so
-          // the list has room. Capped to the band width so it never overruns the
-          // corner controls it is centred between.
-          width: isMobile
-            ? "100%"
-            : open
-              ? { sm: "min(520px, 100%)", lg: "min(760px, 100%)" }
-              : "min(300px, 100%)",
-        }}
+  // --- Shared content pieces (identical in both responsive forms) ---------------
+
+  const searchField = (
+    <CarbonSearch
+      size="lg"
+      className="dock-search"
+      labelText="Search schools in view"
+      placeholder="Search schools in view by name or MSID"
+      value={query}
+      onChange={(e) => setQuery((e.target as HTMLInputElement).value)}
+      onClear={() => setQuery("")}
+    />
+  );
+
+  const colLabels = (
+    <div className="dock-colhead">
+      <span className="dock-colhead__label">{query ? `School (${rows.length.toLocaleString("en-US")})` : "School"}</span>
+      <span
+        className="dock-colhead__label dock-colhead__label--help"
+        title="Facility use compares enrollment to FISH student stations (permanent capacity). Underused means 75% or below, or 400+ surplus stations, the co-location threshold. Rule 6A-1.0998271."
       >
-        {/* Collapsed peek: a compact stacked card. The count is the pull-up
-            toggle at the top; below it the three filter stats stack as equal,
-            aligned full-width rows (same size, numbers right-aligned to a shared
-            column so the labels line up). Stacking keeps the card narrow so it
-            sits in the clear space beside the scale/coordinate readout. */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, px: 2, py: 1.5 }}>
-          <Box
-            component="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-label={open ? "Collapse schools in view" : "Expand schools in view"}
-            disabled={empty}
-            sx={{
-              appearance: "none", font: "inherit", textAlign: "left", width: "100%",
-              bgcolor: "transparent", border: "none", borderRadius: 0, p: 0.5, mx: -0.5, mt: -0.5,
-              cursor: empty ? "default" : "pointer",
-              display: "flex", alignItems: "center", gap: 0.75,
-              "&:focus-visible": { outline: `2px solid ${TEAL}`, outlineOffset: 1 },
+        Facility use
+      </span>
+    </div>
+  );
+
+  // The virtualized rows (position:absolute inside a full-height spacer). Shared
+  // between the desktop scroll box and the phone sheet body.
+  const virtualRows = (
+    <div className="dock-rows" style={{ height: rowVirtualizer.getTotalSize() }}>
+      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+        const f = rows[virtualRow.index];
+        const p = f.properties;
+        const gs = resolveGradeStyle(p.current_grade);
+        const isPlp = ctx.plp.has(p.msid);
+        const underused = isUnderutilizedFacility(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
+        return (
+          <div
+            key={p.msid}
+            className={`dock-row${p.msid === selectedMsid ? " dock-row--selected" : ""}`}
+            data-index={virtualRow.index}
+            ref={(el) => rowVirtualizer.measureElement(el)}
+            onClick={() => focus(f)}
+            tabIndex={0}
+            role="button"
+            aria-label={`Focus ${p.name} on the map`}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                focus(f);
+              }
+            }}
+            style={{ transform: `translateY(${virtualRow.start}px)` }}
+          >
+            <span
+              className="dock-row__grade"
+              style={{
+                background: rgbaToCss(gs.fill),
+                color: rgbaToCss(gs.letterColor),
+                border: `1.25px ${gs.dashed ? "dashed" : "solid"} ${rgbaToCss(gs.stroke)}`,
+              }}
+            >
+              {gs.letter}
+            </span>
+            <span className="dock-row__text">
+              <span className="dock-row__name">{p.name}</span>
+              <span className="dock-row__sub">
+                {p.county}, {schoolTypeLabel(p.type)}
+                {isPlp ? <>, <span style={{ color: PLP_RED, fontWeight: 600 }}>PLP</span></> : null}
+                {underused ? <>, <span style={{ fontWeight: 600, color: UTIL_COLORS.under }}>Underused</span></> : null}
+              </span>
+            </span>
+            <UsageDonut enrollment={p.enrollment} capacity={p.capacity} cofte={p.cofte} surplus={p.fish_surplus} />
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const noMatchesMsg = noMatches ? (
+    <div className="dock-nomatch">No schools in view match &quot;{query}&quot;.</div>
+  ) : null;
+
+  const openInListBtn = (
+    <button type="button" className="dock-openlist" onClick={openInList}>
+      <span>Open {inViewTotal.toLocaleString("en-US")} in the list to sort, compare, and export</span>
+      <ArrowForwardIcon size={16} style={{ flex: "none" }} />
+    </button>
+  );
+
+  const expandBody = (
+    <div className="dock-expand">
+      <div className="dock-searchwrap">{searchField}</div>
+      {colLabels}
+      <div className="dock-list" ref={listContainerRef}>
+        {noMatchesMsg}
+        {virtualRows}
+      </div>
+      {openInListBtn}
+    </div>
+  );
+
+  // ---------------------------------------------------------------------------
+  // Phone: draggable bottom sheet with peek / half / full detents.
+  // ---------------------------------------------------------------------------
+  if (isMobile) {
+    const height = dragH != null ? dragH : detents[snap];
+    const expanded = height > PEEK_PX + 8;
+    const showBody = height > PEEK_PX + 40;
+
+    const endDrag = () => {
+      const d = dragRef.current;
+      dragRef.current = null;
+      if (!d) return;
+      // A tap (no drag) is a binary expand/collapse, matching the two-state
+      // chevron: collapse from any expanded detent, else expand to half. The full
+      // detent stays reachable by dragging or the Arrow keys.
+      if (!d.moved) {
+        setSnap((s) => (s === 0 ? 1 : 0));
+        setDragH(null);
+        return;
+      }
+      const h = d.curH;
+      let best: 0 | 1 | 2 = 0;
+      let bestDist = Infinity;
+      detents.forEach((t, i) => {
+        const dist = Math.abs(t - h);
+        if (dist < bestDist) { bestDist = dist; best = i as 0 | 1 | 2; }
+      });
+      setSnap(best);
+      setDragH(null);
+    };
+
+    const onPointerDown = (e: React.PointerEvent) => {
+      try { (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId); } catch { /* no-op */ }
+      dragRef.current = { startY: e.clientY, startH: detents[snap], moved: false, curH: detents[snap] };
+      setDragH(detents[snap]);
+    };
+    const onPointerMove = (e: React.PointerEvent) => {
+      const d = dragRef.current;
+      if (!d) return;
+      const dy = d.startY - e.clientY;
+      if (Math.abs(dy) > 4) d.moved = true;
+      const h = Math.min(detents[2], Math.max(PEEK_PX, d.startH + dy));
+      d.curH = h;
+      setDragH(h);
+    };
+
+    // Activating a filter from the peek reveals the results it produced.
+    const revealOnFilter = () => { if (snap === 0) setSnap(1); };
+
+    return (
+      <div className="dock-mobile" style={{ display: empty ? "none" : "block" }}>
+        <div
+          className="dock-sheet"
+          style={{ height, transition: dragH != null || reduceMotion ? "none" : "height 300ms cubic-bezier(0.32,0.72,0,1)" }}
+        >
+          {/* Grabber: the only drag surface, so it never fights the list scroll. */}
+          <div
+            className="dock-grabber"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+            role="button"
+            tabIndex={0}
+            aria-label={expanded ? "Collapse schools in view" : "Expand schools in view"}
+            aria-expanded={expanded}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSnap((s) => (s === 0 ? 1 : 0)); }
+              else if (e.key === "ArrowUp") { e.preventDefault(); setSnap((s) => Math.min(2, s + 1) as 0 | 1 | 2); }
+              else if (e.key === "ArrowDown") { e.preventDefault(); setSnap((s) => Math.max(0, s - 1) as 0 | 1 | 2); }
             }}
           >
-            {!empty && (
-              <Box aria-hidden sx={{ display: "flex", color: SHELL_DIM, flex: "none" }}>
-                {open ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-              </Box>
-            )}
-            <Typography component="span" sx={{ fontSize: 17, fontWeight: 700, color: SHELL_ON, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
-              {inViewTotal.toLocaleString("en-US")}
-            </Typography>
-            <Typography component="span" sx={{ fontSize: 13, color: SHELL_DIM, whiteSpace: "nowrap" }}>
-              school{inViewTotal === 1 ? "" : "s"} in view
-            </Typography>
-          </Box>
+            <div className="dock-grabber__bar" aria-hidden />
+            <div className="dock-head">
+              <span className="dock-count">{inViewTotal.toLocaleString("en-US")}</span>
+              <span className="dock-count-label">school{inViewTotal === 1 ? "" : "s"} in view</span>
+              <span className="dock-head__chevron" aria-hidden>{expanded ? <ChevronDown size={18} /> : <ChevronUp size={18} />}</span>
+            </div>
+          </div>
 
-          {/* Filter stats: each isolates its set across the whole view. Separate
-              buttons, never nested in the toggle above. Equal, aligned rows. */}
+          {/* Quick-filter chips. The "all filters" entry is NOT repeated here: the
+              map already carries a Filters button (MapQuickActions), so a second one
+              in the sheet would be redundant. */}
+          <div className="dock-filterrow">
+            <FilterStat compact label="PLP" value={inViewPlp} color={PLP_RED} active={plpOnly}
+              onClick={() => { setPlpOnly(!plpOnly); revealOnFilter(); }}
+              title="Persistently low-performing schools (F.S. 1002.333). Tap to show only these." />
+            <FilterStat compact label="Underused" value={inViewUnderutilized} color={SLATE} active={underusedActive}
+              onClick={() => { toggleFacilityUse("under"); revealOnFilter(); }}
+              title="Facilities under the 75% / 400-station threshold. Tap to show only these." />
+            <FilterStat compact label="Co-location" value={inViewCoLocation} color={CO_LOC_TEAL} active={coLocationOnly}
+              onClick={() => { setCoLocationOnly(!coLocationOnly); revealOnFilter(); }}
+              title="Co-location candidates: underused district facilities in a siting area. Tap to show only these." />
+          </div>
+
+          {/* Body: mounted only once the sheet is meaningfully open. */}
+          {showBody && expandBody}
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Desktop / tablet: a compact bar tucked into the bottom-right corner beside the
+  // map controls (same 40px height as a control button, for a uniform corner). The
+  // collapsed state is just the count bar; expanding grows the stats + list UPWARD
+  // from that bar, so the corner stays snug until the analyst asks for detail.
+  // ---------------------------------------------------------------------------
+  const statsRow = !empty && (
+    <div className="dock-stats-row">
+      <FilterStat compact label="PLP" value={inViewPlp} color={PLP_RED} active={plpOnly}
+        onClick={() => { setPlpOnly(!plpOnly); }}
+        title="Persistently low-performing schools (F.S. 1002.333). Click to show only these." />
+      <FilterStat compact label="Underused" value={inViewUnderutilized} color={SLATE} active={underusedActive}
+        onClick={() => { toggleFacilityUse("under"); }}
+        title="Facilities under the 75% / 400-station threshold, all types. Click to show only these." />
+      <FilterStat compact label="Co-location" value={inViewCoLocation} color={CO_LOC_TEAL} active={coLocationOnly}
+        onClick={() => { setCoLocationOnly(!coLocationOnly); }}
+        title="Co-location candidates: underused district facilities in a School of Hope siting area. Click to show only these." />
+    </div>
+  );
+
+  // Count header stays at the TOP of the card in both states, so it is anchored
+  // when the list expands beneath it. The card is bottom-anchored and grows
+  // upward; a grid-rows 0fr->1fr transition animates the expand smoothly without
+  // hard-coding the content height.
+  return (
+    <div className="dock-desktop">
+      <div className={`dock-card${open && !empty ? " dock-card--open" : ""}`}>
+        <button
+          type="button"
+          className="dock-bar"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label={open ? "Collapse schools in view" : "Expand schools in view"}
+          disabled={empty}
+        >
+          <span className="dock-bar__group">
+            <span className="dock-count">{inViewTotal.toLocaleString("en-US")}</span>
+            <span className="dock-count-label">school{inViewTotal === 1 ? "" : "s"} in view</span>
+          </span>
           {!empty && (
-            <Stack spacing={0.75} sx={{ width: "100%" }}>
-              <FilterStat label="PLP" value={inViewPlp} color={PLP_RED} active={plpOnly}
-                onClick={() => { const v = !plpOnly; setPlpOnly(v); if (v) setOpen(true); }}
-                title="Persistently low-performing schools (F.S. 1002.333). Click to show only these." />
-              <FilterStat label="Underused" value={inViewUnderutilized} color={SLATE} active={underusedActive}
-                onClick={() => { const willActivate = !underusedActive; toggleFacilityUse("under"); if (willActivate) setOpen(true); }}
-                title="Facilities under the 75% / 400-station threshold, all types. Click to show only these." />
-              <FilterStat label="Co-location" value={inViewCoLocation} color={CO_LOC_TEAL} active={coLocationOnly}
-                onClick={() => { const v = !coLocationOnly; setCoLocationOnly(v); if (v) setOpen(true); }}
-                title="Co-location candidates: underused district facilities in a School of Hope siting area. Click to show only these." />
-            </Stack>
+            <span className="dock-bar__chevron" aria-hidden>{open ? <ChevronDown size={18} /> : <ChevronUp size={18} />}</span>
           )}
-        </Box>
-
-        <Collapse in={open && !empty} timeout={260}>
-          <Box sx={{ borderTop: `1px solid ${SHELL_HAIRLINE}` }}>
-            {/* Search within the in-view set. */}
-            <Box sx={{ px: 2, py: 1.25, borderBottom: `1px solid ${SHELL_HAIRLINE}` }}>
-              <TextField
-                fullWidth size="small" value={query} onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search schools in view by name or MSID"
-                InputProps={{
-                  startAdornment: <InputAdornment position="start"><SearchIcon size={16} /></InputAdornment>,
-                  endAdornment: query ? (
-                    <InputAdornment position="end">
-                      <Box component="button" aria-label="Clear search" onClick={() => setQuery("")} sx={{ appearance: "none", border: "none", bgcolor: "transparent", cursor: "pointer", color: SHELL_DIM, display: "flex", p: 0.25 }}>
-                        <CloseIcon size={14} />
-                      </Box>
-                    </InputAdornment>
-                  ) : undefined,
-                }}
-                sx={{ "& .MuiInputBase-root": { fontSize: 13 } }}
-              />
-            </Box>
-            {/* Column labels. Facility use is shown per row as a usage donut, and
-                only the underused schools carry an explicit label, so no separate
-                color key is needed. */}
-            <Box sx={{ px: 3, pt: 1.5, pb: 1.25, borderBottom: `1px solid ${SHELL_HAIRLINE}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Typography sx={COL_LABEL}>{query ? `School (${rows.length.toLocaleString("en-US")})` : "School"}</Typography>
-              <Typography
-                sx={{ ...COL_LABEL, cursor: "help" }}
-                title="Facility use = enrollment vs. FISH student stations. Underused = utilization at or below 75% OR 400+ surplus stations (the co-location threshold), per FL DOE Rule 6A-1.0998271."
-              >
-                Facility use
-              </Typography>
-            </Box>
-            <Box ref={listContainerRef} sx={{ maxHeight: isMobile ? "46vh" : "38vh", overflowY: "auto", px: 1.5, py: 1 }}>
-              {noMatches && (
-                <Typography sx={{ px: 1.5, py: 2, fontSize: 13, color: SHELL_DIM, textAlign: "center" }}>
-                  No schools in view match &quot;{query}&quot;.
-                </Typography>
-              )}
-              <Box sx={{ position: "relative", height: rowVirtualizer.getTotalSize(), width: "100%" }}>
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const f = rows[virtualRow.index];
-                  const p = f.properties;
-                  const gs = resolveGradeStyle(p.current_grade);
-                  const isPlp = ctx.plp.has(p.msid);
-                  const underused = isUnderutilizedFacility(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
-                  return (
-                    <Stack
-                      key={p.msid} direction="row" alignItems="center" spacing={1.5}
-                      data-index={virtualRow.index}
-                      ref={(el) => rowVirtualizer.measureElement(el)}
-                      onClick={() => focus(f)}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`Focus ${p.name} on the map`}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          focus(f);
-                        }
-                      }}
-                      sx={{
-                        position: "absolute", top: 0, left: 0, width: "100%",
-                        transform: `translateY(${virtualRow.start}px)`,
-                        px: 1.5, py: 1, borderRadius: 0, cursor: "pointer",
-                        bgcolor: p.msid === selectedMsid ? alpha("#1976D2", 0.1) : "transparent",
-                        transition: "background-color 120ms ease",
-                        "&:hover": { bgcolor: p.msid === selectedMsid ? alpha("#1976D2", 0.14) : alpha(SHELL_ON, 0.04) },
-                        "&:focus-visible": { outline: `2px solid #1976D2`, outlineOffset: -2 },
-                      }}
-                    >
-                      <Box sx={{
-                        width: 24, height: 24, borderRadius: 0, flex: "none",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 10.5, fontWeight: 800,
-                        bgcolor: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor),
-                        border: `1.25px ${gs.dashed ? "dashed" : "solid"} ${rgbaToCss(gs.stroke)}`,
-                      }}>{gs.letter}</Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography noWrap sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, lineHeight: 1.25 }}>{p.name}</Typography>
-                        <Typography noWrap sx={{ fontSize: 11.5, color: SHELL_DIM, lineHeight: 1.25 }}>
-                          {p.county}, {schoolTypeLabel(p.type)}
-                          {isPlp ? <>, <Box component="span" sx={{ color: PLP_RED, fontWeight: 700 }}>PLP</Box></> : null}
-                          {underused ? (
-                            <>
-                              , <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.4 }}>
-                                <Box component="span" sx={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", bgcolor: UTIL_COLORS.under, flex: "none" }} />
-                                <Box component="span" sx={{ fontWeight: 700 }}>Underused</Box>
-                              </Box>
-                            </>
-                          ) : null}
-                        </Typography>
-                      </Box>
-                      <UsageDonut enrollment={p.enrollment} capacity={p.capacity} cofte={p.cofte} surplus={p.fish_surplus} />
-                    </Stack>
-                  );
-                })}
-              </Box>
-            </Box>
-            {/* Bridge to the full analytical table. */}
-            <Box sx={{ borderTop: `1px solid ${SHELL_HAIRLINE}`, p: 1.5 }}>
-              <Button
-                fullWidth
-                onClick={openInList}
-                endIcon={<ArrowForwardIcon size={16} />}
-                sx={{ textTransform: "none", fontWeight: 600, color: TEAL, py: 1.25, borderRadius: 0, justifyContent: "space-between", px: 1.5, "&:hover": { bgcolor: alpha(TEAL, 0.08) } }}
-              >
-                Open {inViewTotal.toLocaleString("en-US")} in the list to sort, compare, and export
-              </Button>
-            </Box>
-          </Box>
-        </Collapse>
-      </Paper>
-    </Box>
+        </button>
+        <div className="dock-expand-anim">
+          <div className="dock-expand-anim__inner">
+            {!empty && (
+              <>
+                {statsRow}
+                {expandBody}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// A ribbon stat that doubles as a filter toggle. Active = the whole view is
-// isolated to this set; a small x signals "click to clear". aria-pressed makes
-// the toggle state available to assistive tech.
-function FilterStat({ label, value, color, active, onClick, title }: { label: string; value: number; color: string; active: boolean; onClick: () => void; title?: string }) {
+// A stat that doubles as a filter toggle. Active = the whole view is isolated to
+// this set; a small x signals "click to clear". The semantic color rides on the
+// --stat-color CSS variable. `compact` is the phone chip; otherwise a full-width
+// stacked row for the desktop card.
+function FilterStat({ label, value, color, active, onClick, title, compact }: { label: string; value: number; color: string; active: boolean; onClick: () => void; title?: string; compact?: boolean }) {
   return (
-    <Box
-      component="button"
+    <button
+      type="button"
+      className={`dock-stat ${compact ? "dock-stat--compact" : "dock-stat--full"}${active ? " dock-stat--active" : ""}`}
       onClick={onClick}
       aria-pressed={active}
       title={title}
-      sx={{
-        appearance: "none", font: "inherit", cursor: "pointer", whiteSpace: "nowrap",
-        display: "flex", alignItems: "center", gap: 0.75, width: "100%",
-        px: 1, py: 0.6, borderRadius: 1,
-        border: `1px solid ${active ? alpha(color, 0.5) : SHELL_HAIRLINE}`,
-        bgcolor: active ? alpha(color, 0.12) : "transparent",
-        "&:hover": { bgcolor: active ? alpha(color, 0.18) : alpha(SHELL_ON, 0.04) },
-        "&:focus-visible": { outline: `2px solid ${color}`, outlineOffset: 1 },
-      }}
+      style={{ "--stat-color": color } as CSSProperties}
     >
-      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: color, flex: "none" }} />
-      {/* Numbers share a fixed, right-aligned column so the labels line up down
-          the stack regardless of digit count. */}
-      <Typography component="span" sx={{ fontSize: 14, fontWeight: 700, color, lineHeight: 1, minWidth: 34, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-        {value.toLocaleString("en-US")}
-      </Typography>
-      <Typography component="span" sx={{ fontSize: 12.5, color: SHELL_DIM, fontWeight: active ? 600 : 400 }}>{label}</Typography>
-      {active && <CloseIcon size={12} style={{ color: SHELL_DIM, marginLeft: "auto" }} />}
-    </Box>
+      <span className="dock-stat__dot" />
+      <span className="dock-stat__value">{value.toLocaleString("en-US")}</span>
+      <span className="dock-stat__label">{label}</span>
+      {active && <span className="dock-stat__x" aria-hidden><CloseIcon size={12} /></span>}
+    </button>
   );
 }

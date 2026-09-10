@@ -96,7 +96,7 @@ export interface CoLocationReason {
   basis: "cofte" | "enrollment" | "none"; // whether the % is the statutory COFTE rate or an enrollment proxy
   isPlpAnchor: boolean;                   // the building is itself a PLP school
   inOpportunityZone: boolean;
-  nearestPlp: { name: string; miles: number } | null;
+  nearestPlp: { msid: string; name: string; miles: number } | null;
 }
 
 // One economical sentence naming the utilization and the qualifying pathway(s).
@@ -126,6 +126,10 @@ export interface SchoolFilterInput {
   plpOnly: boolean;
   coLocationOnly: boolean;
   facilityUse: Set<FacilityUseKey>; // utilization tiers (under/inuse/full); empty = no constraint
+  // Custom utilization band as % (enrollment / capacity, the ratio the List shows),
+  // for precise thresholds the tiers cannot express. null = open on that end.
+  utilMin: number | null;
+  utilMax: number | null;
   boundary: LatLng[] | null; // a hand-drawn polygon; when set, only points inside pass
   // MSIDs inside the active board/legislative district, or null for no district
   // filter. Precomputed by the district-tagging spatial join (see districts.ts).
@@ -180,9 +184,9 @@ export function buildFilterContext(
     // county and cross-county spillover of the 5-mile ring is not counted.
     // Opportunity Zones are an independent pathway, so a school can qualify on
     // OZ alone even when no PLP list loaded.
-    const anchors: Array<{ coord: LngLat; county: CountyName; name: string }> = [];
+    const anchors: Array<{ msid: string; coord: LngLat; county: CountyName; name: string }> = [];
     for (const f of schools.features) {
-      if (plp.has(f.properties.msid)) anchors.push({ coord: f.geometry.coordinates as LngLat, county: f.properties.county, name: f.properties.name });
+      if (plp.has(f.properties.msid)) anchors.push({ msid: f.properties.msid, coord: f.geometry.coordinates as LngLat, county: f.properties.county, name: f.properties.name });
     }
     for (const f of schools.features) {
       const p = f.properties;
@@ -191,14 +195,14 @@ export function buildFilterContext(
       // The closest same-county PLP anchor within 5 miles, so the co-location
       // reason can name it and report the distance (same geodesic the eligibility
       // decision and the measure tool use).
-      let nearestPlp: { name: string; miles: number } | null = null;
+      let nearestPlp: { msid: string; name: string; miles: number } | null = null;
       for (const a of anchors) {
         if (a.coord === here) continue; // a PLP anchor is counted via isPlpAnchor, not as its own neighbor
         if (a.county !== p.county) continue; // same-district (county) requirement, Rule 6A-1.0998271(3)
         const d = distanceMiles(here, a.coord);
         if (d <= SOH_RADIUS_MILES) {
           nearbyPlpCount++;
-          if (!nearestPlp || d < nearestPlp.miles) nearestPlp = { name: a.name, miles: d };
+          if (!nearestPlp || d < nearestPlp.miles) nearestPlp = { msid: a.msid, name: a.name, miles: d };
         }
       }
       const inOpportunityZone = Boolean(ozIndex && opportunityZoneAtPoint(ozIndex, here)?.designated);
@@ -263,6 +267,16 @@ export function passesFilters(
   if (input.facilityUse.size > 0) {
     const key = utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus).key;
     if (key === "unknown" || !input.facilityUse.has(key)) return false;
+  }
+
+  // Custom utilization band (enrollment / capacity %, the ratio shown in the List).
+  // A school with no reported enrollment/capacity cannot satisfy a set band, so it
+  // is excluded when either bound is active (same behavior as the tiers).
+  if (input.utilMin != null || input.utilMax != null) {
+    if (p.enrollment == null || p.capacity == null || p.capacity <= 0) return false;
+    const pct = (p.enrollment / p.capacity) * 100;
+    if (input.utilMin != null && pct < input.utilMin) return false;
+    if (input.utilMax != null && pct > input.utilMax) return false;
   }
 
   return true;

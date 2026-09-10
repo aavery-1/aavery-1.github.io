@@ -1,23 +1,32 @@
 // Map legend. Explains every encoding currently drawn on the map: grade
 // color+letter, school-type shape, the co-location dot, the School of Hope star,
 // the PLP eligibility area, and any active overlay (income / growth ramps,
-// opportunity zones, flood zones, boundary lines). Sections appear only when
+// opportunity zones, drive-time reach, boundary lines). Sections appear only when
 // their layer is active, so the legend always matches what is on screen.
 //
-// Compact by design: swatch + label rows only, with the longer explanations moved
-// to hover tooltips (and the school inspector) so the card stays small on the map.
+// Real IBM Carbon: Popover + IconButton + PopoverContent, no MUI, mirroring
+// MapLayersControl beside it. Type and chrome colors follow Carbon (Gray 10)
+// tokens (MapLegend.carbon.css); the grade fills, co-location teal, and School
+// of Hope amber are DATA encodings set inline from the same source of truth the
+// map draws from. Each channel sits under a hairline divider so it reads fast.
+// No em dashes.
 
 import { useState } from "react";
-import { Box, Typography, Tooltip, IconButton, Popover } from "@mui/material";
-import { List as ListIcon } from "@carbon/icons-react";
+import { IconButton, Popover, PopoverContent } from "@carbon/react";
+import { Legend as LegendIcon, StarFilled } from "@carbon/icons-react";
 import { useStore } from "../store";
 import { layerById } from "../config/layers";
-import { GRADE_STYLES, rgbaToCss, GRADE_DOMAIN } from "./gradeEncoding";
+import { GRADE_STYLES, rgbaToCss } from "./gradeEncoding";
 import { SHAPE_LEGEND, shapeSvgElement, type MarkerShape } from "./markerShapes";
-import { ACCENT, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE } from "../muiTheme";
+import "./MapLegend.carbon.css";
 
 const SLATE = "#334155";
 const CO_LOC_TEAL = "#0D9488"; // matches the teal co-location dot on the map
+const SOH_AMBER = "#B45309"; // matches the School of Hope star on the map
+
+// A to F read as one run; the ungraded set (I / NR / NG) sits after a small gap.
+const GRADES_AF = ["A", "B", "C", "D", "F"] as const;
+const GRADES_UNGRADED = ["I", "NR", "NG"] as const;
 
 function fmtUsd(n: number): string {
   if (n >= 1000) return `$${Math.round(n / 1000)}k`;
@@ -28,209 +37,234 @@ function fmtPct(n: number): string {
 }
 
 // One grade swatch: a CIRCLE with the letter inside, matching how the map draws
-// school markers (color + letter).
+// school markers (color + letter). Colors come from the shared encoding.
 function GradeDot({ grade }: { grade: keyof typeof GRADE_STYLES }) {
   const s = GRADE_STYLES[grade];
   return (
-    <Box
-      sx={{
-        width: 16, height: 16, borderRadius: "50%", flex: "none",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: s.letter.length > 1 ? 6.5 : 9, fontWeight: 800, lineHeight: 1,
-        fontVariantNumeric: "tabular-nums",
-        bgcolor: rgbaToCss(s.fill), color: rgbaToCss(s.letterColor),
+    <span
+      className={`map-legend-grade${s.letter.length > 1 ? " map-legend-grade--multi" : ""}`}
+      style={{
+        background: rgbaToCss(s.fill),
+        color: rgbaToCss(s.letterColor),
         border: `1.5px ${s.dashed ? "dashed" : "solid"} ${rgbaToCss(s.stroke)}`,
-        boxShadow: "0 1px 2px rgba(15,23,42,0.14)",
       }}
-      aria-label={s.description}
       title={s.description}
+      aria-label={s.description}
     >
       {s.letter}
-    </Box>
+    </span>
   );
 }
 
 // A neutral shape swatch matching the map's school-type markers.
 function ShapeSwatch({ shape }: { shape: MarkerShape }) {
   return (
-    <Box component="span" sx={{ width: 14, height: 14, flex: "none", display: "inline-flex" }}>
-      <svg viewBox="0 0 100 100" width="14" height="14" aria-hidden>
-        <g fill="#E2E8F0" stroke={SLATE} strokeWidth={9} strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: shapeSvgElement(shape) }} />
-      </svg>
-    </Box>
+    <svg viewBox="0 0 100 100" width="15" height="15" aria-hidden>
+      <g fill="#E2E8F0" stroke={SLATE} strokeWidth={9} strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: shapeSvgElement(shape) }} />
+    </svg>
   );
-}
-
-// A section: a tight uppercase micro-label in a fixed left column, with its
-// swatches to the RIGHT on the same line (not stacked above), so the legend stays
-// short. The label carries an optional hover tooltip with the longer explanation.
-function Section({ title, info, children }: { title: string; info?: string; children: React.ReactNode }) {
-  const label = (
-    <Typography
-      sx={{ fontSize: 10, fontWeight: 700, color: SHELL_DIM, textTransform: "none", letterSpacing: "0.01em", lineHeight: 1.35, cursor: info ? "help" : "default" }}
-    >
-      {title}
-    </Typography>
-  );
-  return (
-    <Box sx={{ display: "flex", gap: 1, mb: 0.65, alignItems: "flex-start" }}>
-      <Box sx={{ width: 40, flex: "none", pt: 0.3 }}>
-        {info ? <Tooltip title={info} placement="left" arrow enterTouchDelay={0}>{label}</Tooltip> : label}
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>{children}</Box>
-    </Box>
-  );
-}
-
-function Row({ swatch, label, info }: { swatch: React.ReactNode; label: string; info?: string }) {
-  const body = (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.9, mb: 0.4, cursor: info ? "help" : "default" }}>
-      <Box sx={{ flex: "none", display: "flex", alignItems: "center", justifyContent: "center", width: 16 }}>{swatch}</Box>
-      <Typography sx={{ fontSize: 12, color: SHELL_ON, lineHeight: 1.25, fontWeight: 500 }}>{label}</Typography>
-    </Box>
-  );
-  return info ? <Tooltip title={info} placement="left" arrow enterTouchDelay={0}>{body}</Tooltip> : body;
-}
-
-function LineSwatch({ color, dashed }: { color: string; dashed?: boolean }) {
-  return <Box component="span" sx={{ width: 16, height: 0, borderTop: `2.5px ${dashed ? "dashed" : "solid"} ${color}`, flex: "none" }} />;
-}
-
-function AreaSwatch({ color, border }: { color: string; border: string }) {
-  return <Box component="span" sx={{ width: 14, height: 11, borderRadius: 0.75, bgcolor: color, border: `1.5px solid ${border}`, flex: "none" }} />;
 }
 
 function Ramp({ stops, min, mid, max }: { stops: string[]; min: string; mid?: string; max: string }) {
   return (
-    <Box>
-      <Box sx={{ height: 7, borderRadius: 999, background: `linear-gradient(90deg, ${stops.join(", ")})`, border: `1px solid ${SHELL_HAIRLINE}` }} />
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.35, fontSize: 10, color: SHELL_DIM, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+    <>
+      <div className="map-legend-ramp-bar" style={{ background: `linear-gradient(90deg, ${stops.join(", ")})` }} />
+      <div className="map-legend-ramp-scale">
         <span>{min}</span>
         {mid ? <span>{mid}</span> : null}
         <span>{max}</span>
-      </Box>
-    </Box>
+      </div>
+    </>
   );
 }
 
 export function MapLegend() {
   const activeLayerIds = useStore((s) => s.activeLayerIds);
-  // A compact icon button that opens the legend as a popover, matching the base
-  // map control beside it (Google Maps / Felt pattern). Keeps the map clear
-  // instead of a large card standing open over it.
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const open = Boolean(anchor);
+  const [open, setOpen] = useState(false);
   const has = (id: string) => activeLayerIds.has(id);
 
   const income = layerById("household_income")?.style.colorRamp;
   const growth = layerById("population_growth")?.style.colorRamp;
-
   const showMarkers = has("school_locations");
 
+  const hasBoundaries =
+    has("congressional_districts") || has("state_senate_districts") ||
+    has("state_house_districts") || has("board_districts");
+  const hasAreas = has("opportunity_zones") || has("drive_time_reach");
+  const empty =
+    !showMarkers && !has("existing_soh") && !has("plp_radius") &&
+    !has("household_income") && !has("population_growth") && !hasAreas && !hasBoundaries;
+
   return (
-    <>
-      <Tooltip title="Legend" placement="left">
-        <IconButton
-          aria-label="Legend"
-          onClick={(e) => setAnchor(e.currentTarget)}
-          size="small"
-          sx={{ width: 40, height: 40, borderRadius: 0, color: open ? ACCENT : SHELL_DIM, "&:hover": { bgcolor: "#f4f5f7", color: SHELL_ON } }}
-        >
-          <ListIcon size={18} aria-hidden />
-        </IconButton>
-      </Tooltip>
-      <Popover
-        open={open}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        slotProps={{ paper: { role: "region", "aria-label": "Map legend", sx: { mt: 1, borderRadius: 0, border: `1px solid ${SHELL_HAIRLINE}`, boxShadow: "var(--shadow-card)", width: 256, maxWidth: "calc(100vw - 16px)", maxHeight: "min(66vh, 560px)", overflowY: "auto" } } }}
+    <Popover open={open} onRequestClose={() => setOpen(false)} align="bottom-right" dropShadow>
+      <IconButton
+        label="Legend"
+        aria-label="Legend: what the map's colors, shapes, and markers mean"
+        kind="ghost"
+        size="md"
+        align="left"
+        className={`map-legend-trigger${open ? " map-legend-trigger--open" : ""}`}
+        onClick={() => setOpen((v) => !v)}
       >
-        <Box sx={{ px: 1.75, pt: 1.5, pb: 1.5 }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 700, color: SHELL_ON, mb: 1.25 }}>Legend</Typography>
+        <LegendIcon size={18} />
+      </IconButton>
+      <PopoverContent>
+        <div className="map-legend-panel" role="region" aria-label="Map legend">
+          <h3 className="map-legend-heading">Legend</h3>
+
           {showMarkers && (
             <>
-              <Section title="Grade" info="Color + letter. A (green) to F (red); I / NR / NG in grey (incomplete, not rated, no grade).">
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.45 }}>
-                  {GRADE_DOMAIN.map((g) => <GradeDot key={g} grade={g} />)}
-                </Box>
-              </Section>
+              <section className="map-legend-section">
+                <span className="map-legend-label">Grade</span>
+                <div className="map-legend-grades">
+                  <span className="map-legend-grade-run">
+                    {GRADES_AF.map((g) => <GradeDot key={g} grade={g} />)}
+                  </span>
+                  <span className="map-legend-grade-run">
+                    {GRADES_UNGRADED.map((g) => <GradeDot key={g} grade={g} />)}
+                  </span>
+                </div>
+              </section>
 
-              <Section title="Type" info="Shape shows school type at every zoom; the grade letter is added when you zoom into a neighborhood.">
-                <Box sx={{ display: "flex", flexWrap: "wrap", columnGap: 0.6, rowGap: 0.4 }}>
+              <section className="map-legend-section">
+                <span className="map-legend-label">School type</span>
+                <ul className="map-legend-shapes">
                   {SHAPE_LEGEND.map((s) => (
-                    <Box key={s.label} sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
+                    <li key={s.label} className="map-legend-shape">
                       <ShapeSwatch shape={s.shape} />
-                      <Typography sx={{ fontSize: 11, color: SHELL_ON, fontWeight: 500 }}>{s.label}</Typography>
-                    </Box>
+                      <span>{s.label}</span>
+                    </li>
                   ))}
-                </Box>
-              </Section>
+                </ul>
+              </section>
 
-              <Section title="Markers">
-                <Row
-                  swatch={<Box component="span" sx={{ width: 11, height: 11, borderRadius: "50%", bgcolor: CO_LOC_TEAL, border: "1.5px solid #fff", boxShadow: "0 0 0 0.5px rgba(15,23,42,0.2)", flex: "none" }} />}
-                  label="Co-location"
-                  info="Co-location candidate: an underused district school (utilization at or below 75%, or 400+ surplus stations) inside a School of Hope siting area. The building-age rule is not checked here; see a school's details."
-                />
-                {has("existing_soh") && (
-                  <Row swatch={<span style={{ color: "#B45309", fontSize: 13, lineHeight: 1 }}>★</span>} label="School of Hope" info="An existing School of Hope (loan-fund site)." />
-                )}
-              </Section>
+              <section className="map-legend-section">
+                <span className="map-legend-label">Markers</span>
+                <ul className="map-legend-rows">
+                  <li className="map-legend-row" title="Co-location candidate: an underused district school (utilization at or below 75%, or 400+ surplus stations) inside a School of Hope siting area. The building-age rule is checked in a school's details.">
+                    <span className="map-legend-swatch">
+                      <span className="map-legend-dot" style={{ background: CO_LOC_TEAL }} />
+                    </span>
+                    <span>Co-location candidate</span>
+                  </li>
+                  {has("existing_soh") && (
+                    <li className="map-legend-row">
+                      <span className="map-legend-swatch">
+                        <StarFilled size={15} className="map-legend-star" style={{ color: SOH_AMBER }} />
+                      </span>
+                      <span>School of Hope</span>
+                    </li>
+                  )}
+                </ul>
+              </section>
             </>
           )}
 
           {!showMarkers && has("existing_soh") && (
-            <Section title="Markers">
-              <Row swatch={<span style={{ color: "#B45309", fontSize: 13, lineHeight: 1 }}>★</span>} label="School of Hope" />
-            </Section>
+            <section className="map-legend-section">
+              <span className="map-legend-label">Markers</span>
+              <ul className="map-legend-rows">
+                <li className="map-legend-row">
+                  <span className="map-legend-swatch">
+                    <StarFilled size={15} className="map-legend-star" style={{ color: SOH_AMBER }} />
+                  </span>
+                  <span>School of Hope</span>
+                </li>
+              </ul>
+            </section>
           )}
 
           {has("plp_radius") && (
-            <Section title="Eligibility area" info="The dissolved union of 5-mile radii around persistently low-performing schools.">
-              <Row swatch={<Box component="span" sx={{ width: 14, height: 14, borderRadius: "50%", border: "1.5px solid #D32F2F", bgcolor: "rgba(211,47,47,0.14)" }} />} label="Within 5 mi of a PLP school" />
-            </Section>
+            <section className="map-legend-section">
+              <span className="map-legend-label">Eligibility area</span>
+              <ul className="map-legend-rows">
+                <li className="map-legend-row" title="The merged 5-mile radii around persistently low-performing schools.">
+                  <span className="map-legend-swatch">
+                    <span className="map-legend-dot map-legend-area" style={{ borderRadius: "50%", border: "1.5px solid #D32F2F", background: "rgba(211,47,47,0.14)", boxShadow: "none", width: 14, height: 14 }} />
+                  </span>
+                  <span>Within 5 mi of a PLP school</span>
+                </li>
+              </ul>
+            </section>
           )}
 
           {has("household_income") && income && (
-            <Section title="Median household income" info="ACS 2019-2023, census-tract level.">
+            <section className="map-legend-section">
+              <span className="map-legend-label">Median household income</span>
               <Ramp stops={income.stops} min={fmtUsd(income.domain[0])} max={fmtUsd(income.domain[income.domain.length - 1])} />
-            </Section>
+            </section>
           )}
 
           {has("population_growth") && growth && (
-            <Section title="Population growth" info="Red decline, grey flat, green growth (county level).">
+            <section className="map-legend-section">
+              <span className="map-legend-label">Population growth</span>
               <Ramp stops={growth.stops} min={fmtPct(growth.domain[0])} mid={fmtPct(growth.domain[1])} max={`${fmtPct(growth.domain[growth.domain.length - 1])}+`} />
-            </Section>
+            </section>
           )}
 
-          {(has("opportunity_zones") || has("drive_time_reach")) && (
-            <Section title="Areas">
-              {has("opportunity_zones") && <Row swatch={<AreaSwatch color="rgba(255,204,128,0.6)" border="#FF8F00" />} label="Opportunity zone" />}
-              {has("drive_time_reach") && <Row swatch={<AreaSwatch color="rgba(0,137,123,0.12)" border="#00897B" />} label="15-min drive reach" />}
-            </Section>
+          {hasAreas && (
+            <section className="map-legend-section">
+              <span className="map-legend-label">Areas</span>
+              <ul className="map-legend-rows">
+                {has("opportunity_zones") && (
+                  <li className="map-legend-row">
+                    <span className="map-legend-swatch">
+                      <span className="map-legend-area" style={{ display: "block", background: "rgba(255,204,128,0.6)", border: "1.5px solid #FF8F00" }} />
+                    </span>
+                    <span>Opportunity zone</span>
+                  </li>
+                )}
+                {has("drive_time_reach") && (
+                  <li className="map-legend-row">
+                    <span className="map-legend-swatch">
+                      <span className="map-legend-area" style={{ display: "block", background: "rgba(0,137,123,0.12)", border: "1.5px solid #00897B" }} />
+                    </span>
+                    <span>15-min drive reach</span>
+                  </li>
+                )}
+              </ul>
+            </section>
           )}
 
-          {(has("congressional_districts") || has("state_senate_districts") || has("state_house_districts") || has("board_districts")) && (
-            <Section title="District boundaries">
-              {has("congressional_districts") && <Row swatch={<LineSwatch color="#512DA8" />} label="Congressional" />}
-              {has("state_senate_districts") && <Row swatch={<LineSwatch color="#7E57C2" />} label="State Senate" />}
-              {has("state_house_districts") && <Row swatch={<LineSwatch color="#B39DDB" />} label="State House" />}
-              {has("board_districts") && <Row swatch={<LineSwatch color="#6D28D9" />} label="School board" />}
-            </Section>
+          {hasBoundaries && (
+            <section className="map-legend-section">
+              <span className="map-legend-label">District boundaries</span>
+              <ul className="map-legend-rows">
+                {has("congressional_districts") && (
+                  <li className="map-legend-row">
+                    <span className="map-legend-swatch"><span className="map-legend-line" style={{ borderTop: "2.5px solid #512DA8" }} /></span>
+                    <span>Congressional</span>
+                  </li>
+                )}
+                {has("state_senate_districts") && (
+                  <li className="map-legend-row">
+                    <span className="map-legend-swatch"><span className="map-legend-line" style={{ borderTop: "2.5px solid #7E57C2" }} /></span>
+                    <span>State Senate</span>
+                  </li>
+                )}
+                {has("state_house_districts") && (
+                  <li className="map-legend-row">
+                    <span className="map-legend-swatch"><span className="map-legend-line" style={{ borderTop: "2.5px solid #B39DDB" }} /></span>
+                    <span>State House</span>
+                  </li>
+                )}
+                {has("board_districts") && (
+                  <li className="map-legend-row">
+                    <span className="map-legend-swatch"><span className="map-legend-line" style={{ borderTop: "2.5px solid #6D28D9" }} /></span>
+                    <span>School board</span>
+                  </li>
+                )}
+              </ul>
+            </section>
           )}
-          {/* Empty state: no markers layer and nothing else drawn. */}
-          {!showMarkers && !has("existing_soh") && !has("plp_radius") && !has("household_income")
-            && !has("population_growth") && !has("opportunity_zones")
-            && !has("drive_time_reach") && !has("congressional_districts") && !has("state_senate_districts")
-            && !has("state_house_districts") && !has("board_districts") && (
-            <Typography sx={{ fontSize: 12, color: SHELL_DIM, lineHeight: 1.5 }}>
+
+          {empty && (
+            <p className="map-legend-empty">
               No map layers are on. Turn on a layer from the left panel to see what it draws here.
-            </Typography>
+            </p>
           )}
-        </Box>
-      </Popover>
-    </>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

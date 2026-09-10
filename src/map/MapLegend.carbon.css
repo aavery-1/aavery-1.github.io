@@ -1,13 +1,19 @@
-/* MapLegend: the legend popover off a bare top-right icon button, mirroring the
-   sibling base-map control so the two read as one shared card. All classes are
-   prefixed .map-legend- so they never collide globally. Chrome colors use Carbon
-   tokens / app vars; every swatch color is a data-encoding literal set inline in
-   the TSX. */
+/* MapLegend: what the map's colors, shapes, and markers mean, in a Carbon
+   Popover off a bare top-right icon button (sibling to MapLayersControl). All
+   classes are prefixed .map-legend- so they never collide globally. Chrome uses
+   Carbon tokens / app vars; the grade fills, the co-location teal, and the
+   School of Hope amber are DATA encodings, set inline in the TSX from the same
+   source of truth the map draws from. No em dashes (prose test). */
 
 .map-legend-trigger {
   width: 40px;
   height: 40px;
   border-radius: 0;
+  /* On-brand KIPP navy glyph, matching the other map controls. */
+  color: var(--kipp-navy, #20275d);
+}
+.map-legend-trigger svg {
+  fill: currentColor;
 }
 .map-legend-trigger--open,
 .map-legend-trigger--open:hover {
@@ -15,142 +21,163 @@
 }
 
 .map-legend-panel {
-  padding: 12px 14px;
-  width: 256px;
-  max-width: calc(100vw - 16px);
+  padding: 16px;
+  width: 264px;
   max-height: min(66vh, 560px);
   overflow-y: auto;
+  font-family: var(--font-sans);
 }
 
-.map-legend-title {
-  margin: 0 0 10px;
+/* Carbon heading-compact-01: 14px / 18px, SemiBold. */
+.map-legend-heading {
+  margin: 0;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: 0.16px;
   color: var(--text-primary);
 }
 
+/* Stacked sections, separated by a hairline so the card reads as scannable
+   groups rather than one crowded block. */
 .map-legend-section {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 5px;
-  align-items: flex-start;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
 }
-.map-legend-section__label-col {
-  width: 40px;
-  flex: none;
-  padding-top: 2px;
-}
-.map-legend-section__label {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 0.01em;
-  line-height: 1.35;
-}
-.map-legend-section__label--info {
-  cursor: help;
-}
-.map-legend-section__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.map-legend-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 3px;
-}
-.map-legend-row--info {
-  cursor: help;
-}
-.map-legend-row__swatch {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-}
-.map-legend-row__label {
+/* Section eyebrow, matching MapLayersControl's section labels (Carbon label-01
+   metrics: 12px / 16px, letter-spacing 0.16px, text-secondary). */
+.map-legend-label {
+  display: block;
   font-size: 12px;
-  color: var(--text-primary);
-  line-height: 1.25;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.34;
+  letter-spacing: 0.16px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 
+/* GRADE: A to F as one run, then the ungraded set after a small gap. */
 .map-legend-grades {
   display: flex;
+  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 4px;
 }
-.map-legend-grade-dot {
-  width: 16px;
-  height: 16px;
+.map-legend-grade-run {
+  display: flex;
+  gap: 5px;
+}
+.map-legend-grade {
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.14);
 }
-
-.map-legend-shapes {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 5px;
-  row-gap: 3px;
+.map-legend-grade--multi {
+  font-size: 8px;
 }
+
+/* TYPE: shape swatches in a tidy two-column grid, one label per cell. */
+.map-legend-shapes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+  row-gap: 8px;
+}
+/* Carbon label-01 / body-compact metrics for row text: 12px, Regular. */
 .map-legend-shape {
   display: flex;
   align-items: center;
-  gap: 3px;
-}
-.map-legend-shape__swatch {
-  width: 14px;
-  height: 14px;
-  flex: none;
-  display: inline-flex;
-}
-.map-legend-shape__label {
-  font-size: 11px;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--text-primary);
-  font-weight: 500;
+}
+.map-legend-shape svg {
+  flex: none;
 }
 
-.map-legend-ramp__bar {
-  height: 7px;
+/* MARKERS and other point/line/area rows. */
+.map-legend-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.map-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.34;
+}
+.map-legend-swatch {
+  flex: none;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-legend-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 0 0.5px rgba(15, 23, 42, 0.25);
+}
+.map-legend-star {
+  font-size: 15px;
+  line-height: 1;
+}
+.map-legend-area {
+  display: block;
+  width: 14px;
+  height: 11px;
+}
+.map-legend-line {
+  display: block;
+  width: 16px;
+  height: 0;
+}
+
+/* Sequential ramp (income / population growth). */
+.map-legend-ramp-bar {
+  height: 8px;
   border-radius: 999px;
   border: 1px solid var(--hairline);
 }
-.map-legend-ramp__scale {
+.map-legend-ramp-scale {
   display: flex;
   justify-content: space-between;
-  margin-top: 3px;
-  font-size: 10px;
-  color: var(--text-secondary);
-  font-weight: 600;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.34;
+  color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
-.map-legend-line {
-  width: 16px;
-  height: 0;
-  flex: none;
-}
-.map-legend-area {
-  width: 14px;
-  height: 11px;
-  border-radius: 3px;
-  flex: none;
-}
-
 .map-legend-empty {
-  margin: 0;
+  margin: 16px 0 0;
   font-size: 12px;
+  font-weight: 400;
+  line-height: 1.34;
   color: var(--text-secondary);
-  line-height: 1.5;
 }

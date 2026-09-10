@@ -114,6 +114,8 @@ describe("filterSchools composition", () => {
     plpOnly: false,
     coLocationOnly: false,
     facilityUse: new Set<FacilityUseKey>(),
+    utilMin: null,
+    utilMax: null,
     boundary: null,
     districtMsids: null,
   };
@@ -259,6 +261,9 @@ describe("filterSchools composition", () => {
     expect(r).toBeDefined();
     expect(r!.utilPct).toBe(50);
     expect(r!.nearestPlp?.name).toBe("Anchor High");
+    // The anchor's MSID rides along so the tooltip can make its name a link that
+    // selects that school (fly-to + inspector).
+    expect(r!.nearestPlp?.msid).toBe("AP3");
     // Distance matches the 5-mile eligibility geodesic (the two coords are ~2 mi apart).
     expect(r!.nearestPlp!.miles).toBeGreaterThan(1);
     expect(r!.nearestPlp!.miles).toBeLessThan(3);
@@ -272,7 +277,7 @@ describe("filterSchools composition", () => {
   it("formatCoLocationReason lists the Opportunity Zone first when both pathways apply", () => {
     const both = formatCoLocationReason({
       utilPct: 62, basis: "cofte", isPlpAnchor: false, inOpportunityZone: true,
-      nearestPlp: { name: "Jackson Senior High", miles: 2.34 },
+      nearestPlp: { msid: "J1", name: "Jackson Senior High", miles: 2.34 },
     });
     expect(both).toBe("Underused at 62% of capacity, in a Qualified Opportunity Zone and within 5 miles of Jackson Senior High (2.3 mi)");
     // OZ appears before the PLP clause.

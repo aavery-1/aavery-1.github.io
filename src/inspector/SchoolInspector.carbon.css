@@ -1,0 +1,233 @@
+/* School inspector, in real IBM Carbon (g10 tokens) with no MUI. Plain elements
+   styled here; @carbon/react supplies Button / IconButton / Tag. Data encodings
+   (grade fills, the utilization tier color, the trend delta color) are set inline
+   in the TSX from the shared source of truth. No em dashes.
+
+   DESIGN SPEC (Carbon productive set, IBM Plex Sans). One consistent system:
+
+   TYPE (size / weight / token):
+     Panel title (school name) ......... 16 / 600 primary   heading-compact-02
+     Section heading (.insp-label) ..... 14 / 600 primary   heading-compact-01
+     Sub-heading (.insp-subhead, etc) .. 12 / 600 secondary  (emphasized label)
+     Value / statement / verdict ....... 14 / 400 primary   body-compact-01
+     Field label ....................... 12 / 400 secondary  label-01
+     Note / caption / helper ........... 12 / 400 secondary  helper-text-01
+   Weight rule: 600 is reserved for headings, sub-headings, and the key ANSWER of
+   a row (a verdict, a percentage, a KPI number). Everything else is 400.
+
+   SPACING (Carbon 2x grid, multiples of 4/8):
+     Panel gutter (left/right) ......... 20px (header, body, footer all align)
+     Between sections (divider margin) . 20px each side
+     Heading to its content ............ 12px  (bound tighter than the space above)
+     Row padding (kv / indicator) ...... 8px vertical
+   Hierarchy is carried by space: a heading gets more room above than below. */
+
+.insp {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: none;
+  background: var(--cds-layer-01, #ffffff);
+  animation: inspectorIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .insp { animation: none; }
+}
+
+/* Full-height detail column (List view). */
+.insp--full { width: 100%; height: 100%; max-height: 100%; }
+@media (min-width: 600px) { .insp--full { width: 380px; } }
+@media (min-width: 900px) {
+  .insp--full { width: 400px; border-left: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
+}
+
+/* Compact companion card on the map: sizes to content, capped so it clears the
+   bottom-right map controls and the Google logo; its own body scrolls. */
+.insp--compact {
+  width: 100%;
+  height: auto;
+  max-height: 80dvh;
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+@media (min-width: 600px) {
+  .insp--compact { width: 340px; max-height: calc(100dvh - 296px); }
+}
+
+/* ---- Header ---- */
+.insp-head {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  flex: none;
+}
+.insp-head__row { display: flex; align-items: flex-start; gap: 12px; }
+.insp-grade {
+  width: 40px; height: 40px; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px;
+}
+.insp-head__id { flex: 1; min-width: 0; }
+.insp-title {
+  font-size: 16px; font-weight: 600; line-height: 1.25;
+  color: var(--cds-text-primary, #161616);
+}
+.insp-sub {
+  font-size: 12px; line-height: 1.35; color: var(--cds-text-secondary, #525252); margin-top: 2px;
+}
+.insp-close { flex: none; margin: -6px -6px 0 0; }
+.insp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.insp-tags .cds--tag { margin: 0; }
+/* Co-location tag tinted to the KIPP navy (Carbon Tag has no navy preset). */
+.insp-tag-coloc.cds--tag {
+  background: rgba(0, 30, 98, 0.1);
+  color: #001541;
+}
+
+/* ---- Body + sections ---- */
+.insp-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.insp-divider { height: 1px; border: 0; margin: 20px 0; background: var(--cds-border-subtle-01, #e0e0e0); }
+/* Section title: Carbon heading-compact-01 (14px/600), primary text, so each
+   section reads as a clear tier above the 12px sub-labels and body within it. */
+.insp-label {
+  font-size: 14px; font-weight: 600; line-height: 1.3;
+  color: var(--cds-text-primary, #161616); margin: 0 0 12px;
+}
+.insp-subhead { font-size: 12px; font-weight: 600; color: var(--cds-text-secondary, #525252); margin: 0 0 6px; }
+
+/* ---- Verdict callout ---- */
+.insp-verdict {
+  padding: 16px;
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: rgba(22, 22, 22, 0.02);
+}
+.insp-verdict--eligible {
+  border-color: rgba(36, 161, 72, 0.35);
+  background: rgba(36, 161, 72, 0.06);
+}
+.insp-verdict__head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.insp-verdict__title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.insp-verdict__text { font-size: 12px; color: var(--cds-text-primary, #161616); line-height: 1.5; }
+.insp-verdict__note { font-size: 12px; color: var(--cds-text-primary, #161616); line-height: 1.5; margin-top: 6px; }
+.insp-verdict__caveat { font-size: 12px; color: var(--cds-text-helper, #6f6f6f); line-height: 1.5; margin-top: 6px; }
+.insp-verdict__cite { font-size: 12px; color: var(--cds-text-helper, #6f6f6f); line-height: 1.4; margin-top: 6px; font-variant-numeric: tabular-nums; }
+
+/* Inline "jump to nearest PLP school" link inside the verdict sentence. */
+.insp-link {
+  appearance: none; border: 0; background: none; padding: 0; margin: 0;
+  font: inherit; font-weight: 600; color: #001e62; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.insp-link:hover { color: #001541; }
+.insp-link:focus-visible { outline: 2px solid #001e62; outline-offset: 1px; }
+
+/* ---- Key indicators: one compact row each, label left, verdict right ---- */
+.insp-indrow {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 0; border-top: 1px solid rgba(22, 22, 22, 0.06);
+}
+.insp-indrow:first-child { border-top: 0; }
+.insp-indrow__label { font-size: 14px; color: var(--cds-text-primary, #161616); }
+.insp-indrow__verdict {
+  flex: none; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 600; color: var(--cds-text-secondary, #525252);
+}
+.insp-indrow__verdict--yes { color: #24a148; }
+
+/* ---- Enrollment & capacity ---- */
+.insp-util-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.insp-util-head__left { display: flex; align-items: center; gap: 6px; }
+.insp-util-tier {
+  padding: 1px 6px; font-size: 12px; font-weight: 600; line-height: 1.5;
+  /* color + background set inline (utilization tier). */
+}
+.insp-util-pct { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.insp-bar { height: 6px; border-radius: 999px; background: rgba(22, 22, 22, 0.06); overflow: hidden; }
+.insp-bar__fill { height: 100%; border-radius: 999px; }
+.insp-note { font-size: 12px; color: var(--cds-text-secondary, #525252); margin-top: 6px; line-height: 1.45; font-variant-numeric: tabular-nums; }
+
+/* ---- Enrollment trend chart ---- */
+.insp-trend { margin-top: 14px; }
+/* Header row: left-aligned title, with the paging arrows pushed to the right. */
+.insp-trend__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; min-height: 24px; }
+/* Chart title is a sub-heading, matching "Building utilization" and "Historic
+   letter grades" so the section/sub-section tiers stay consistent. */
+.insp-trend__title {
+  margin: 0; text-align: left;
+  font-size: 12px; font-weight: 600; color: var(--cds-text-secondary, #525252);
+}
+.insp-trend__nav { display: flex; align-items: center; gap: 2px; flex: none; }
+.insp-trend__nav .cds--btn { min-height: 24px; }
+/* Legend left-aligned under the title, in a smaller type than the chart body. */
+.insp-trend__legend { display: flex; justify-content: flex-start; align-items: center; gap: 14px; margin-bottom: 8px; }
+.insp-legend { display: flex; align-items: center; gap: 5px; }
+.insp-legend__swatch { width: 13px; height: 0; }
+.insp-legend__label { font-size: 11px; font-weight: 600; color: var(--cds-text-secondary, #525252); }
+/* Pinned axes: the y-axis SVG is a fixed column and the X title is fixed below;
+   only .insp-chart__scroll (the plot + year labels) scrolls, paged by the arrow
+   buttons. The scrollbar is hidden since the arrows drive it. */
+.insp-trend__chart { display: flex; align-items: flex-start; }
+.insp-chart__yaxis { flex: none; display: block; }
+.insp-chart__scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-behavior: smooth; }
+.insp-chart__scroll::-webkit-scrollbar { display: none; }
+.insp-chart__plot { display: block; }
+.insp-chart__xtitle {
+  text-align: center; margin-top: 4px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #001e62;
+}
+.insp-trend__empty { font-size: 12px; color: var(--cds-text-secondary, #525252); margin-top: 8px; }
+
+/* Two KPI tiles in a recessed inlay (Carbon layer-02), split by a hairline. */
+.insp-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 12px;
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: var(--cds-layer-02, #f4f4f4);
+}
+.insp-stat { padding: 10px 14px; min-width: 0; }
+.insp-stat + .insp-stat { border-left: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
+.insp-stat__label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.32px; text-transform: uppercase;
+  color: var(--cds-text-secondary, #525252);
+}
+.insp-stat__value {
+  display: flex; align-items: baseline; gap: 2px;
+  margin-top: 4px; font-size: 22px; font-weight: 600; line-height: 1.1;
+  color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.insp-stat__arrow { font-size: 17px; line-height: 1; }
+.insp-stat__sub {
+  font-size: 12px; color: var(--cds-text-secondary, #525252);
+  margin-top: 3px; line-height: 1.35; font-variant-numeric: tabular-nums;
+}
+
+/* ---- Key/value rows ---- */
+.insp-kv { padding: 8px 0; }
+.insp-kv__label { font-size: 12px; font-weight: 400; letter-spacing: 0.16px; color: var(--cds-text-secondary, #525252); }
+.insp-kv__value { font-size: 14px; font-weight: 400; color: var(--cds-text-primary, #161616); margin-top: 2px; line-height: 1.35; word-break: break-word; }
+.insp-kv__value--mono { font-family: var(--font-mono, monospace); }
+.insp-kv__addr { display: flex; align-items: flex-start; gap: 5px; }
+
+/* District value as a filter drill-down. */
+.insp-district-btn {
+  appearance: none; border: 0; background: none; padding: 0; margin-top: 2px;
+  font: inherit; font-size: 14px; font-weight: 400; line-height: 1.35;
+  color: var(--cds-text-primary, #161616); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px; text-align: left;
+}
+.insp-district-btn svg { color: var(--cds-text-secondary, #525252); flex: none; }
+.insp-district-btn:hover, .insp-district-btn:hover svg { color: #001e62; }
+.insp-district-btn:focus-visible { outline: 2px solid #001e62; outline-offset: 1px; }
+
+/* ---- Footer ---- */
+.insp-footer {
+  flex: none;
+  padding: 16px 20px;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: var(--cds-layer-01, #ffffff);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.insp-footer .cds--btn { width: 100%; max-width: none; justify-content: space-between; }
+.insp-footer .export-button { width: 100%; max-width: none; }

@@ -137,9 +137,9 @@ export function buildCompareSections(
       title: "School of Hope eligibility",
       rows: [
         yesNo("soh", "In a School of Hope siting area", ctx.sohEligibleMsids, "Within a siting area: 5 miles of a persistently low-performing school or in an Opportunity Zone, and Title I eligible (F.S. 1002.333)."),
-        yesNo("plp", "Persistently low-performing (PLP) anchor", ctx.plp, "A school on the state's persistently low-performing list; a hope operator may open nearby to serve its students."),
-        yesNo("coloc", "Co-location candidate", ctx.coLocationMsids, "An underused district building (utilization at or below 75%, or 400+ surplus stations) inside a siting area. The rule's exclusion of buildings under 4 years old is not modeled, so this is a candidate, not confirmed eligibility."),
-        build("titlei", "Title I eligibility", (i) => titleILabel(schools[i].properties.title_i), "Federal Title I status (NCES CCD), the available proxy for economic disadvantage."),
+        yesNo("plp", "Persistently low-performing (PLP) anchor", ctx.plp, "A school on the state's persistently low-performing list. A hope operator may open nearby to serve its students."),
+        yesNo("coloc", "Co-location candidate", ctx.coLocationMsids, "An underused district building (use at or below 75%, or 400+ surplus stations) inside a siting area. One test we can't check: buildings under 4 years old don't qualify, so this is a candidate, not confirmed."),
+        build("titlei", "Title I eligibility", (i) => titleILabel(schools[i].properties.title_i), "Federal Title I eligibility (NCES CCD)."),
       ],
     },
     {

@@ -8,6 +8,7 @@
 import { ContentSwitcher, Switch } from "@carbon/react";
 import { useStore, type ListScope } from "../store";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
+import { usePhone } from "../ui/useMediaQuery";
 import { SchoolTable } from "./SchoolTable";
 import "./SchoolListView.carbon.css";
 
@@ -17,6 +18,9 @@ export function SchoolListView() {
   const listScope = useStore((s) => s.listScope);
   const setListScope = useStore((s) => s.setListScope);
   const { total, inViewTotal } = useFilteredSchools();
+  // On a phone the full segment labels plus their counts overflow the switcher
+  // (the count clipped to "1,15"); shorten the labels there so both counts read.
+  const phone = usePhone();
 
   const selectedIndex = Math.max(0, SCOPE_ORDER.indexOf(listScope));
 
@@ -35,14 +39,14 @@ export function SchoolListView() {
           >
             <Switch name="all" aria-label="All filtered schools">
               <span className="school-list__scope-inner">
-                All schools
-                <Count value={total} active={listScope === "all"} />
+                {phone ? "All" : "All schools"}
+                <Count value={total} />
               </span>
             </Switch>
             <Switch name="inView" aria-label="Schools in the current map view">
               <span className="school-list__scope-inner">
-                In map view
-                <Count value={inViewTotal} active={listScope === "inView"} />
+                {phone ? "In view" : "In map view"}
+                <Count value={inViewTotal} />
               </span>
             </Switch>
           </ContentSwitcher>
@@ -60,10 +64,10 @@ export function SchoolListView() {
   );
 }
 
-function Count({ value, active }: { value: number; active: boolean }) {
-  return (
-    <span className="school-list__scope-count" style={active ? { color: "#0043CE" } : undefined}>
-      {value.toLocaleString("en-US")}
-    </span>
-  );
+// The count's color is handled entirely in CSS so it stays legible on BOTH the
+// selected (dark) and unselected (light) segments: brand light-blue on dark,
+// text-primary on light. Inline color here forced a dark blue onto the dark
+// selected segment (failed contrast).
+function Count({ value }: { value: number }) {
+  return <span className="school-list__scope-count">{value.toLocaleString("en-US")}</span>;
 }

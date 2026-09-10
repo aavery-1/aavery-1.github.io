@@ -1,0 +1,273 @@
+/* The map's shortlist tray, on the SAME Carbon g10 system as the school inspector
+   (see SchoolInspector.carbon.css for the full spec). Square corners, IBM Plex,
+   type snapped to 16/14/12, 600 weight only for headings and key answers, spacing
+   on the 2/4/8 grid. Buttons/tags are real @carbon/react components; the grade
+   badge and eligibility colors reuse the app's shared encodings so the tray always
+   agrees with the map dots and the inspector. No em dashes in this file. */
+
+.shortlist-tray {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  background: var(--cds-layer, #ffffff);
+  border-top: 1px solid var(--cds-border-subtle, #e0e0e0);
+  box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.14);
+  /* Slide the whole tray up from below on open; the --closing class slides it
+     back down and holds until React unmounts it (onAnimationEnd), so BOTH expand
+     and collapse are smooth (transform only, GPU-friendly, no height jump). */
+  animation: shortlistTrayUp 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+.shortlist-tray--closing {
+  animation: shortlistTrayDown 260ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+@keyframes shortlistTrayUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes shortlistTrayDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+/* When the inspector is open it floats over the map's right edge; inset the tray
+   past it so the two sit side by side rather than the tray sliding under the
+   panel. Only at >=600px, where the inspector is a right card not a bottom sheet. */
+@media (min-width: 600px) {
+  .shortlist-tray--inspector { right: 360px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shortlist-tray,
+  .shortlist-tray--closing { animation: none; }
+}
+
+/* ---- Header bar: identity + neutrality note left, actions right ---- */
+.shortlist-tray__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  padding: 8px 12px 8px 16px;
+  border-bottom: 1px solid var(--cds-border-subtle, #e0e0e0);
+}
+.shortlist-tray__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--cds-text-primary, #161616);
+}
+.shortlist-tray__title svg { color: var(--cds-text-secondary, #525252); flex: none; }
+.shortlist-tray__title-text { font-size: 14px; font-weight: 600; }
+.shortlist-tray__count {
+  font-size: 12px;
+  color: var(--cds-text-secondary, #525252);
+  font-variant-numeric: tabular-nums;
+}
+.shortlist-tray__note {
+  font-size: 12px;
+  color: var(--cds-text-secondary, #525252);
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .shortlist-tray__note { display: none; }
+}
+.shortlist-tray__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Empty state: shown when the shortlist opener is used with nothing pinned. */
+.shortlist-tray__empty {
+  padding: 16px 20px 20px;
+  max-width: 460px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+}
+
+/* ---- Card row: fills the width, scrolls only when the sites exceed it ---- */
+.shortlist-tray__cards {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  overflow-x: auto;
+  align-items: stretch;
+}
+.sl-card {
+  flex: 1 1 240px;
+  max-width: 360px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  background: var(--cds-layer-01, #ffffff);
+  border: 1px solid var(--cds-border-subtle, #e0e0e0);
+  padding: 16px;
+}
+.sl-card--selected {
+  border-color: var(--cds-focus, #0f62fe);
+  box-shadow: inset 0 0 0 1px var(--cds-focus, #0f62fe);
+}
+.sl-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+/* Grade badge: square, matching the inspector's .insp-grade encoding. */
+.sl-card__grade {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+.sl-card__remove { margin-left: auto; margin-top: -6px; margin-right: -6px; flex: none; }
+.sl-card__name {
+  appearance: none;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-top: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--cds-text-primary, #161616);
+}
+.sl-card__name:hover {
+  color: var(--cds-link-primary, #0f62fe);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sl-card__name:focus-visible { outline: 2px solid var(--cds-focus, #0f62fe); outline-offset: 1px; }
+.sl-card__county {
+  font-size: 12px;
+  color: var(--cds-text-secondary, #525252);
+  margin-top: 2px;
+}
+.sl-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+}
+.sl-card__chips .cds--tag { margin: 0; }
+
+/* Facts: a label / value list matching the inspector's key-value type. */
+.sl-card__facts {
+  margin: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sl-fact {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  line-height: 1.35;
+}
+.sl-fact dt {
+  flex: none;
+  width: 52px;
+  font-size: 12px;
+  color: var(--cds-text-secondary, #525252);
+}
+.sl-fact dd {
+  margin: 0;
+  font-size: 14px;
+  color: var(--cds-text-primary, #161616);
+  font-variant-numeric: tabular-nums;
+}
+.sl-fact--muted { color: var(--cds-text-secondary, #525252); }
+
+/* Phone: the tray is a bottom sheet; cards become a swipeable, snapping row so a
+   single site fills the width and the others are one swipe away. */
+@media (max-width: 600px) {
+  .shortlist-tray__cards { scroll-snap-type: x mandatory; padding: 12px; }
+  .sl-card { flex: 0 0 84%; min-width: 0; scroll-snap-align: start; }
+}
+
+/* ---- Full comparison modal: the matrix over a scrim, opened on demand ---- */
+.shortlist-fulltable {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shortlist-fulltable__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(22, 22, 22, 0.5);
+  animation: scrimFade 160ms ease-out;
+}
+.shortlist-fulltable__panel {
+  position: relative;
+  width: min(1100px, 94vw);
+  height: min(80dvh, 760px);
+  display: flex;
+  flex-direction: column;
+  background: var(--cds-layer, #ffffff);
+  overflow: hidden;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
+}
+/* On a phone the matrix needs every pixel: go full-bleed so the two sticky
+   columns and at least one site column are all reachable. */
+@media (max-width: 600px) {
+  .shortlist-fulltable { align-items: stretch; justify-content: stretch; }
+  .shortlist-fulltable__panel { width: 100vw; height: 100dvh; max-height: 100dvh; }
+}
+.shortlist-fulltable__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 16px;
+  border-bottom: 1px solid var(--cds-border-subtle, #e0e0e0);
+}
+.shortlist-fulltable__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cds-text-primary, #161616);
+}
+.shortlist-fulltable__body { flex: 1; min-height: 0; position: relative; }
+/* Force a visible horizontal scrollbar on the comparison matrix. Without it,
+   overlay-scrollbar systems (macOS) hide the affordance and a matrix wider than
+   the panel looks clipped rather than scrollable. */
+.shortlist-fulltable__body .compare-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #a8a8a8 transparent;
+}
+.shortlist-fulltable__body .compare-scroll::-webkit-scrollbar { height: 10px; width: 10px; }
+.shortlist-fulltable__body .compare-scroll::-webkit-scrollbar-track { background: transparent; }
+.shortlist-fulltable__body .compare-scroll::-webkit-scrollbar-thumb {
+  background: #c6c6c6;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.shortlist-fulltable__body .compare-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+  background-clip: content-box;
+}
+.shortlist-fulltable__loading {
+  padding: 32px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--cds-text-secondary, #525252);
+}
+@keyframes scrimFade { from { opacity: 0; } to { opacity: 1; } }

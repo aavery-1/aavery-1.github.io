@@ -4,9 +4,9 @@
 //     app-bar menu button; the inspector becomes a bottom sheet.
 
 import { Box, CircularProgress, Drawer, useMediaQuery, useTheme } from "@mui/material";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { MapErrorBoundary } from "./map/MapErrorBoundary";
-import { Toolbar } from "./tools/Toolbar";
+import { Toolbar, MapToolButtons } from "./tools/Toolbar";
 
 // The three views and the attribution sheet load on demand. The app shell (nav,
 // rail, filters) paints immediately while the heavy map renderer (deck.gl) and
@@ -14,17 +14,54 @@ import { Toolbar } from "./tools/Toolbar";
 // only touches one view re-downloads only that chunk.
 const MapView = lazy(() => import("./map/MapView").then((m) => ({ default: m.MapView })));
 const SchoolListView = lazy(() => import("./views/SchoolListView").then((m) => ({ default: m.SchoolListView })));
-const CompareView = lazy(() => import("./views/CompareView").then((m) => ({ default: m.CompareView })));
 const AttributionStrip = lazy(() => import("./topbar/AttributionStrip").then((m) => ({ default: m.AttributionStrip })));
 import { TopNav } from "./shell/TopNav";
 import { LeftRail } from "./shell/LeftRail";
 import { RightColumn } from "./shell/RightColumn";
 import { OverviewDock } from "./status/OverviewDock";
+import { ShortlistTray } from "./status/ShortlistTray";
 import { ActiveFilterChips } from "./status/ActiveFilterChips";
 import { MapLegend } from "./map/MapLegend";
 import { MapLayersControl } from "./map/MapLayersControl";
+import { MapQuickActions } from "./map/MapQuickActions";
 import { useMapPersistence } from "./map/useMapPersistence";
 import { useStore } from "./store";
+import { Bookmark as BookmarkIcon } from "@carbon/icons-react";
+
+// The shortlist ("compare") opener lives ON THE MAP, in the top-right control
+// cluster, so the app bar stays to the essentials (brand, search, view switch).
+// It carries the pinned-site count and toggles the map's shortlist tray. Adding a
+// site no longer auto-opens the tray; instead this button POPS and its counter
+// ticks up, so the pick is acknowledged without hijacking the map.
+function ShortlistMapButton() {
+  const count = useStore((s) => s.comparePinnedMsids.length);
+  const open = useStore((s) => s.shortlistOpen);
+  const setOpen = useStore((s) => s.setShortlistOpen);
+  const [pop, setPop] = useState(false);
+  const prev = useRef(count);
+  useEffect(() => {
+    if (count > prev.current) {
+      setPop(true);
+      const t = setTimeout(() => setPop(false), 450);
+      prev.current = count;
+      return () => clearTimeout(t);
+    }
+    prev.current = count;
+  }, [count]);
+  return (
+    <button
+      type="button"
+      className={`map-ctrl-btn map-shortlist-btn${open ? " map-ctrl-btn--active" : ""}${pop ? " map-shortlist-btn--pop" : ""}`}
+      onClick={() => setOpen(!open)}
+      aria-pressed={open}
+      aria-label={count > 0 ? `Shortlist, ${count} site${count === 1 ? "" : "s"}` : "Shortlist, empty"}
+      title={count > 0 ? "Review your shortlist" : "Pin sites to build a shortlist"}
+    >
+      <BookmarkIcon size={18} />
+      {count > 0 && <span className="map-shortlist-badge">{count}</span>}
+    </button>
+  );
+}
 
 // Shown in a view's place while its code chunk downloads. Deliberately quiet: a
 // centered spinner on the app's own surface, so a lazy view never flashes a
@@ -50,7 +87,9 @@ export default function App() {
   const panelCollapsed = useStore((s) => s.panelCollapsed);
   const setPanelCollapsed = useStore((s) => s.setPanelCollapsed);
   const [attributionOpen, setAttributionOpen] = useState(false);
-  const [mobileRailOpen, setMobileRailOpen] = useState(false);
+  // Lifted to the store so the results sheet's Filters entry can open it too.
+  const mobileRailOpen = useStore((s) => s.mobileRailOpen);
+  const setMobileRailOpen = useStore((s) => s.setMobileRailOpen);
 
   // Escape: exit an active map tool first, then close the inspector, then the
   // expanded filter panel. One key, unwinding the most transient state first.
@@ -76,19 +115,27 @@ export default function App() {
           <MapView />
         </Suspense>
       </MapErrorBoundary>
+      {/* Phone-only Search + Filters, moved off the app bar onto the map. */}
+      <MapQuickActions />
       <ActiveFilterChips />
       {/* Top-right control cluster: legend + base map as two icon buttons in one
           shared card (a hairline between them), mirroring the bottom-right zoom
           group so the map's chrome reads as one consistent system. */}
       <div className="map-topright">
         <div className="map-controls-group">
+          <ShortlistMapButton />
+        </div>
+        <div className="map-controls-group">
           <MapLegend />
           <span className="map-ctrl-sep" aria-hidden />
           <MapLayersControl />
+          <span className="map-ctrl-sep" aria-hidden />
+          <MapToolButtons />
         </div>
       </div>
       <Toolbar />
       <OverviewDock />
+      <ShortlistTray />
       {attributionOpen && (
         <Suspense fallback={null}>
           <AttributionStrip open onClose={() => setAttributionOpen(false)} />
@@ -106,14 +153,6 @@ export default function App() {
         </Suspense>
       </Box>
     );
-  } else if (viewMode === "compare") {
-    mainSurface = (
-      <Box sx={{ flex: 1, position: "relative", minWidth: 0 }}>
-        <Suspense fallback={<ViewFallback />}>
-          <CompareView />
-        </Suspense>
-      </Box>
-    );
   } else {
     mainSurface = (
       <Box sx={{ flex: 1, position: "relative", minWidth: 0 }}>
@@ -126,11 +165,8 @@ export default function App() {
   // programmatic scrollIntoView (from the list, say) can never drag the whole app
   // sideways when a child like the app bar overflows at a narrow width.
   return (
-    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "clip" }}>
-      <TopNav
-        onOpenAttribution={() => setAttributionOpen(true)}
-        onOpenMobileRail={() => setMobileRailOpen(true)}
-      />
+    <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "clip" }}>
+      <TopNav onOpenAttribution={() => setAttributionOpen(true)} />
       <Box sx={{ flex: 1, display: "flex", minHeight: 0, position: "relative", pl: { sm: "64px" } }}>
         {/* Desktop rail: a thin icon rail that OVERLAYS the map when expanded
             (rather than pushing it), matching the full-bleed dashboard layout.
@@ -142,7 +178,7 @@ export default function App() {
         )}
         {!isMobile && (
           <Box sx={{ position: "absolute", top: 0, left: 0, height: "100%", zIndex: 20, display: "flex", boxShadow: panelCollapsed ? "none" : "8px 0 24px rgba(15,23,42,0.10)" }}>
-            <LeftRail />
+            <LeftRail onOpenAttribution={() => setAttributionOpen(true)} />
           </Box>
         )}
 
@@ -168,7 +204,7 @@ export default function App() {
             underneath.
 
             The scrim is context-aware, which is how we thread the needle. Over
-            the List and Compare views the background is a static grid you have
+            the List view the background is a static grid you have
             stepped away from to read one detail, so a dimming scrim focuses the
             panel and a click on it closes the inspector. Over the Map the
             background is live spatial context you want to keep seeing and
@@ -191,19 +227,26 @@ export default function App() {
               />
             )}
             {viewMode === "map" ? (
-              // Map: a lighter companion card, inset from the edges so the map
-              // stays visible around it and reads as the primary surface.
+              // Map: a lighter companion card, anchored top-right and inset from
+              // the edges so the map stays visible around it and reads as the
+              // primary surface. No bottom anchor: the card sizes to its content
+              // (capped by the panel's own maxHeight), so it never stretches over
+              // the bottom dock, the map controls, or Google's logo.
               <Box
                 sx={{
-                  position: "absolute", top: 12, right: 12, bottom: 12, zIndex: 31,
-                  maxWidth: "calc(100% - 24px)",
+                  // Inset past the 40px top-right control column (right:12, ~52px
+                  // wide with margins) so the shortlist button, legend, map style
+                  // and tools stay visible and clickable while the inspector is
+                  // open, and the shortlist "pop" is never hidden behind the card.
+                  position: "absolute", top: 12, right: 64, zIndex: 31,
+                  maxWidth: "calc(100% - 76px)",
                   boxShadow: "0 8px 28px rgba(15,23,42,0.18)",
                 }}
               >
                 <RightColumn compact />
               </Box>
             ) : (
-              // List / Compare: the full-height detail column over the scrim.
+              // List: the full-height detail column over the scrim.
               <Box
                 sx={{
                   position: "absolute", top: 0, right: 0, height: "100%", zIndex: 31,
@@ -222,7 +265,7 @@ export default function App() {
             anchor="bottom"
             open={Boolean(selectedSchoolMsid)}
             onClose={() => selectSchool(null)}
-            slotProps={{ paper: { sx: { height: "80vh", borderTopLeftRadius: 20, borderTopRightRadius: 20 } } }}
+            slotProps={{ paper: { sx: { height: "80dvh", borderTopLeftRadius: 20, borderTopRightRadius: 20 } } }}
           >
             <RightColumn />
           </Drawer>

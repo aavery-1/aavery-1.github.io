@@ -9,7 +9,7 @@ const MESSAGES = {
   },
   "auth-error": {
     title: "Google rejected the Maps API key",
-    body: "The key loaded but Google refused it. Common causes: the Maps JavaScript API is not enabled for the project, billing is not enabled, or an HTTP referrer restriction excludes this origin. Check the Google Cloud console for this key.",
+    body: "The key loaded but Google refused it. Common causes: the Maps JavaScript API or billing isn't enabled for the project, or an HTTP referrer restriction excludes this origin. Check the Google Cloud console for this key.",
   },
   "network-error": {
     title: "The Google Maps script could not be reached",

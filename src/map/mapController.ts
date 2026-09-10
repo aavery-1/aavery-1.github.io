@@ -17,6 +17,21 @@ export function panMapTo(center: LatLng, zoom?: number) {
   if (typeof zoom === "number") mapInstance.setZoom(zoom);
 }
 
+// Frame a set of points (the shortlist) so every one is visible at once. One
+// point is just a fly-to; two or more use Google's fitBounds with padding so the
+// pins sit clear of the tray and the corner controls.
+export function fitMapToBounds(points: LatLng[], padding = 96) {
+  if (!mapInstance || points.length === 0) return;
+  if (points.length === 1) {
+    mapInstance.panTo(points[0]);
+    mapInstance.setZoom(15);
+    return;
+  }
+  const bounds = new google.maps.LatLngBounds();
+  for (const p of points) bounds.extend(p);
+  mapInstance.fitBounds(bounds, padding);
+}
+
 // A smooth "fly" to a school: pan there (Google animates the pan), then ease the
 // zoom in one integer step at a time so it reads as a cinematic zoom-in rather
 // than a jump cut. Cancels any in-flight fly so rapid selections do not stack.

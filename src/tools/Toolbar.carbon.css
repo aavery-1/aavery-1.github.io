@@ -4,18 +4,26 @@
    colors come from Carbon g10 tokens (--cds-*) and the app vars; the teal accent
    is var(--focus). No em dashes in this file. */
 
-/* Active-tool positioner: pinned top-center, click-through so the map surface
+/* Active-tool positioner: pinned to the top edge and CENTERED within the map
+   minus its right-hand chrome, so the bar never slides behind the top-right map
+   controls (right inset ~76px) or, when it is open, the inspector panel (the
+   --inspector variant insets past the ~360px card at >=600px, where the inspector
+   is a right card rather than a bottom sheet). Click-through so the map surface
    underneath stays usable; the bar itself re-enables pointer events. */
 .toolbar-active {
   position: absolute;
   top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 12px;
+  right: 76px;
   z-index: 9;
   display: flex;
   justify-content: center;
-  max-width: calc(100vw - 24px);
   pointer-events: none;
+}
+@media (min-width: 600px) {
+  .toolbar-active--inspector {
+    right: 372px;
+  }
 }
 
 /* The slim horizontal bar */
@@ -24,7 +32,7 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  max-width: calc(100vw - 24px);
+  max-width: 100%;
   padding: 7px 12px;
   background: var(--card);
   border: 1px solid color-mix(in srgb, var(--focus) 45%, transparent);
@@ -72,7 +80,7 @@
 
 /* Detail readout lines */
 .toolbar-detail {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.3;
   color: var(--text-secondary);
@@ -104,11 +112,26 @@
   flex-wrap: wrap;
   gap: 4px;
 }
+/* When the bar is narrow (the inspector is open), let the readout wrap at its
+   spaces onto a second line rather than clipping mid-word. Tokens (the numbers)
+   stay intact because wrapping only happens at the spaces between them. */
+.toolbar-radius .toolbar-detail {
+  white-space: normal;
+}
 
 /* Muted text/ghost action buttons (Clear / Cancel) keep the subdued shell tone
    rather than Carbon's default blue ghost text. */
 .toolbar-bar__actions .toolbar-btn-muted.cds--btn {
   color: var(--text-secondary);
+}
+/* Any disabled action in the bar stays subtle instead of Carbon's heavy gray
+   primary-disabled block (which read as broken next to the ghost buttons). */
+.toolbar-bar__actions .cds--btn:disabled,
+.toolbar-bar__actions .cds--btn:disabled:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
+  opacity: 0.5;
 }
 
 /* Bottom-right tool button stack */
@@ -122,22 +145,40 @@
   align-items: flex-end;
 }
 .toolbar-group {
-  overflow: hidden;
+  /* No overflow:hidden here: Carbon is square so nothing needs corner-clipping,
+     and clipping cut off the tool buttons' hover tooltips (they render as a
+     sibling of the trigger inside this group). */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   border: 1px solid var(--hairline);
   box-shadow: var(--shadow-card);
   background: var(--card);
 }
+/* Labeled tool buttons: icon + a short word ("Distance", "Radius") so the tool's
+   function reads without hovering. The icon leads at a fixed 40px hit area so the
+   buttons still align with the icon-only zoom controls below them. */
 .toolbar-tool {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 40px;
+  gap: 8px;
+  width: 100%;
   height: 40px;
-  padding: 0;
+  padding: 0 14px 0 0;
   border: none;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
+  white-space: nowrap;
+}
+.toolbar-tool > svg {
+  flex: none;
+  width: 40px;
+}
+.toolbar-tool__label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
 }
 .toolbar-tool:not(:last-of-type) {
   border-bottom: 1px solid var(--hairline);

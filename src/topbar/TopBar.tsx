@@ -68,7 +68,7 @@ export function TopBar({ onToggleAttribution }: { onToggleAttribution: () => voi
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <span className="wordmark">FL Schools Explorer</span>
+        <span className="wordmark">Florida Facilities Tool</span>
         <span className="sample-badge" title="This build runs on committed sample data, not live sources.">
           Sample data
         </span>

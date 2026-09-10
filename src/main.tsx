@@ -5,6 +5,8 @@ import CssBaseline from "@mui/material/CssBaseline";
 import App from "./App";
 import { RootErrorBoundary } from "./errors/RootErrorBoundary";
 import { DataProvider } from "./data/DataContext";
+import { PasswordGate } from "./auth/PasswordGate";
+import { SplashGate } from "./shell/SplashGate";
 import { installThemeVariables } from "./theme";
 import { muiTheme } from "./muiTheme";
 // Carbon's global styles come first so the app's own overrides in styles.css win
@@ -20,9 +22,12 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider theme={muiTheme}>
       <CssBaseline />
       <RootErrorBoundary>
-        <DataProvider>
-          <App />
-        </DataProvider>
+        <PasswordGate>
+          <DataProvider>
+            <SplashGate />
+            <App />
+          </DataProvider>
+        </PasswordGate>
       </RootErrorBoundary>
     </ThemeProvider>
   </StrictMode>,

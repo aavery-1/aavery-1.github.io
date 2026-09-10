@@ -30,14 +30,20 @@ export function MapControls({
           <Icon.ZoomOut size={18} />
         </button>
       </div>
-      <button
-        className="map-ctrl-btn map-ctrl-solo"
-        onClick={onFullscreen}
-        aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
-        title={isFullscreen ? "Exit full screen" : "Full screen"}
-      >
-        {isFullscreen ? <Icon.ExitFullscreen size={17} /> : <Icon.Fullscreen size={17} />}
-      </button>
+      {/* Only render fullscreen where the browser actually allows it. In an
+          embedded/sandboxed frame (the app preview) document.fullscreenEnabled is
+          false and requestFullscreen is a silent no-op, so the button would look
+          broken; in a real deployed tab it is available and works. */}
+      {typeof document !== "undefined" && document.fullscreenEnabled && (
+        <button
+          className="map-ctrl-btn map-ctrl-solo"
+          onClick={onFullscreen}
+          aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+          title={isFullscreen ? "Exit full screen" : "Full screen"}
+        >
+          {isFullscreen ? <Icon.ExitFullscreen size={17} /> : <Icon.Fullscreen size={17} />}
+        </button>
+      )}
       <button
         className="map-ctrl-btn map-ctrl-solo"
         onClick={onReset}

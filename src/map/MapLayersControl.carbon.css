@@ -7,6 +7,11 @@
   width: 40px;
   height: 40px;
   border-radius: 0;
+  /* On-brand KIPP navy glyph, matching the other map controls. */
+  color: var(--kipp-navy, #20275d);
+}
+.map-layers-trigger svg {
+  fill: currentColor;
 }
 .map-layers-trigger--open,
 .map-layers-trigger--open:hover {
@@ -37,7 +42,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 0;
   margin-bottom: 16px;
 }
 .map-layers-view {
@@ -80,7 +85,7 @@
 .map-layers-overlays {
   display: flex;
   flex-direction: column;
-  margin-top: 2px;
+  margin-top: 6px;
 }
 .map-layers-overlay {
   display: flex;
@@ -91,4 +96,16 @@
 .map-layers-overlay__label {
   font-size: 13px;
   color: var(--text-primary);
+}
+/* The row already carries its own left-aligned label, so the Carbon Toggle's own
+   text is suppressed to keep the row non-redundant: just label + switch. */
+.map-layers-overlay .cds--toggle__label-text,
+.map-layers-overlay .cds--toggle__text {
+  display: none;
+}
+.map-layers-overlay .cds--toggle {
+  flex: none;
+}
+.map-layers-overlay .cds--toggle__label {
+  margin: 0;
 }

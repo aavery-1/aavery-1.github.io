@@ -3,16 +3,119 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hope Siting - Florida charter siting for Schools of Hope</title>
+    <title>Florida Facilities Tool</title>
+    <meta
+      name="description"
+      content="Maps Florida's Schools of Hope facility-siting eligibility (F.S. 1002.333) across Miami-Dade, Broward, and Orange counties."
+    />
+    <link rel="icon" type="image/jpeg" href="/kipp-mark.jpg" />
+    <link rel="apple-touch-icon" href="/kipp-mark.jpg" />
+    <meta name="theme-color" content="#20275d" />
+
+    <!-- Social preview. Image paths are root-relative; make them absolute
+         (https://your-domain/...) once the deploy domain is fixed. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Florida Facilities Tool" />
+    <meta
+      property="og:description"
+      content="Maps Florida's Schools of Hope facility-siting eligibility across Miami-Dade, Broward, and Orange counties."
+    />
+    <meta property="og:image" content="/kipp-team-family.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Florida Facilities Tool" />
+    <meta
+      name="twitter:description"
+      content="Maps Florida's Schools of Hope facility-siting eligibility across Miami-Dade, Broward, and Orange counties."
+    />
+    <meta name="twitter:image" content="/kipp-team-family.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <!-- Branded load splash. Inlined so it paints INSTANTLY, before the app
+         bundle downloads, and covers the whole cold load (bundle + mount + data).
+         The app fades it out once the school data is ready (see SplashGate). -->
+    <style>
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(120% 120% at 50% 38%, #ffffff 0%, #eef2fb 100%);
+        opacity: 1;
+        transition: opacity 1000ms cubic-bezier(0.33, 1, 0.68, 1);
+      }
+      #app-splash.app-splash--out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      /* The content gently lifts and scales as it fades, so the exit reads as a
+         soft dissolve into the app rather than a hard cut. */
+      #app-splash.app-splash--out .app-splash__inner {
+        transform: translateY(-14px) scale(1.03);
+      }
+      .app-splash__inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        animation: appSplashRise 620ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+        transition: transform 1000ms cubic-bezier(0.33, 1, 0.68, 1);
+      }
+      .app-splash__logo {
+        width: min(340px, 72vw);
+        height: auto;
+        display: block;
+        mix-blend-mode: multiply;
+      }
+      /* Carbon-style indeterminate bar: a KIPP navy -> light-blue segment sweeping
+         across a faint navy track. */
+      .app-splash__bar {
+        position: relative;
+        width: min(240px, 60vw);
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(0, 30, 98, 0.12);
+        overflow: hidden;
+      }
+      .app-splash__bar::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 42%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #001e62 0%, #52c3ed 100%);
+        animation: appSplashSweep 1150ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+      @keyframes appSplashSweep {
+        0% { transform: translateX(-115%); }
+        100% { transform: translateX(320%); }
+      }
+      @keyframes appSplashRise {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .app-splash__inner { animation: none; transition: none; }
+        #app-splash.app-splash--out .app-splash__inner { transform: none; }
+        .app-splash__bar::after { animation: none; width: 100%; background: #001e62; }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="app-splash" aria-hidden="true" role="presentation">
+      <div class="app-splash__inner">
+        <img class="app-splash__logo" src="/kipp-team-family.jpg" alt="KIPP Team and Family" />
+        <div class="app-splash__bar"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

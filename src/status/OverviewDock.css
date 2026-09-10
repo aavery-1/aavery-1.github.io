@@ -1,0 +1,525 @@
+/* The "schools in view" dock, in Carbon g10 tokens (no MUI). Desktop is a centered
+   floating card; phone is a floating, draggable sheet inset from the edges. The
+   card chrome matches the map's other control surfaces (sharp corners, hairline
+   border, --cds tokens) so the dock reads as Carbon at every width. No em dashes. */
+
+/* Shared card chrome. */
+.dock-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: auto;
+  background: var(--cds-layer-01, #ffffff);
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  box-shadow: 0 2px 24px rgba(15, 23, 42, 0.14);
+}
+
+/* ---- Desktop / tablet: a compact bar tucked into the bottom-right corner,
+   beside the map-control column (right:16 + 40px wide, so we clear it at
+   right:64). It shares the controls' bottom line (bottom:28) and the collapsed
+   bar is exactly as tall as one control button (40px) for a uniform corner.
+   Expanding grows the card UPWARD from that anchored bottom edge. ---- */
+.dock-desktop {
+  position: absolute;
+  z-index: 8;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  right: 64px;
+  /* Shares the map-controls bottom baseline (44px) so the bottom-right cluster
+     aligns with the bottom-left furniture and clears Google's attribution. */
+  bottom: 44px;
+  max-height: calc(100vh - 120px);
+}
+.dock-desktop .dock-card {
+  pointer-events: auto;
+  width: auto;
+  max-height: 100%;
+}
+.dock-desktop .dock-card--open {
+  width: min(420px, calc(100vw - 120px));
+}
+/* The collapsed count bar: one control-button tall. The count + label are
+   centered as a unit, with the chevron pinned to the right edge so it never
+   pulls the centered text off-axis. Symmetric padding (chevron gutter on both
+   sides) keeps the centering true. */
+.dock-bar {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  position: relative;
+  height: 44px;
+  flex: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  background: var(--cds-layer-01, #ffffff);
+  border: none;
+  white-space: nowrap;
+}
+/* Count + label ride together on a shared text baseline, and the group as a
+   whole is centered vertically in the bar (align-items:baseline alone would
+   pin the text to the top of the 44px bar). */
+.dock-bar__group {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.dock-bar .dock-count {
+  font-size: 19px;
+}
+.dock-bar .dock-count-label {
+  font-size: 14.5px;
+}
+.dock-bar:disabled {
+  cursor: default;
+}
+.dock-bar:focus-visible {
+  outline: 2px solid var(--cds-focus, #001e62);
+  outline-offset: -2px;
+}
+.dock-card--open .dock-bar {
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.dock-bar__chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--cds-text-secondary, #525252);
+}
+/* Smooth expand/contract: a grid-rows 0fr -> 1fr transition grows the body
+   without hard-coding its height. The inner clips during the animation. */
+.dock-expand-anim {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 260ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.dock-card--open .dock-expand-anim {
+  grid-template-rows: 1fr;
+}
+.dock-expand-anim__inner {
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock-expand-anim {
+    transition: none;
+  }
+}
+/* The stat/filter chips ride at the top of the expanded panel, horizontally. */
+.dock-stats-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dock-stats-row::-webkit-scrollbar {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock-desktop .dock-card {
+    transition: none;
+  }
+}
+
+/* ---- Phone: floating draggable sheet ---- */
+.dock-mobile {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  /* Sit above Google's bottom logo + "Map data" attribution row (~28px), which
+     the Maps terms require to stay visible, so the sheet NEVER covers it. */
+  bottom: 30px;
+  z-index: 8;
+  pointer-events: none;
+}
+.dock-sheet {
+  pointer-events: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--cds-layer-01, #ffffff);
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.18);
+}
+
+/* Grabber: the only drag surface on the phone sheet. */
+.dock-grabber {
+  flex: none;
+  cursor: grab;
+  touch-action: none;
+  padding: 8px 16px 6px;
+}
+.dock-grabber:active {
+  cursor: grabbing;
+}
+.dock-grabber:focus-visible {
+  outline: 2px solid var(--cds-focus, #001e62);
+  outline-offset: -2px;
+}
+.dock-grabber__bar {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--cds-border-strong-01, #8d8d8d);
+  margin: 0 auto 8px;
+}
+
+/* Count header (both forms). */
+.dock-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dock-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cds-text-primary, #161616);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.dock-sheet .dock-count {
+  font-size: 17px;
+  font-weight: 700;
+}
+.dock-count-label {
+  font-size: 13px;
+  color: var(--cds-text-secondary, #525252);
+  white-space: nowrap;
+}
+.dock-head__chevron {
+  margin-left: auto;
+  display: flex;
+  color: var(--cds-text-secondary, #525252);
+}
+
+/* Desktop peek: the count row is a toggle button, then the stat stack. */
+.dock-peek {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.dock-peek-toggle {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 4px;
+  margin: -4px -4px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dock-peek-toggle:disabled {
+  cursor: default;
+}
+.dock-peek-toggle:focus-visible {
+  outline: 2px solid var(--cds-focus, #001e62);
+  outline-offset: 1px;
+}
+.dock-peek-toggle__chevron {
+  display: flex;
+  color: var(--cds-text-secondary, #525252);
+  flex: none;
+}
+.dock-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Phone filter row: horizontal, scrollable. */
+.dock-filterrow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dock-filterrow::-webkit-scrollbar {
+  display: none;
+}
+.dock-filterrow__sep {
+  flex: none;
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 0;
+  background: var(--cds-border-subtle-01, #e0e0e0);
+}
+.dock-filters-btn {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  flex: none;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cds-link-primary, #001e62);
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: var(--cds-layer-01, #fff);
+}
+.dock-filters-btn:hover {
+  background: var(--cds-layer-hover-01, #e8e8e8);
+}
+.dock-filters-btn:focus-visible {
+  outline: 2px solid var(--cds-focus, #001e62);
+  outline-offset: 1px;
+}
+
+/* FilterStat: a stat that doubles as a filter toggle. --stat-color carries the
+   semantic color (PLP red / underused slate / co-location teal). */
+.dock-stat {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: transparent;
+}
+.dock-stat:hover {
+  background: rgba(22, 22, 22, 0.04);
+}
+.dock-stat:focus-visible {
+  outline: 2px solid var(--stat-color, #001e62);
+  outline-offset: 1px;
+}
+.dock-stat--full {
+  width: 100%;
+}
+.dock-stat--compact {
+  flex: none;
+  border-radius: 999px;
+}
+.dock-stat--active {
+  border-color: color-mix(in srgb, var(--stat-color) 50%, transparent);
+  background: color-mix(in srgb, var(--stat-color) 12%, transparent);
+}
+.dock-stat--active:hover {
+  background: color-mix(in srgb, var(--stat-color) 18%, transparent);
+}
+.dock-stat__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stat-color);
+  flex: none;
+}
+.dock-stat__value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--stat-color);
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.dock-stat--full .dock-stat__value {
+  min-width: 34px;
+}
+.dock-stat__label {
+  font-size: 12px;
+  color: var(--cds-text-secondary, #525252);
+}
+.dock-stat--active .dock-stat__label {
+  font-weight: 600;
+}
+.dock-stat__x {
+  color: var(--cds-text-secondary, #525252);
+  display: flex;
+}
+.dock-stat--full .dock-stat__x {
+  margin-left: auto;
+}
+.dock-stat--compact .dock-stat__x {
+  margin-left: 2px;
+}
+
+/* Expanded body: search + column header + list + open-in-list. */
+.dock-expand {
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.dock-sheet .dock-expand {
+  flex: 1;
+}
+.dock-searchwrap {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  flex: none;
+}
+.dock-colhead {
+  padding: 12px 24px 10px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+}
+.dock-colhead__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--cds-text-secondary, #525252);
+}
+.dock-colhead__label--help {
+  cursor: help;
+}
+.dock-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 12px;
+}
+.dock-desktop .dock-list {
+  max-height: 200px;
+}
+.dock-sheet .dock-list {
+  flex: 1;
+  min-height: 0;
+}
+.dock-rows {
+  position: relative;
+  width: 100%;
+}
+
+/* A result row. */
+.dock-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+.dock-row:hover {
+  background: rgba(22, 22, 22, 0.04);
+}
+.dock-row--selected {
+  background: rgba(13, 148, 136, 0.1);
+}
+.dock-row--selected:hover {
+  background: rgba(13, 148, 136, 0.14);
+}
+.dock-row:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: -2px;
+}
+.dock-row__grade {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+.dock-row__text {
+  flex: 1;
+  min-width: 0;
+}
+.dock-row__name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cds-text-primary, #161616);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dock-row__sub {
+  display: block;
+  font-size: 12px;
+  color: var(--cds-text-secondary, #525252);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dock-donut {
+  position: relative;
+  flex: none;
+}
+.dock-donut__pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.dock-nomatch {
+  padding: 16px 12px;
+  font-size: 13px;
+  color: var(--cds-text-secondary, #525252);
+  text-align: center;
+}
+
+/* Open-in-list bridge: a flat, full-width action. */
+.dock-openlist {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: none;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: transparent;
+  color: var(--cds-link-primary, #001e62);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: left;
+  flex: none;
+}
+.dock-openlist:hover {
+  background: var(--cds-layer-hover-01, #e8e8e8);
+}
+.dock-openlist:focus-visible {
+  outline: 2px solid var(--cds-focus, #001e62);
+  outline-offset: -2px;
+}
+
+/* Carbon Search inside the dock keeps its default g10 field. */
+.dock-search .cds--search-input {
+  background: var(--cds-field-01, #f4f4f4);
+}

@@ -29,7 +29,7 @@ export function useActiveFilters(): ActiveFilter[] {
     filters.push({ key: "county", section: "Geography", label, onClear: () => s.setCounties(ALL_COUNTIES) });
   }
   if (s.districtFilter) filters.push({ key: "district", section: "Geography", label: districtFilterLabel(s.districtFilter), onClear: () => s.setDistrictFilter(null) });
-  if (s.drawnBoundary && s.drawnBoundary.length >= 3) filters.push({ key: "boundary", section: "Geography", label: "Drawn area", onClear: () => s.clearDrawnBoundary() });
+  if (s.drawnBoundary && s.drawnBoundary.length >= 3) filters.push({ key: "boundary", section: "Geography", label: "Map area", onClear: () => s.clearDrawnBoundary() });
 
   if (s.plpOnly) filters.push({ key: "plp", section: "Schools", label: "Persistently low-performing", onClear: () => s.setPlpOnly(false) });
   if (s.coLocationOnly) filters.push({ key: "coloc", section: "Schools", label: "Co-location candidate", onClear: () => s.setCoLocationOnly(false) });
@@ -40,6 +40,12 @@ export function useActiveFilters(): ActiveFilter[] {
     if (s.facilityUseSelection.has(tier.key)) {
       filters.push({ key: `fu-${tier.key}`, section: "Schools", label: `Facility use: ${tier.label}`, onClear: () => s.toggleFacilityUse(tier.key) });
     }
+  }
+  if (s.utilMin != null || s.utilMax != null) {
+    const label = s.utilMin != null && s.utilMax != null
+      ? `Utilization ${s.utilMin}-${s.utilMax}%`
+      : s.utilMin != null ? `Utilization >= ${s.utilMin}%` : `Utilization <= ${s.utilMax}%`;
+    filters.push({ key: "utilrange", section: "Schools", label, onClear: () => s.setUtilRange(null, null) });
   }
   if (s.titleISelection.size > 0) filters.push({ key: "titlei", section: "Schools", label: `Title I: ${[...s.titleISelection].map(titleILabel).join(", ")}`, onClear: s.clearTitleI });
 

@@ -15,7 +15,7 @@ export const theme = {
     textPrimary: "#161616", // Gray 100, text-primary
     textSecondary: "#525252", // Gray 70, text-secondary
     textTertiary: "#6f6f6f", // Gray 60, text-helper
-    focus: "#0f62fe",        // Blue 60, interactive / focus
+    focus: "#001e62",        // KIPP navy (brand indigo), interactive / focus
     // Map overlay encodings, in Carbon's categorical/sequential data-viz palette.
     incomeRamp: ["#edf5ff", "#a6c8ff", "#4589ff", "#0f62fe", "#002d9c"], // Carbon Blue sequential
     boardOutline: "#8a3ffc",       // Carbon Purple 60

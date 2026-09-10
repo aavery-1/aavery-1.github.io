@@ -35,8 +35,8 @@ export function MapLayersControl() {
   return (
     <Popover open={open} onRequestClose={() => setOpen(false)} align="bottom-right" dropShadow>
       <IconButton
-        label="Base map and view"
-        aria-label="Base map and view"
+        label="Map style"
+        aria-label="Map style and overlays"
         kind="ghost"
         size="md"
         align="left"
@@ -47,9 +47,8 @@ export function MapLayersControl() {
       </IconButton>
       <PopoverContent>
         <div className="map-layers-panel">
-          <h3 className="map-layers-heading">Base map</h3>
+          <h3 className="map-layers-heading">Map style</h3>
 
-          <span className="map-layers-section">Map view</span>
           <div className="map-layers-views">
             {VIEWS.map((v) => {
               const selected = baseMapType === v.value;

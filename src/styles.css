@@ -277,78 +277,162 @@ code {
   background: var(--card);
 }
 
-/* App header (Carbon). A flex child at the top of the shell, composed from
-   Carbon components (ContentSwitcher, ComboBox, IconButton, Tag, Popover) and
-   colored with Carbon g10 theme tokens (--cds-*). */
+/* App header: a strictly-Carbon WHITE bar (Sep 8 rebrand). It reads as the same
+   g10 white surface as the rest of the tool, not a separate navy band. Brand comes
+   from the KIPP Team & Family wordmark; the palette is KIPP indigo #20275D with the
+   light-blue #52C3ED accent sampled from that logo. Carbon components (Content
+   Switcher, ComboBox, IconButton, Popover) render close to their defaults on white,
+   with only the accent recolored. No em dashes in this file. */
 .app-header {
+  --kipp-navy: #20275d;
+  --kipp-blue: #52c3ed;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   flex: none;
-  min-height: 48px;
-  padding: 0 12px;
-  background: var(--cds-layer-01, #fff);
-  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  /* 1.5x the prior 56px bar; elements stay vertically centered (align-items). */
+  min-height: 84px;
+  padding: 0 28px;
+  background: #fff;
+  color: var(--kipp-navy);
   z-index: 10;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
 }
-.app-header__brand {
+/* LEFT ZONE (product): the wordmark. Extra right padding gives the KIPP Team &
+   Family logo real breathing room before the search field. */
+.app-header__lead {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: none;
+  min-width: 0;
+  padding-right: 12px;
+}
+.app-header__divider {
+  flex: none;
+  width: 1px;
+  height: 28px;
+  background: var(--cds-border-subtle-01, #e0e0e0);
+}
+/* MIDDLE ZONE (system): fills the bar and centers the persistent search. */
+.app-header__mid {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+.app-header__search-wrap {
+  width: 100%;
+  max-width: 460px;
+}
+/* RIGHT ZONE (global): shortlist cart + account menu. */
+.app-header__utils {
   display: flex;
   align-items: center;
   gap: 10px;
   flex: none;
 }
+.app-header__util-sep {
+  flex: none;
+  width: 1px;
+  height: 28px;
+  margin: 0 2px;
+  background: var(--cds-border-subtle-01, #e0e0e0);
+}
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+/* KIPP Team & Family wordmark. The source is a white-background JPG, so multiply
+   blend drops the white cleanly onto the white bar (and any off-white tint). */
 .app-header__logo {
-  width: 32px;
-  height: 32px;
   flex: none;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: var(--cds-background-inverse, #161616);
-  color: var(--cds-text-inverse, #fff);
 }
-.app-header__id {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
+.app-header__logo img {
+  display: block;
+  height: 28px;
+  width: auto;
+  mix-blend-mode: multiply;
 }
-.app-header__title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--cds-text-primary, #161616);
-}
-.app-header__subtitle {
-  font-size: 11px;
-  color: var(--cds-text-secondary, #525252);
-}
-.app-header__source-tag {
+.app-header__logo .app-header__logo-mark {
   display: none;
-  cursor: help;
-}
-.app-header__spacer {
-  flex: 1;
 }
 .app-header__switch {
   flex: none;
-}
-/* Size the switcher so the three equal-width segments each fit their label
-   (the default width clipped "Compare" to "Comp"); trim the segment padding a
-   little to keep the bar compact. */
-.app-header__switch .cds--content-switcher {
-  width: 336px;
-}
-.app-header__switch .cds--content-switcher-btn {
-  padding-inline: 10px;
-}
-.view-switch__inner {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+}
+/* Regular, stock Carbon ContentSwitcher: no custom track, no recolor. It renders
+   with Carbon's own segmented-control styling (using the app's brand token for the
+   selected segment) so it looks like the rest of the tool's Carbon components. Each
+   segment sizes to its own content and never clips, so "Map" / "List" always show
+   in full. */
+.app-header__switch .cds--content-switcher {
+  width: auto;
+}
+.app-header__switch .cds--content-switcher-btn {
+  overflow: visible;
+}
+.app-header__switch .cds--content-switcher-text {
+  overflow: visible;
+  text-overflow: clip;
+}
+.app-header__switch .view-switch__inner {
   white-space: nowrap;
 }
-.view-switch__badge {
-  min-width: 16px;
-  height: 16px;
+.app-header__switch .view-switch__label {
+  font-size: 14px;
+}
+/* Selected segment: the dark KIPP navy, not Carbon's near-black default. White
+   text/icon (Carbon's selected default) stays legible on it. */
+.app-header__switch .cds--content-switcher-btn.cds--content-switcher--selected,
+.app-header__switch .cds--content-switcher-btn[aria-selected="true"] {
+  background-color: var(--kipp-navy);
+}
+/* Shortlist "cart": a persistent icon button; navy glyph, a light-blue filled
+   state when its map tray is open. */
+.app-header__shortlist {
+  position: relative;
+  appearance: none;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--kipp-navy);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.app-header__shortlist:hover {
+  background: rgba(32, 39, 93, 0.08);
+}
+.app-header__shortlist:active {
+  background: rgba(32, 39, 93, 0.14);
+}
+.app-header__shortlist:focus-visible {
+  outline: 2px solid var(--kipp-navy);
+  outline-offset: -2px;
+}
+.app-header__shortlist--on {
+  background: var(--kipp-blue);
+  color: var(--kipp-navy);
+}
+.app-header__shortlist--on:hover {
+  background: #43b6e2;
+}
+.app-header__shortlist-badge {
+  position: absolute;
+  top: 5px;
+  right: 4px;
+  min-width: 15px;
+  height: 15px;
   padding: 0 4px;
   display: inline-flex;
   align-items: center;
@@ -358,33 +442,102 @@ code {
   line-height: 1;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
-  background: var(--cds-background-brand, #0f62fe);
-  color: var(--cds-text-on-color, #fff);
+  background: var(--kipp-navy);
+  color: #fff;
+  box-shadow: 0 0 0 1.5px #fff;
 }
-.cds--content-switcher--selected .view-switch__badge {
-  background: var(--cds-background-brand, #0f62fe);
+.app-header__shortlist--on .app-header__shortlist-badge {
+  background: var(--kipp-navy);
+  color: #fff;
 }
+.view-switch__inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+/* Persistent middle-zone search: the Carbon ComboBox on white, its default g10
+   field, with only a leading magnifier added so it reads as a search. */
 .app-header__search {
-  width: 300px;
-  flex: none;
+  width: 100%;
+}
+.app-header__search-wrap .cds--text-input {
+  padding-left: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 32 32' fill='none' stroke='%23525252' stroke-width='2'%3E%3Ccircle cx='14' cy='14' r='8'/%3E%3Cline x1='20' y1='20' x2='27' y2='27'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
 }
 .app-header__search-popover {
   width: min(360px, calc(100vw - 32px));
   padding: 8px;
 }
+/* Account menu trigger: a KIPP-navy avatar disc with a white initial. */
 .app-header__avatar {
-  width: 32px;
-  height: 32px;
+  appearance: none;
+  width: 36px;
+  height: 36px;
   flex: none;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: none;
   border-radius: 50%;
-  background: var(--cds-background-brand, #0f62fe);
-  color: var(--cds-text-on-color, #fff);
-  font-size: 13px;
+  background: var(--kipp-navy);
+  color: #fff;
+  font-size: 14px;
   font-weight: 700;
-  cursor: default;
+  cursor: pointer;
+  transition: box-shadow 120ms ease;
+}
+.app-header__avatar:hover {
+  box-shadow: 0 0 0 2px var(--kipp-blue);
+}
+.app-header__avatar:focus-visible {
+  outline: 2px solid var(--kipp-navy);
+  outline-offset: 2px;
+}
+/* Account button in the bottom-left rail (desktop): a KIPP-navy avatar over a
+   short label, matching the rail's other icon-over-label items. */
+.rail-account {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #525252;
+}
+.rail-account:hover {
+  background: rgba(22, 22, 22, 0.06);
+}
+.rail-account:focus-visible {
+  outline: 2px solid #20275d;
+  outline-offset: -2px;
+}
+.rail-account__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #20275d;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rail-account--on .rail-account__avatar {
+  box-shadow: 0 0 0 2px #52c3ed;
+}
+.rail-account__label {
+  font-size: 10px;
+  line-height: 1.1;
 }
 /* Custom two-line options in the search ComboBox menu */
 .school-option {
@@ -418,7 +571,60 @@ code {
 }
 .school-option__sub {
   font-size: 11px;
+  line-height: 1.3;
   color: var(--cds-text-secondary, #525252);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The school-search menu carries two-line options; Carbon's default single-line
+   item height crams the two lines together (they overlapped the row below). Let
+   the option size to its content with real vertical padding so name and sub-line
+   never collide. Scoped to menus that hold a .school-option. */
+.cds--list-box__menu-item__option:has(.school-option) {
+  height: auto;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.school-option__name {
+  line-height: 1.25;
+}
+/* Hide the menu entirely when the query produced no options (empty query, or a
+   no-match), so the dropdown never opens on an empty field. */
+.app-header__search-wrap .cds--list-box__menu:not(:has(.cds--list-box__menu-item)),
+.app-header__search-popover .cds--list-box__menu:not(:has(.cds--list-box__menu-item)),
+.map-quick-actions__search .cds--list-box__menu:not(:has(.cds--list-box__menu-item)) {
+  display: none;
+}
+/* A smooth drop-in when results appear (Carbon mounts the menu on open, so this
+   enter animation plays each time it opens). */
+.cds--list-box__menu:has(.school-option) {
+  animation: comboDrop 160ms cubic-bezier(0.32, 0.72, 0, 1);
+  transform-origin: top center;
+}
+@keyframes comboDrop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cds--list-box__menu:has(.school-option) { animation: none; }
+}
+/* Smooth open for the map's Carbon flyouts (legend + map style). Carbon toggles
+   the popover content between display:none and block, and a CSS animation restarts
+   whenever an element becomes displayed, so this plays on every open. The inner
+   panel animates (not the content, which Carbon transforms for positioning). */
+.map-legend-panel,
+.map-layers-panel {
+  animation: mapPopIn 170ms cubic-bezier(0.32, 0.72, 0, 1);
+  transform-origin: top right;
+}
+@keyframes mapPopIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-legend-panel,
+  .map-layers-panel { animation: none; }
 }
 /* Info menu inside the header Popover */
 .hdr-menu {
@@ -462,15 +668,99 @@ code {
 .hdr-menu__about {
   padding: 8px 16px 10px;
 }
-/* Show the source tag and inline search only where there is room. */
-@media (min-width: 1056px) {
-  .app-header__source-tag {
-    display: inline-flex;
-  }
+/* Account block at the top of the account menu. */
+.hdr-menu__account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 10px;
 }
+.hdr-menu__account-avatar {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #001e62;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.hdr-menu__email {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cds-text-primary, #161616);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Live data-source status, moved off the bar into the menu. */
+.hdr-menu__status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+}
+.hdr-menu__status-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: #24a148;
+  box-shadow: 0 0 0 3px rgba(36, 161, 72, 0.18);
+}
+/* Tablet: the persistent search collapses to a popover icon (see useCompact), so
+   the bar has room for the FULL wordmark; keep it, just scale it down a touch so
+   it never crowds the switcher. The compact "KIPP:" mark is reserved for phones
+   (below), where the bar is genuinely tight. */
 @media (max-width: 899.95px) {
   .app-header__search {
     width: 100%;
+  }
+  .app-header__logo-full img {
+    height: 24px;
+  }
+}
+
+/* Phone: the bar is brand + primary view switch + shortlist + account (search and
+   filters moved onto the map). The view switch drops its text labels (icon-only,
+   the selected segment stays highlighted) and spacing tightens a touch, while the
+   bar keeps its taller 56px height so it still feels like the rest of the tool. */
+@media (max-width: 599.95px) {
+  .app-header {
+    gap: 16px;
+    padding: 0 16px;
+  }
+  .app-header__lead {
+    gap: 8px;
+  }
+  /* Phone only: swap the full wordmark for the compact "KIPP:" mark. It reads a bit
+     larger here (28px, matching the desktop wordmark's weight) now that the bar has
+     more breathing room. Dividers drop so everything fits a 360px screen. */
+  .app-header__logo .app-header__logo-full {
+    display: none;
+  }
+  .app-header__logo .app-header__logo-mark {
+    display: block;
+    height: 28px;
+  }
+  .app-header__divider,
+  .app-header__util-sep {
+    display: none;
+  }
+  /* Give the view switch and account avatar real space between them so the right
+     cluster does not read as crowded. */
+  .app-header__utils {
+    gap: 14px;
+  }
+  .app-header__switch .cds--content-switcher-btn {
+    padding: 0 12px;
+  }
+  .view-switch__label {
+    display: none;
   }
 }
 
@@ -505,10 +795,10 @@ code {
 .map-furniture {
   position: absolute;
   left: 12px;
-  /* Aligned with the map controls and results sheet on a shared bottom baseline,
-     lifted clear of Google's bottom-left logo (~26px tall), which the Maps terms
-     require to stay visible and unobstructed. */
-  bottom: 28px;
+  /* Lifted well clear of Google's bottom-left logo + attribution row (~40px), which
+     the Maps terms require to stay visible, so the scale bar and coordinate readout
+     give the Google logo real breathing room instead of crowding it. */
+  bottom: 44px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -577,8 +867,16 @@ code {
   display: flex;
   gap: 4px;
   align-items: center;
+  /* Keep the pair on one line and let the box size to its content, so the
+     coordinates never wrap or spill out of the box (the mobile bug). */
+  white-space: nowrap;
+  width: max-content;
+  max-width: 100%;
   pointer-events: auto;
   box-shadow: var(--shadow-card);
+}
+.coord-readout .mono {
+  white-space: nowrap;
 }
 .coord-tag {
   color: var(--text-tertiary);
@@ -915,7 +1213,7 @@ code {
 .timeline-track {
   display: flex;
   align-items: flex-end;
-  gap: 3px;
+  gap: 5px;
   overflow-x: auto;
   padding-bottom: 4px;
 }
@@ -924,12 +1222,14 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   flex: none;
 }
+/* Timeline reads newest-first (left), so a formula-change boundary sits on the
+   RIGHT edge of its year, between it and the older year beside it. */
 .timeline-divider {
   position: absolute;
-  left: -3px;
+  right: -3px;
   top: -2px;
   bottom: 12px;
   width: 2px;
@@ -953,7 +1253,11 @@ code {
   border-color: var(--hairline) !important;
 }
 .timeline-year {
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
   color: var(--text-tertiary);
 }
 
@@ -1150,7 +1454,10 @@ code {
 .map-controls {
   position: absolute;
   right: 16px;
-  bottom: 28px;
+  /* One shared bottom baseline with the bottom-left furniture (scale bar) and the
+     bottom-right dock, so all of the map's bottom chrome aligns on one line and
+     clears Google's logo + attribution row at every width. */
+  bottom: 44px;
   z-index: 8;
   display: flex;
   flex-direction: column;
@@ -1165,7 +1472,10 @@ code {
   border: 1px solid var(--hairline);
   border-radius: 0;
   box-shadow: var(--shadow-card);
-  overflow: hidden;
+  /* Not `hidden`: the buttons' Carbon tooltips and the base-map flyout render
+     inline (not portaled), so clipping the group would hide them. The square
+     corners and flush 40px buttons mean nothing needs clipping here anyway. */
+  overflow: visible;
 }
 .map-ctrl-sep {
   height: 1px;
@@ -1180,15 +1490,70 @@ code {
   height: 40px;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  /* On-brand KIPP navy glyphs, not a generic blackish gray. */
+  color: var(--kipp-navy, #20275d);
   transition: background 120ms ease, color 120ms ease;
 }
 .map-ctrl-btn:hover {
   background: #f4f5f7;
-  color: var(--text-primary);
+  color: var(--kipp-navy, #20275d);
 }
 .map-ctrl-btn:active {
   background: #eceef1;
+}
+.map-ctrl-btn:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: -2px;
+}
+/* Active tool (Distance / Radius) reads as engaged with a filled brand state. */
+.map-ctrl-btn--active,
+.map-ctrl-btn--active:hover {
+  background: var(--focus, #001e62);
+  color: #fff;
+}
+.map-ctrl-btn--active svg {
+  fill: #fff;
+}
+/* Shortlist opener on the map: a bookmark glyph with a pinned-count badge. */
+.map-shortlist-btn {
+  position: relative;
+}
+/* A brief "pop" when a site is added, so the pick registers without the tray
+   opening on its own (the group has overflow:visible, so the scale is not clipped). */
+.map-shortlist-btn--pop {
+  animation: shortlistPop 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes shortlistPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-shortlist-btn--pop { animation: none; }
+}
+.map-shortlist-badge {
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  background: var(--kipp-navy, #20275d);
+  color: #fff;
+  box-shadow: 0 0 0 1.5px #fff;
+}
+.map-ctrl-btn--active .map-shortlist-badge {
+  background: #fff;
+  color: var(--kipp-navy, #20275d);
+  box-shadow: 0 0 0 1.5px var(--kipp-navy, #20275d);
 }
 /* Solo buttons carry their own card surface (group buttons share one). */
 .map-ctrl-solo {
@@ -1249,7 +1614,7 @@ code {
   color: #fff;
   border-radius: 999px;
   padding: 7px 8px 7px 16px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25);
 }
@@ -1272,9 +1637,6 @@ code {
   border-width: 1.5px;
 }
 .soh-tooltip-star {
-  color: #B45309;
-  font-size: 15px;
-  line-height: 1;
   flex: none;
 }
 .soh-tooltip-fund {
@@ -1289,12 +1651,13 @@ code {
 .pin-tooltip {
   position: absolute;
   z-index: 9;
-  max-width: 240px;
+  width: max-content;
+  max-width: 268px;
   background: var(--card);
   border: 1px solid var(--hairline);
   border-radius: 0;
   box-shadow: var(--shadow-card);
-  padding: 8px 10px;
+  padding: 10px 12px;
   pointer-events: none;
 }
 .pin-tooltip-head {
@@ -1323,49 +1686,98 @@ code {
   color: var(--text-secondary);
   margin-top: 3px;
 }
-.pin-tooltip-util {
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: 4px;
-  padding: 3px 6px;
-  border-radius: 0;
-  display: inline-block;
-}
-/* Material palette: Deep Orange 700 over, Blue 700 under, Green 700 target,
-   Grey 600 unknown. Fill tint is 12% of the tone; text is tone 900. */
-.pin-tooltip-util.util-over {
-  background: rgba(230, 74, 25, 0.12);
-  color: #BF360C; /* Deep Orange 900 */
-}
-.pin-tooltip-util.util-under {
-  background: rgba(25, 118, 210, 0.10);
-  color: #0D47A1; /* Blue 900 */
-}
-.pin-tooltip-util.util-target {
-  background: rgba(56, 142, 60, 0.10);
-  color: #1B5E20; /* Green 900 */
-}
-.pin-tooltip-util.util-unknown {
-  background: rgba(117, 117, 117, 0.10);
-  color: #424242; /* Grey 800 */
-}
-/* Co-location eligibility flag in the pin tooltip: teal, matching the map badge. */
-.pin-tooltip-coloc {
-  margin-top: 4px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #0f766e; /* Teal 700 */
-  display: inline-flex;
-  align-items: center;
+/* A labeled fact list: one row per question a scout asks (rate, underutilized,
+   PLP, co-location eligible). A hairline sets it apart from the identity header. */
+.pin-tooltip-facts {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--hairline);
+  display: grid;
   gap: 5px;
 }
-.pin-tooltip-coloc::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 0;
-  background: #0d9488; /* Teal 600 */
+.pin-tooltip-fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pin-tooltip-fact dt {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+.pin-tooltip-fact dd {
+  margin: 0;
   flex: none;
+  text-align: right;
+}
+/* The facility rate: the statutory COFTE-based FUR, the one figure used across
+   the whole tool, colored by its tier (shared vocabulary with the dock and
+   inspector: under = teal, inuse = amber, full = red, unknown = slate). */
+.tt-rate {
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tt-rate.util-under { color: #0f766e; }
+.tt-rate.util-inuse { color: #b45309; }
+.tt-rate.util-full { color: #b91c1c; }
+.tt-rate.util-unknown { color: var(--text-secondary); font-weight: 600; font-size: 12px; }
+/* Yes/No pills: a plain, legible verdict per row. "Yes" carries the meaning
+   color of its category (opportunity = teal, low-performing flag = red); "No"
+   and "Unknown" stay quiet so the Yeses draw the eye. */
+.tt-yn {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  line-height: 1.5;
+}
+.tt-yn--yes-opp { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
+.tt-yn--yes-plp { background: rgba(183, 28, 28, 0.12); color: #b71c1c; }
+.tt-yn--no { background: var(--surface-sunken, rgba(15, 23, 42, 0.06)); color: var(--text-secondary); }
+.tt-yn--na { background: rgba(148, 163, 184, 0.16); color: var(--text-secondary); }
+/* Why it qualifies for co-location: the pathways one per row instead of a
+   run-on sentence. */
+.pin-tooltip-why {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3px;
+}
+.pin-tooltip-why li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.pin-tooltip-why li::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #0f766e;
+}
+.pin-tooltip-why-note {
+  color: var(--text-secondary);
+}
+/* The hover tooltip is a non-interactive PREVIEW (base pointer-events: none): it
+   never intercepts the cursor, so it cannot vanish as you reach for it, and it
+   never blocks a click on the pin beneath. Inspecting is a single click on the
+   pin (which opens the full inspector); the tooltip only previews. */
+.pin-tooltip-cta {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hairline);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 /* Slim decision-oriented status strip along the bottom of the map. Replaces
@@ -1664,10 +2076,11 @@ code {
   .layer-panel {
     width: 100%;
   }
-  /* Below the full-desktop width the bottom-center overview dock narrows toward
-     the corners, so trim the bottom-left furniture to guarantee clearance: drop
-     the cursor/center tag and let the readout shrink to its numbers. */
-  .coord-tag {
+  /* Below the full-desktop width the bottom-right "schools in view" card, when
+     expanded, reaches far enough left to collide with the bottom-left cursor
+     readout. The readout is a pointer-only power feature, so it stands down here
+     (the scale bar, which stays well clear at the far-left edge, remains). */
+  .coord-readout {
     display: none;
   }
   .map-furniture {
@@ -1675,17 +2088,28 @@ code {
   }
 }
 
-/* Phones: the "schools in view" bottom sheet peeks flush along the bottom (above
-   the Google attribution strip), so lift the corner map controls and the scale
-   bar clear of the collapsed peek. The expanded sheet grows over them on demand,
-   which is expected. Keeps zoom reachable and the attribution visible. */
+/* Phones: the "schools in view" sheet peeks along the bottom (its ~96px peek
+   sits 24px up, clearing Google's attribution strip). Lift the corner controls
+   clear of that peek, and pull the measure/radius tools OUT of the mid-map float
+   into the top-right control column so nothing floats over the pins. The expanded
+   sheet grows over the corner controls on demand, which is expected. */
 @media (max-width: 599px) {
   .map-controls {
-    bottom: 122px;
+    bottom: 132px;
   }
   .map-furniture {
-    bottom: 122px;
-    max-width: 40vw;
+    bottom: 132px;
+    /* Size to content (never a hard 40vw clamp that chopped the coordinates); the
+       stack sits far left of the bottom-right controls, so it cannot collide. */
+    max-width: calc(100vw - 84px);
+  }
+  /* Measure / Radius: join the top-right column under the legend + base-map
+     group (legend 40 + hairline + base map 40, from top: 12), instead of
+     floating halfway down the right edge over the map content. */
+  .toolbar-stack {
+    top: 104px;
+    bottom: auto;
+    right: 12px;
   }
 }
 

@@ -29,7 +29,7 @@ export class RootErrorBoundary extends Component<Props, State> {
         <div className="recovery">
           <div className="card recovery-card">
             <h1>The tool hit an unexpected error</h1>
-            <p>The map and data were not affected on disk. Reloading usually clears a transient render error.</p>
+            <p>Your data on disk is unchanged. Reloading usually clears a transient render error.</p>
             <pre className="recovery-detail">{this.state.error.message}</pre>
             <button className="btn btn-primary" onClick={() => window.location.reload()}>
               Reload the tool

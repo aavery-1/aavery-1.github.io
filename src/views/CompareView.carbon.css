@@ -100,6 +100,12 @@
   border-collapse: separate;
   border-spacing: 0;
 }
+/* Semantic <th> (corner, row labels, site headers) carry their own weight and
+   alignment via the spans inside; neutralize the browser default bold/center. */
+.compare-table th {
+  font-weight: 400;
+  text-align: left;
+}
 /* Neutralize Carbon's header-label wrapper so our flex content sits directly
    in the cell. */
 .compare-table thead .cds--table-header-label {
@@ -136,11 +142,11 @@
   padding: 6px 16px;
 }
 .compare-section-title {
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.32px;
+  letter-spacing: 0.16px;
   color: var(--text-secondary);
-  text-transform: uppercase;
 }
 
 /* Row label column: sticky left, with a neutral diff dot. */
@@ -173,7 +179,7 @@
   background: var(--focus);
 }
 .compare-label-text {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.35;
 }
@@ -335,7 +341,7 @@
 }
 .compare-empty-desc {
   margin: 8px 0 0;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
 }
@@ -355,4 +361,25 @@
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.5;
+}
+
+/* ---- Phone: the matrix has to work on a narrow, full-bleed modal ----
+   Narrow the sticky label column and size site columns to ~46vw, so the label
+   plus about one and a half sites stay on screen and the rest is one swipe away.
+   The toolbar controls stack full width above the matrix. */
+@media (max-width: 599.95px) {
+  .compare-toolbar { padding: 10px 12px; gap: 10px; }
+  .compare-controls { width: 100%; gap: 8px 12px; }
+  .compare-add { width: 100%; }
+  .compare-empty-add { max-width: none; }
+  .compare-corner,
+  .compare-label {
+    width: 132px;
+    min-width: 132px;
+    padding-left: 12px;
+    padding-right: 10px;
+  }
+  .compare-value,
+  .compare-site-header { min-width: 46vw; padding-left: 12px; padding-right: 12px; }
+  .compare-empty-card { padding: 24px; }
 }

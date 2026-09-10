@@ -11,6 +11,7 @@ import { useDeckLayers, type SchoolHoverInfo, type SohHoverInfo } from "./useDec
 import { resolveGradeStyle, rgbaToCss } from "./gradeEncoding";
 import { useData } from "../data/DataContext";
 import { schoolTypeLabel } from "../data/types";
+import { StarFilled } from "@carbon/icons-react";
 import { useStore, type LatLng, type BaseMapType } from "../store";
 import { PILOT_MIN_ZOOM } from "../geo/countyBounds";
 import { basemapStyleFor } from "./mapStyles";
@@ -40,7 +41,23 @@ export function MapView() {
   const [hover, setHover] = useState<SchoolHoverInfo | null>(null);
   const [sohHover, setSohHover] = useState<SohHoverInfo | null>(null);
 
-  const onSchoolHover = useCallback((info: SchoolHoverInfo | null) => setHover(info), []);
+  // The school tooltip is interactive (its PLP anchor is a link), so leaving the
+  // marker must not hide it instantly: the cursor has to cross a small gap of bare
+  // map to reach it. A short grace timer bridges that gap, and hovering the
+  // tooltip itself cancels the pending hide. Moving to another marker (a non-null
+  // hover) or leaving the tooltip clears it at once.
+  const hideTimer = useRef<number | null>(null);
+  const cancelHide = useCallback(() => {
+    if (hideTimer.current != null) {
+      window.clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+  }, []);
+  const onSchoolHover = useCallback((info: SchoolHoverInfo | null) => {
+    cancelHide();
+    if (info) setHover(info);
+    else hideTimer.current = window.setTimeout(() => setHover(null), 160);
+  }, [cancelHide]);
   const onSohHover = useCallback((info: SohHoverInfo | null) => setSohHover(info), []);
   const layers = useDeckLayers(onSchoolHover, onSohHover);
   const { schools } = useData();
@@ -62,7 +79,12 @@ export function MapView() {
       const [lng, lat] = f.geometry.coordinates as [number, number];
       bounds.extend({ lat, lng });
     }
-    m.fitBounds(bounds, { top: 70, right: 40, bottom: 260, left: 80 });
+    // Padding only clears the chrome that actually overlays the map on load:
+    // the header breathing room (top), the left rail (left), the zoom/tool
+    // controls (right), and the COLLAPSED overview dock (~42px) plus a margin
+    // (bottom). Reserving the expanded-dock height here (was 260) shoved every
+    // school up and to the right, leaving the fit off-center over open water.
+    m.fitBounds(bounds, { top: 72, right: 56, bottom: 96, left: 80 });
   }, [schools]);
 
   const toggleFullscreen = useCallback(() => {
@@ -174,7 +196,6 @@ export function MapView() {
       const tool = useStore.getState().activeTool;
       if (tool === "measure") addMeasurePoint(p);
       else if (tool === "radius") setRadius(p);
-      else if (tool === "draw") useStore.getState().addDrawPoint(p);
     });
 
     // Tear down fully. Without this, React 18 StrictMode's dev-only double
@@ -242,9 +263,20 @@ export function MapView() {
     if (didInitialFit.current || status !== "ready" || !mapRef.current || !schools?.features.length) return;
     didInitialFit.current = true;
     if (window.location.hash.includes("c=")) return;
-    // Extra bottom padding clears the summary/list callouts; left padding clears
-    // the filter rail.
+    // Cinematic first-load reveal: frame the tri-county area (Orange / Orlando,
+    // Miami-Dade, Broward) from the school bounds, hold it one step WIDER behind
+    // the load splash, then gently zoom in to the frame as the splash lifts. The
+    // final camera is always the true fit, so the framing is correct regardless.
+    const map = mapRef.current;
     fitToSchools();
+    google.maps.event.addListenerOnce(map, "idle", () => {
+      const zt = map.getZoom();
+      if (typeof zt !== "number") return;
+      map.setZoom(Math.max(PILOT_MIN_ZOOM, zt - 1)); // hold wide (behind the splash)
+      window.setTimeout(() => {
+        if (mapRef.current === map) map.setZoom(zt); // smooth zoom-in as the splash fades
+      }, 1200);
+    });
   }, [status, schools, fitToSchools]);
 
   // Google overlay layers, each toggled independently. Created lazily, attached
@@ -276,7 +308,11 @@ export function MapView() {
       />
       {status === "loading" && <div className="map-loading">Loading the base map...</div>}
       {hover && (
-        <div className="pin-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>
+        <div
+          className="pin-tooltip pin-tooltip--preview"
+          style={{ left: hover.x + 14, top: hover.y + 14 }}
+        >
+          {/* Header: grade badge + school name, then a muted identity line. */}
           <div className="pin-tooltip-head">
             <span
               className="pin-tooltip-grade"
@@ -292,41 +328,96 @@ export function MapView() {
             <span className="pin-tooltip-name">{hover.name}</span>
           </div>
           <div className="pin-tooltip-sub">
-            {hover.level} school, {schoolTypeLabel(hover.type)}. Grade {hover.grade}.
+            {hover.level} school &middot; {schoolTypeLabel(hover.type)}
           </div>
-          <div
-            className={
-              "pin-tooltip-util " +
-              (hover.utilizationBucket === "over"
-                ? "util-over"
-                : hover.utilizationBucket === "under"
-                  ? "util-under"
-                  : hover.utilizationBucket === "target"
-                    ? "util-target"
-                    : "util-unknown")
-            }
-          >
-            {hover.utilizationPct != null && hover.enrollment != null && hover.capacity != null
-              ? `Utilization ${hover.utilizationPct}% (${hover.enrollment.toLocaleString("en-US")} of ${hover.capacity.toLocaleString("en-US")})`
-              : "Utilization not available"}
-          </div>
-          {hover.coLocationEligible && (
-            <div className="pin-tooltip-coloc">
-              Co-location candidate{hover.coLocationReason ? `: ${hover.coLocationReason}.` : " (underused district facility in a siting area)"}
+
+          {/* A labeled fact list: one row per question a scout asks, each with a
+              plainly-labeled value. The facility rate is the statutory COFTE-based
+              FUR (utilizationStyle), the single figure used across the tool, so
+              nothing here contradicts the inspector or the co-location test. */}
+          <dl className="pin-tooltip-facts">
+            <div className="pin-tooltip-fact">
+              <dt>Facility use rate</dt>
+              <dd className={"tt-rate util-" + hover.utilKey}>
+                {hover.utilPct != null
+                  ? `${hover.utilPct}%${hover.utilBasis === "enrollment" ? " (est.)" : ""}`
+                  : "Not reported"}
+              </dd>
             </div>
+            <div className="pin-tooltip-fact">
+              <dt>Underused</dt>
+              <dd>
+                {hover.underutilized == null ? (
+                  <span className="tt-yn tt-yn--na">Unknown</span>
+                ) : hover.underutilized ? (
+                  <span className="tt-yn tt-yn--yes-opp">Yes</span>
+                ) : (
+                  <span className="tt-yn tt-yn--no">No</span>
+                )}
+              </dd>
+            </div>
+            <div className="pin-tooltip-fact">
+              <dt>Persistently low-performing</dt>
+              <dd>
+                {hover.isPlp ? (
+                  <span className="tt-yn tt-yn--yes-plp">Yes</span>
+                ) : (
+                  <span className="tt-yn tt-yn--no">No</span>
+                )}
+              </dd>
+            </div>
+            <div className="pin-tooltip-fact">
+              <dt>Co-location eligible</dt>
+              <dd>
+                {hover.coLocationEligible ? (
+                  <span className="tt-yn tt-yn--yes-opp">Yes</span>
+                ) : (
+                  <span className="tt-yn tt-yn--no">No</span>
+                )}
+              </dd>
+            </div>
+          </dl>
+
+          {/* Why it qualifies, only when eligible: the pathways broken out as
+              scannable rows. This is a hover PREVIEW (pointer-events: none), so the
+              nearby PLP school is named as plain text; click the pin to inspect and
+              jump to it from there. */}
+          {hover.coLocationEligible && (hover.coLocInOZ || hover.coLocNearestPlp || hover.coLocIsPlpAnchor) && (
+            <ul className="pin-tooltip-why">
+              {hover.coLocInOZ && <li>In a Qualified Opportunity Zone</li>}
+              {hover.coLocNearestPlp && (
+                <li>
+                  {hover.coLocNearestPlp.miles.toFixed(1)} mi from {hover.coLocNearestPlp.name}{" "}
+                  <span className="pin-tooltip-why-note">(low-performing)</span>
+                </li>
+              )}
+              {!hover.coLocInOZ && !hover.coLocNearestPlp && hover.coLocIsPlpAnchor && (
+                <li>At a persistently low-performing school</li>
+              )}
+            </ul>
           )}
-          <div className="pin-tooltip-sub" style={{ marginTop: 3 }}>Click to inspect.</div>
+
+          <div className="pin-tooltip-cta">Click the pin to inspect &rarr;</div>
         </div>
       )}
       {sohHover && (
         <div className="pin-tooltip soh-tooltip" style={{ left: sohHover.x + 14, top: sohHover.y + 14 }}>
           <div className="pin-tooltip-head">
-            <span className="soh-tooltip-star" aria-hidden>★</span>
-            <span className="pin-tooltip-name">{sohHover.operator}</span>
+            <StarFilled size={16} className="soh-tooltip-star" style={{ color: "#B45309" }} aria-hidden={true} />
+            <span className="pin-tooltip-name">{sohHover.kind === "operator" ? sohHover.schoolName : sohHover.operator}</span>
           </div>
-          <div className="pin-tooltip-sub">Existing School of Hope</div>
-          <div className="pin-tooltip-sub" style={{ marginTop: 3 }}>{sohHover.address}</div>
-          {sohHover.note && <div className="pin-tooltip-sub" style={{ marginTop: 3, fontStyle: "italic" }}>{sohHover.note}</div>}
+          {sohHover.kind === "operator" ? (
+            <>
+              <div className="pin-tooltip-sub">Hope Operator: {sohHover.operator}</div>
+              {sohHover.address && <div className="pin-tooltip-sub" style={{ marginTop: 3 }}>{sohHover.address}</div>}
+            </>
+          ) : (
+            <>
+              <div className="pin-tooltip-sub">Existing School of Hope</div>
+              <div className="pin-tooltip-sub" style={{ marginTop: 3 }}>{sohHover.address}</div>
+              {sohHover.note && <div className="pin-tooltip-sub" style={{ marginTop: 3, fontStyle: "italic" }}>{sohHover.note}</div>}
+            </>
+          )}
         </div>
       )}
       <div className="map-furniture">

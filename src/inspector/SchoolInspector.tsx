@@ -1,64 +1,64 @@
-// Right-column inspector for a selected school. A bordered surface with a sticky
-// header (identity at a glance), a scrollable body of MECE sections, and a sticky
-// footer with the primary actions.
+// Right-column inspector for a selected school. A bordered surface with a header
+// (identity at a glance), a scrollable body of MECE sections, and a footer with
+// the primary actions.
+//
+// Real IBM Carbon: plain elements styled by SchoolInspector.carbon.css (g10
+// tokens) plus @carbon/react Button / IconButton / Tag; NO MUI. Data encodings
+// (grade fills, the utilization tier color, the trend delta color) are set inline
+// from the shared source of truth so the panel never disagrees with the map/list.
 //
 // Unlike the map overlays, the inspector's location and community facts are
 // ALWAYS shown: a school has a board district, legislative districts, an income
-// context, and an opportunity-zone status regardless of which
-// map layers happen to be toggled on. Those come straight from the spatial
-// indexes (loaded eagerly in DataContext), so toggling a layer never blanks a
-// fact the analyst needs.
+// context, and an opportunity-zone status regardless of which map layers happen
+// to be toggled on. Those come straight from the spatial indexes (loaded eagerly
+// in DataContext), so toggling a layer never blanks a fact the analyst needs.
 //
-// Sections, in decision order:
-//   1. School & location  - identity, address, MSID, districts + representatives.
-//   2. Key indicators      - co-location eligibility, PLP status, SoH eligibility.
-//   3. Enrollment & capacity - utilization + an enrollment-vs-capacity trend.
-//   4. Community context   - median income, opportunity zone.
+// Sections, in decision order: verdict first, then key indicators, enrollment &
+// capacity, academic performance, location & districts, community context.
+// No em dashes in this file.
 
-import { useState } from "react";
-import {
-  Box, Paper, IconButton, Typography, Divider, Stack, Button, Chip, List,
-  ListItem, LinearProgress, Tooltip,
-} from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { Close as CloseIcon, Compare as CompareArrowsIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon } from "@carbon/icons-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Button, IconButton, Tag } from "@carbon/react";
+import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
-import { useStore, MAX_COMPARE, utilizationStyle, isUnderutilizedFacility } from "../store";
+import { useStore, MAX_COMPARE, utilizationStyle } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { GradeTimeline } from "./GradeTimeline";
 import {
   incomeAtPoint, boardDistrictAtPoint, opportunityZoneAtPoint,
-  legislativeDistrictsAtPoint, formatIncomeWithMoe,
+  legislativeDistrictsAtPoint,
 } from "../data/derive/contextReads";
 import { ExportButton } from "../tools/ExportButton";
-import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated, formatCoLocationReason } from "../data/derive/filters";
+import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated } from "../data/derive/filters";
 import { evaluatePlp, plpMsids } from "../data/derive/plp";
 import { distanceMiles, type LngLat } from "../geo/measure";
-import { SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, TEAL } from "../muiTheme";
 import { titleILabel } from "../data/types";
 import type { LegislativeProps, Representative } from "../data/types";
+import "./SchoolInspector.carbon.css";
 
-const RED_STRONG = "#B71C1C";
-const RED_MID = "#D32F2F";
-const RED_TINT = alpha(RED_MID, 0.1);
-const GREEN_MID = "#047857"; // Emerald 700, success / eligible
+// Local color constants (Carbon roles / brand), so the inspector needs no MUI.
+const NAVY = "#001e62";     // KIPP navy, interactive / chart line
+const GREEN = "#24a148";    // Carbon green 50, eligible / growth
+const RED = "#da1e28";      // Carbon red 60, decline
+const DIM = "#525252";      // text-secondary, chart labels
+const HAIRLINE = "#e0e0e0"; // border-subtle, gridlines
+const CAPACITY = "#ef6c00"; // capacity reference line (amber)
+const tint = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`;
 
 function GradeBadge({ grade }: { grade: string }) {
   const s = resolveGradeStyle(grade);
   return (
-    <Box
-      sx={{
-        width: 40, height: 40, borderRadius: 1.5,
-        display: "inline-flex", alignItems: "center", justifyContent: "center",
-        fontWeight: 800, fontSize: 16,
-        bgcolor: rgbaToCss(s.fill), color: rgbaToCss(s.letterColor),
-        border: "1.5px solid", borderColor: rgbaToCss(s.stroke),
-        borderStyle: s.dashed ? "dashed" : "solid", flex: "none",
+    <span
+      className="insp-grade"
+      style={{
+        background: rgbaToCss(s.fill),
+        color: rgbaToCss(s.letterColor),
+        border: `1.5px ${s.dashed ? "dashed" : "solid"} ${rgbaToCss(s.stroke)}`,
       }}
       aria-label={s.description}
     >
       {s.letter}
-    </Box>
+    </span>
   );
 }
 
@@ -81,12 +81,41 @@ function niceNum(x: number, round: boolean): number {
 // has. A dashed capacity line makes the ceiling explicit.
 function EnrollmentTrend({ history, capacity }: { history: Array<{ year: string; enrollment: number }>; capacity: number | null }) {
   const [hover, setHover] = useState<number | null>(null);
+  // The plot pane scrolls under the pinned axes, but with no scrollbar: two arrow
+  // buttons page it instead. `nav` tracks whether each direction has more to show.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [nav, setNav] = useState({ canLeft: false, canRight: false });
+  const updateNav = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const canLeft = el.scrollLeft > 1;
+    const canRight = el.scrollLeft < max - 1;
+    setNav((prev) => (prev.canLeft === canLeft && prev.canRight === canRight ? prev : { canLeft, canRight }));
+  }, []);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollLeft = 0;
+    updateNav();
+    window.addEventListener("resize", updateNav);
+    return () => window.removeEventListener("resize", updateNav);
+  }, [history, updateNav]);
   if (history.length < 2) {
-    return <Typography sx={{ fontSize: 12, color: SHELL_DIM, mt: 1 }}>Not enough enrollment history to chart.</Typography>;
+    return <p className="insp-trend__empty">Not enough enrollment history to chart.</p>;
   }
 
-  const W = 320, H = 150, padL = 50, padR = 14, padT = 16, padB = 40;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
+  // Geometry for a PINNED-axis chart: the Y axis (values + "Students") and the X
+  // title stay fixed while only the plot (line, area, points) and the year labels
+  // scroll horizontally. Two SVGs of equal height share one vertical scale so
+  // their rows line up: a fixed AXISW-wide y-axis, and a data-width plot that
+  // scrolls inside .insp-chart__scroll.
+  const AXISW = 52;          // fixed y-axis column width
+  const xInset = 4;          // tiny inset so the end points aren't clipped (no visible gap at the axis)
+  const perYear = 42;        // comfortable horizontal spacing per school year
+  const padT = 12, plotH = 116, xLabelH = 24;
+  const Hsvg = padT + plotH + xLabelH;
+  const plotSpan = Math.max(200, (history.length - 1) * perYear);
+  const dataW = plotSpan + xInset * 2;
   const vals = history.map((d) => d.enrollment);
   const maxEnroll = Math.max(...vals);
   // Y domain: a fixed 0 baseline (never truncated, since this is a count and a
@@ -96,165 +125,230 @@ function EnrollmentTrend({ history, capacity }: { history: Array<{ year: string;
   const rawMax = Math.max(capacity ?? 0, maxEnroll, 1);
   const step = niceNum(rawMax / 2, true) || 1;
   const yMax = Math.max(step, Math.ceil(rawMax / step) * step);
-  const x = (i: number) => padL + (history.length === 1 ? plotW / 2 : (i / (history.length - 1)) * plotW);
+  const x = (i: number) => xInset + (history.length === 1 ? plotSpan / 2 : (i / (history.length - 1)) * plotSpan);
   const y = (v: number) => padT + (1 - v / yMax) * plotH;
 
   const pts = history.map((d, i) => `${x(i).toFixed(1)},${y(d.enrollment).toFixed(1)}`);
-  const area = `${padL},${padT + plotH} ${pts.join(" ")} ${x(history.length - 1).toFixed(1)},${padT + plotH}`;
+  const area = `${x(0).toFixed(1)},${padT + plotH} ${pts.join(" ")} ${x(history.length - 1).toFixed(1)},${padT + plotH}`;
   const first = history[0], last = history[history.length - 1];
-  const yr = (s: string) => (s.length >= 4 ? `'${s.slice(2, 4)}` : s);
+  // School-year labels follow the house convention: the SHORT axis form is the
+  // END year with an "SY" prefix ("2020-2021" -> "SY21"); the FULL form keeps both
+  // years ("2020-2021" -> "SY2020-2021"). Odd formats fall back raw.
+  const yrTick = (s: string) => {
+    const m = s.match(/^(\d{4})-(\d{4})$/);
+    return m ? `SY${m[2].slice(2)}` : s;
+  };
+  const syFull = (s: string) => (/^\d{4}-\d{4}$/.test(s) ? `SY${s}` : s);
+  // Thin the x-axis year labels only when they would crowd (a long history).
+  // Every year keeps its point and hover target; we drop some text labels,
+  // always keeping the first and last, so the axis stays legible either way.
+  const labelStride = history.length > 12 ? 2 : 1;
+  const showYearLabel = (i: number) => i === 0 || i === history.length - 1 || i % labelStride === 0;
   const active = hover;
   const yTicks: number[] = [];
   for (let v = 0; v <= yMax + step / 2; v += step) yTicks.push(v);
+  const scrollByYears = (dir: number) => {
+    scrollRef.current?.scrollBy({ left: dir * perYear * 4, behavior: "smooth" });
+  };
+  const showNav = nav.canLeft || nav.canRight;
 
   return (
-    <Box sx={{ mt: 1.5 }}>
-      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
-        <Legend swatch={TEAL} label="Enrollment" />
-        {capacity != null && <Legend swatch="#EF6C00" dashed label={`Capacity ${capacity.toLocaleString("en-US")}`} />}
-      </Stack>
-      <Box
-        component="svg"
-        viewBox={`0 0 ${W} ${H}`}
-        sx={{ width: "100%", height: "auto", display: "block", overflow: "visible" }}
-        role="img"
-        aria-label={`Enrollment from ${first.enrollment} students in ${first.year} to ${last.enrollment} in ${last.year}, against a capacity of ${capacity ?? "unknown"}.`}
-        onMouseLeave={() => setHover(null)}
-      >
-        {/* y gridlines + labels (0 at bottom, capacity/peak at top) */}
-        {yTicks.map((v) => (
-          <g key={v}>
-            <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} stroke={SHELL_HAIRLINE} strokeWidth={0.75} />
-            <text x={padL - 6} y={y(v) + 3} textAnchor="end" fontSize={9} fill={SHELL_DIM} style={{ fontVariantNumeric: "tabular-nums" }}>
+    <div className="insp-trend">
+      <div className="insp-trend__head">
+        <p className="insp-trend__title">Enrollment over time</p>
+        {showNav && (
+          <div className="insp-trend__nav">
+            <IconButton label="Earlier years" kind="ghost" size="sm" disabled={!nav.canLeft} onClick={() => scrollByYears(-1)}>
+              <ChevronLeftIcon size={16} />
+            </IconButton>
+            <IconButton label="Later years" kind="ghost" size="sm" disabled={!nav.canRight} onClick={() => scrollByYears(1)}>
+              <ChevronRightIcon size={16} />
+            </IconButton>
+          </div>
+        )}
+      </div>
+      <div className="insp-trend__legend">
+        <Legend swatch={NAVY} label="Enrollment" />
+        {capacity != null && <Legend swatch={CAPACITY} dashed label={`Capacity (${capacity.toLocaleString("en-US")})`} />}
+      </div>
+      <div className="insp-trend__chart">
+        {/* FIXED y axis: value labels + the bold navy "Students" title. Same
+            height and vertical scale as the plot, so their rows line up. */}
+        <svg className="insp-chart__yaxis" viewBox={`0 0 ${AXISW} ${Hsvg}`} width={AXISW} height={Hsvg} aria-hidden="true">
+          {yTicks.map((v) => (
+            <text key={v} x={AXISW - 8} y={y(v) + 3} textAnchor="end" fontSize={9} fill={DIM} style={{ fontVariantNumeric: "tabular-nums" }}>
               {v.toLocaleString("en-US")}
             </text>
-          </g>
-        ))}
-        {/* axis unit labels: students on Y, school year on X */}
-        <text transform={`translate(11 ${padT + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={8.5} fill={SHELL_DIM} letterSpacing={0.4}>Students</text>
-        <text x={padL + plotW / 2} y={H - 4} textAnchor="middle" fontSize={8.5} fill={SHELL_DIM} letterSpacing={0.4}>School year</text>
-        {/* capacity reference line */}
-        {capacity != null && capacity <= yMax && (
-          <line x1={padL} x2={W - padR} y1={y(capacity)} y2={y(capacity)} stroke="#EF6C00" strokeWidth={1.5} strokeDasharray="5 3" />
-        )}
-        {/* area + line */}
-        <polygon points={area} fill={alpha(TEAL, 0.12)} />
-        <polyline points={pts.join(" ")} fill="none" stroke={TEAL} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-        {/* x ticks: every year */}
-        {history.map((d, i) => (
-          <text key={d.year} x={x(i)} y={padT + plotH + 14} textAnchor="middle" fontSize={8.5} fill={SHELL_DIM}>
-            {yr(d.year)}
-          </text>
-        ))}
-        {/* points + hover targets */}
-        {history.map((d, i) => (
-          <g key={d.year}>
-            <circle cx={x(i)} cy={y(d.enrollment)} r={i === active ? 4 : 2.5} fill={i === active ? TEAL : "#FFFFFF"} stroke={TEAL} strokeWidth={1.5} />
-            <rect x={x(i) - plotW / (history.length * 2)} y={padT} width={plotW / history.length} height={plotH} fill="transparent" onMouseEnter={() => setHover(i)} style={{ cursor: "pointer" }} />
-          </g>
-        ))}
-        {/* readable hover tooltip */}
-        {active != null && (() => {
-          const d = history[active];
-          const cx = x(active);
-          const boxW = 118, boxH = capacity != null ? 40 : 26;
-          const bx = Math.max(padL, Math.min(W - padR - boxW, cx - boxW / 2));
-          const by = Math.max(2, y(d.enrollment) - boxH - 10);
-          const pct = capacity ? Math.round((d.enrollment / capacity) * 100) : null;
-          return (
-            <g>
-              <line x1={cx} x2={cx} y1={padT} y2={padT + plotH} stroke={alpha(TEAL, 0.4)} strokeWidth={1} />
-              <rect x={bx} y={by} width={boxW} height={boxH} rx={5} fill="#0F172A" opacity={0.94} />
-              <text x={bx + 8} y={by + 15} fontSize={10} fontWeight={700} fill="#fff">{d.year}</text>
-              <text x={bx + 8} y={by + 27} fontSize={10} fill="#CBD5E1" style={{ fontVariantNumeric: "tabular-nums" }}>
-                {d.enrollment.toLocaleString("en-US")} enrolled
-              </text>
-              {capacity != null && pct != null && (
-                <text x={bx + 8} y={by + 37} fontSize={9.5} fill="#FDBA74" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  {pct}% of capacity
+          ))}
+          <line x1={AXISW - 0.5} x2={AXISW - 0.5} y1={padT} y2={padT + plotH} stroke={HAIRLINE} strokeWidth={0.75} />
+          <text transform={`translate(13 ${padT + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fontWeight={700} letterSpacing={1} fill={NAVY}>Students</text>
+        </svg>
+        {/* SCROLLING plot: gridlines, capacity line, area + line, points, and the
+            year labels. Only this pane scrolls horizontally. */}
+        <div className="insp-chart__scroll" ref={scrollRef} onScroll={updateNav}>
+          <svg
+            className="insp-chart__plot"
+            viewBox={`0 0 ${dataW} ${Hsvg}`}
+            width={dataW}
+            height={Hsvg}
+            role="img"
+            aria-label={`Enrollment from ${first.enrollment} students in ${syFull(first.year)} to ${last.enrollment} in ${syFull(last.year)}, against a capacity of ${capacity ?? "unknown"}.`}
+            onMouseLeave={() => setHover(null)}
+          >
+            {/* horizontal gridlines (span the full plot; identical at any scroll) */}
+            {yTicks.map((v) => (
+              <line key={v} x1={0} x2={dataW} y1={y(v)} y2={y(v)} stroke={HAIRLINE} strokeWidth={0.75} />
+            ))}
+            {/* capacity reference line */}
+            {capacity != null && capacity <= yMax && (
+              <line x1={0} x2={dataW} y1={y(capacity)} y2={y(capacity)} stroke={CAPACITY} strokeWidth={1.5} strokeDasharray="5 3" />
+            )}
+            {/* area + line */}
+            <polygon points={area} fill={tint(NAVY, 12)} />
+            <polyline points={pts.join(" ")} fill="none" stroke={NAVY} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+            {/* x ticks: compact two-digit year label, thinned only if crowded. The
+                first/last labels anchor inward so they never clip at the edges now
+                that the points sit right against the axis. */}
+            {history.map((d, i) => (
+              showYearLabel(i) ? (
+                <text key={d.year} x={i === 0 ? 2 : i === history.length - 1 ? dataW - 2 : x(i)} y={padT + plotH + 16} textAnchor={i === 0 ? "start" : i === history.length - 1 ? "end" : "middle"} fontSize={9.5} fill={DIM} style={{ fontVariantNumeric: "tabular-nums" }}>
+                  {yrTick(d.year)}
                 </text>
-              )}
-            </g>
-          );
-        })()}
-      </Box>
-      <Typography sx={{ fontSize: 11, color: SHELL_DIM, mt: 0.5, fontVariantNumeric: "tabular-nums" }}>
-        {last.enrollment.toLocaleString("en-US")} in {last.year}, {last.enrollment - first.enrollment >= 0 ? "+" : ""}
-        {(last.enrollment - first.enrollment).toLocaleString("en-US")} since {first.year}
-      </Typography>
-    </Box>
+              ) : null
+            ))}
+            {/* points + hover targets */}
+            {history.map((d, i) => (
+              <g key={d.year}>
+                <circle cx={x(i)} cy={y(d.enrollment)} r={i === active ? 4 : 2.5} fill={i === active ? NAVY : "#FFFFFF"} stroke={NAVY} strokeWidth={1.5} />
+                <rect x={x(i) - plotSpan / (history.length * 2)} y={padT} width={plotSpan / history.length} height={plotH} fill="transparent" onMouseEnter={() => setHover(i)} style={{ cursor: "pointer" }} />
+              </g>
+            ))}
+            {/* Hover tooltip: a Carbon inverse popover (gray-80 surface, white /
+                gray-30 text) with a caret to the point and real padding. It flips
+                above or below so it never clips, and clamps within the plot. The
+                % line stays neutral so it never implies a utilization tier that
+                disagrees with the tier chip above (utilizationStyle owns that). */}
+            {active != null && (() => {
+              const d = history[active];
+              const cx = x(active);
+              const py = y(d.enrollment);
+              const pct = capacity ? Math.round((d.enrollment / capacity) * 100) : null;
+              const boxW = 152, boxH = pct != null ? 62 : 44;
+              const caretH = 6, gap = 3;
+              const placeAbove = py - gap - caretH - boxH >= padT;
+              const by = placeAbove ? py - gap - caretH - boxH : py + gap + caretH;
+              const bx = Math.max(2, Math.min(dataW - boxW - 2, cx - boxW / 2));
+              const caretX = Math.max(bx + 12, Math.min(bx + boxW - 12, cx));
+              const caret = placeAbove
+                ? `${caretX - 6},${by + boxH} ${caretX + 6},${by + boxH} ${caretX},${by + boxH + caretH}`
+                : `${caretX - 6},${by} ${caretX + 6},${by} ${caretX},${by - caretH}`;
+              return (
+                <g>
+                  <line x1={cx} x2={cx} y1={padT} y2={padT + plotH} stroke={tint(NAVY, 45)} strokeWidth={1} />
+                  <polygon points={caret} fill="#393939" />
+                  <rect x={bx} y={by} width={boxW} height={boxH} rx={2} fill="#393939" />
+                  <text x={bx + 12} y={by + 20} fontSize={12.5} fontWeight={600} fill="#ffffff">{syFull(d.year)}</text>
+                  <text x={bx + 12} y={by + 37} fontSize={11} fill="#c6c6c6" style={{ fontVariantNumeric: "tabular-nums" }}>
+                    {d.enrollment.toLocaleString("en-US")} enrolled
+                  </text>
+                  {pct != null && (
+                    <text x={bx + 12} y={by + 53} fontSize={11} fontWeight={600} fill="#ffffff" style={{ fontVariantNumeric: "tabular-nums" }}>
+                      {pct}% of capacity
+                    </text>
+                  )}
+                </g>
+              );
+            })()}
+          </svg>
+        </div>
+      </div>
+      {/* FIXED x-axis title, centered under the scrolling plot (right of the y axis). */}
+      <div className="insp-chart__xtitle" style={{ marginLeft: AXISW }}>School year</div>
+      {(() => {
+        // Two KPI tiles side by side in a recessed inlay (Carbon layer-02): the
+        // current count, and the net change against the first year on record.
+        // The percentage is the headline of the change tile (the arrow + color
+        // carry direction), with the absolute count and baseline year beneath.
+        const delta = last.enrollment - first.enrollment;
+        const pctChange = first.enrollment ? Math.round((delta / first.enrollment) * 100) : 0;
+        const trendColor = delta > 0 ? GREEN : delta < 0 ? RED : DIM;
+        const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "→";
+        const word = delta > 0 ? "more" : delta < 0 ? "fewer" : "change";
+        return (
+          <div className="insp-stats">
+            <div className="insp-stat">
+              <div className="insp-stat__label">Latest enrollment</div>
+              <div className="insp-stat__value">{last.enrollment.toLocaleString("en-US")}</div>
+              <div className="insp-stat__sub">{syFull(last.year)}</div>
+            </div>
+            <div className="insp-stat">
+              <div className="insp-stat__label">Net change</div>
+              <div className="insp-stat__value" style={{ color: trendColor }}>
+                <span className="insp-stat__arrow">{arrow}</span>{Math.abs(pctChange)}%
+              </div>
+              <div className="insp-stat__sub">
+                {delta === 0 ? `No change since ${syFull(first.year)}` : `${Math.abs(delta).toLocaleString("en-US")} ${word} since ${syFull(first.year)}`}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
   );
 }
 
 function Legend({ swatch, label, dashed }: { swatch: string; label: string; dashed?: boolean }) {
   return (
-    <Stack direction="row" alignItems="center" spacing={0.5}>
-      <Box sx={{ width: 14, height: 0, borderTop: `2px ${dashed ? "dashed" : "solid"} ${swatch}` }} />
-      <Typography sx={{ fontSize: 11, color: SHELL_DIM, fontWeight: 600 }}>{label}</Typography>
-    </Stack>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <Typography sx={{ fontSize: 11, fontWeight: 700, color: SHELL_DIM, letterSpacing: 0.16, textTransform: "none", mb: 1 }}>
-      {children}
-    </Typography>
+    <span className="insp-legend">
+      <span className="insp-legend__swatch" style={{ borderTop: `2px ${dashed ? "dashed" : "solid"} ${swatch}` }} />
+      <span className="insp-legend__label">{label}</span>
+    </span>
   );
 }
 
 function Kv({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
-    <ListItem disableGutters sx={{ py: 0.6, alignItems: "flex-start", display: "block" }}>
-      <Typography component="div" sx={{ fontSize: 11, fontWeight: 600, color: SHELL_DIM, textTransform: "none", letterSpacing: 0.16 }}>
-        {label}
-      </Typography>
-      <Typography component="div" sx={{ fontSize: 13, color: SHELL_ON, fontWeight: 500, mt: 0.15, fontFamily: mono ? "var(--font-mono)" : "inherit", wordBreak: "break-word" }}>
-        {value}
-      </Typography>
-    </ListItem>
+    <div className="insp-kv">
+      <div className="insp-kv__label">{label}</div>
+      <div className={`insp-kv__value${mono ? " insp-kv__value--mono" : ""}`}>{value}</div>
+    </div>
   );
 }
 
-// Like Kv, but the value is a button that filters the whole view to this
-// district when a filter key is available. Turns a read-only fact into the
-// logical next click (drill from a school into its district).
+// Like Kv, but the value is a button that filters the whole view to this district
+// when a filter key is available. Turns a read-only fact into the logical next
+// click (drill from a school into its district).
 function DistrictKv({ label, text, onFilter }: { label: string; text: string; onFilter?: () => void }) {
   return (
-    <ListItem disableGutters sx={{ py: 0.6, alignItems: "flex-start", display: "block" }}>
-      <Typography component="div" sx={{ fontSize: 11, fontWeight: 600, color: SHELL_DIM, textTransform: "none", letterSpacing: 0.16 }}>
-        {label}
-      </Typography>
+    <div className="insp-kv">
+      <div className="insp-kv__label">{label}</div>
       {onFilter ? (
-        <Button
-          onClick={onFilter}
-          endIcon={<FilterIcon size={12} />}
-          title="Filter the map and list to this district"
-          sx={{
-            p: 0, minWidth: 0, mt: 0.15, textTransform: "none", fontWeight: 500, fontSize: 13,
-            color: SHELL_ON, justifyContent: "flex-start", textAlign: "left", lineHeight: 1.35,
-            "& .MuiButton-endIcon": { ml: 0.5, color: SHELL_DIM },
-            "&:hover": { color: TEAL, bgcolor: "transparent", "& .MuiButton-endIcon": { color: TEAL } },
-          }}
-        >
+        <button type="button" className="insp-district-btn" onClick={onFilter} title="Filter the map and list to this district">
           {text}
-        </Button>
+          <FilterIcon size={12} />
+        </button>
       ) : (
-        <Typography component="div" sx={{ fontSize: 13, color: SHELL_ON, fontWeight: 500, mt: 0.15 }}>{text}</Typography>
+        <div className="insp-kv__value">{text}</div>
       )}
-    </ListItem>
+    </div>
   );
 }
 
-function YesNo({ yes, why }: { yes: boolean; why?: string }) {
+// One compact indicator row: the label and its verdict on a single line. The
+// audience knows the Schools of Hope statute, so a Yes/No (or a neutral "Unknown"
+// for a tri-state fact like Title I) is the whole answer; the reasoning lives in
+// the data elsewhere in the panel.
+function IndRow({ label, yes, unknown }: { label: string; yes: boolean; unknown?: boolean }) {
   return (
-    <Stack direction="row" alignItems="center" spacing={0.75} sx={{ py: 0.75 }}>
-      {yes ? <CheckCircleIcon size={18} style={{ color: GREEN_MID }} /> : <CancelIcon size={18} style={{ color: SHELL_DIM }} />}
-      <Box>
-        <Typography sx={{ fontSize: 13, fontWeight: 700, color: yes ? GREEN_MID : SHELL_ON }}>{yes ? "Yes" : "No"}</Typography>
-        {why && <Typography sx={{ fontSize: 11, color: SHELL_DIM, lineHeight: 1.35 }}>{why}</Typography>}
-      </Box>
-    </Stack>
+    <div className="insp-indrow">
+      <span className="insp-indrow__label">{label}</span>
+      <span className={`insp-indrow__verdict${!unknown && yes ? " insp-indrow__verdict--yes" : ""}`}>
+        {unknown
+          ? <HelpIcon size={16} style={{ color: DIM }} />
+          : yes ? <CheckCircleIcon size={16} style={{ color: GREEN }} /> : <CancelIcon size={16} style={{ color: DIM }} />}
+        {unknown ? "Unknown" : yes ? "Yes" : "No"}
+      </span>
+    </div>
   );
 }
 
@@ -270,6 +364,7 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   const comparePinnedMsids = useStore((s) => s.comparePinnedMsids);
   const toggleComparePin = useStore((s) => s.toggleComparePin);
   const setViewMode = useStore((s) => s.setViewMode);
+  const setShortlistOpen = useStore((s) => s.setShortlistOpen);
   const setDistrictFilter = useStore((s) => s.setDistrictFilter);
 
   if (!selectedSchoolMsid || !data.schools) return null;
@@ -353,31 +448,10 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   // school (every type except charter and virtual). The surplus is the FISH
   // "available capacity" (stations - COFTE) when reported.
   const districtOperated = isDistrictOperated(p.type);
-  // The FISH surplus is COFTE-derived, so it is only trustworthy when the COFTE is
-  // a credible value (> 0). When COFTE is missing or mis-parsed as 0, fall back to
-  // the enrollment-based spare stations, matching isUnderutilizedFacility so the
-  // stated number never contradicts the co-location decision.
-  const surplusStations = (p.fish_surplus != null && p.cofte != null && p.cofte > 0)
-    ? Math.round(p.fish_surplus)
-    : (p.enrollment != null && p.capacity != null ? p.capacity - p.enrollment : null);
-  const facilityUnderused = isUnderutilizedFacility(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
-  // Shared predicate so the inspector chip matches the map/list flag and filter.
+  // Shared predicate so the inspector verdict matches the map/list flag and filter.
   // Co-location requires BOTH an underused district facility AND that the site is
   // in a School of Hope siting area (5-mi of a PLP school or an Opportunity Zone).
   const coLocationEligible = isCoLocationTarget(school, inSitingArea);
-  // Rule (5)(f) also bars co-location at a facility placed into service within
-  // the previous 4 years. We have no building-age data, so we disclose rather
-  // than silently assert full eligibility.
-  const AGE_CAVEAT = " Not checked: co-location also excludes buildings placed into service within the last 4 years (Rule (5)(f)); no building-age data.";
-  const coLocationWhy = !districtOperated
-    ? "Co-location applies to district-operated facilities (not charter or virtual schools)."
-    : p.capacity == null || p.enrollment == null
-      ? "Student stations or enrollment not reported, so spare room is unknown."
-      : !facilityUnderused
-        ? `At ${utilPct != null ? Math.round(utilPct) : "?"}% of capacity with ${surplusStations != null ? surplusStations.toLocaleString("en-US") : "?"} surplus stations, below the 75% / 400-station threshold.`
-        : !inSitingArea
-          ? `Underused (${utilPct != null ? Math.round(utilPct) : "?"}% utilized), but outside a School of Hope siting area: not within 5 miles of a PLP school or inside an Opportunity Zone.`
-          : `${formatCoLocationReason({ utilPct: util.pct, basis: util.basis, isPlpAnchor: plpEval.isPlp, inOpportunityZone: inOZ, nearestPlp: anchorsWithin[0] ? { name: anchorsWithin[0].name, miles: anchorsWithin[0].miles } : null })}, per Rule 6A-1.0998271(5)(e).${AGE_CAVEAT}`;
 
   // District-operated schools carry a lower-cased operator string in the data
   // ("Miami-dade"); use the properly-cased county instead so the subtitle reads
@@ -409,177 +483,153 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   ];
 
   return (
-    <Paper
-      component="aside"
-      elevation={0}
-      square
-      aria-label={`Inspector for ${p.name}`}
-      sx={{
-        // On the map (compact) the panel is a lighter, narrower companion card;
-        // elsewhere it is the full-height detail column.
-        width: compact ? { xs: "100%", sm: 336 } : { xs: "100%", sm: 380, md: 400 },
-        height: "100%", flex: "none",
-        display: "flex", flexDirection: "column", bgcolor: SHELL_BG,
-        border: compact ? `1px solid ${SHELL_HAIRLINE}` : "none",
-        borderLeft: compact ? `1px solid ${SHELL_HAIRLINE}` : { xs: "none", md: `1px solid ${SHELL_HAIRLINE}` },
-        animation: "inspectorIn 220ms cubic-bezier(0.22, 1, 0.36, 1)",
-        "@media (prefers-reduced-motion: reduce)": { animation: "none" },
-      }}
-    >
-      {/* Sticky header */}
-      <Box sx={{ px: 2.5, pt: 2.5, pb: 2, borderBottom: `1px solid ${SHELL_HAIRLINE}` }}>
-        <Stack direction="row" alignItems="flex-start" spacing={1.5}>
+    <aside className={`insp ${compact ? "insp--compact" : "insp--full"}`} aria-label={`Inspector for ${p.name}`}>
+      {/* Header */}
+      <div className="insp-head">
+        <div className="insp-head__row">
           <GradeBadge grade={p.current_grade} />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: 16, fontWeight: 700, color: SHELL_ON, lineHeight: 1.25 }}>{p.name}</Typography>
-            <Typography sx={{ fontSize: 12, color: SHELL_DIM, mt: 0.25 }}>{operatorLine}</Typography>
-          </Box>
-          <IconButton size="small" aria-label="Close inspector" onClick={() => selectSchool(null)} sx={{ color: SHELL_DIM, mr: -0.5, mt: -0.5 }}>
+          <div className="insp-head__id">
+            <div className="insp-title">{p.name}</div>
+            <div className="insp-sub">{operatorLine}</div>
+          </div>
+          <IconButton label="Close inspector" kind="ghost" size="sm" className="insp-close" onClick={() => selectSchool(null)}>
             <CloseIcon size={16} />
           </IconButton>
-        </Stack>
-        <Stack direction="row" spacing={0.75} sx={{ mt: 1.25, flexWrap: "wrap", rowGap: 0.5 }}>
-          {plpEval.isPlp && <Chip size="small" label="PLP" sx={{ height: 22, fontWeight: 700, bgcolor: RED_TINT, color: RED_STRONG, border: `1px solid ${alpha(RED_MID, 0.35)}`, fontSize: 11 }} />}
-          {coLocationEligible && <Chip size="small" label="Co-location candidate" sx={{ height: 22, fontWeight: 700, bgcolor: alpha("#1976D2", 0.1), color: "#0D47A1", border: `1px solid ${alpha("#1976D2", 0.35)}`, fontSize: 11 }} />}
-        </Stack>
-      </Box>
+        </div>
+        {(plpEval.isPlp || coLocationEligible) && (
+          <div className="insp-tags">
+            {plpEval.isPlp && <Tag type="red" size="md">PLP</Tag>}
+            {coLocationEligible && <Tag size="md" className="insp-tag-coloc">Co-location candidate</Tag>}
+          </div>
+        )}
+      </div>
 
       {/* Body */}
-      <Box sx={{ flex: 1, overflowY: "auto", px: 2.5, py: 2 }}>
-        {/* 1. SCHOOL & LOCATION */}
-        <SectionLabel>School &amp; location</SectionLabel>
-        <List dense disablePadding>
-          <Kv label="Address" value={
-            <Stack direction="row" spacing={0.5} alignItems="flex-start">
-              <PlaceIcon size={14} style={{ color: SHELL_DIM, marginTop: 2 }} />
-              <span>{p.address}</span>
-            </Stack>
-          } />
-          <Kv label="MSID" value={p.msid} mono />
-          <Kv label="Title I eligible" value={titleILabel(p.title_i)} />
-          <DistrictKv label="School board district" text={boardLabel} onFilter={districtTags?.board ? () => setDistrictFilter({ kind: "board", value: districtTags.board! }) : undefined} />
-          <DistrictKv label="Congressional district" text={cd ? `District ${cd.district_number}${cdRep ? `, ${repLabel(cdRep)}` : ""}` : "Not mapped for this location"} onFilter={districtTags?.CD ? () => setDistrictFilter({ kind: "CD", value: districtTags.CD! }) : undefined} />
-          <DistrictKv label="State House district" text={sldl ? `District ${sldl.district_number}${sldlRep ? `, ${repLabel(sldlRep)}` : " (representative not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDL ? () => setDistrictFilter({ kind: "SLDL", value: districtTags.SLDL! }) : undefined} />
-          <DistrictKv label="State Senate district" text={sldu ? `District ${sldu.district_number}${slduRep ? `, ${repLabel(slduRep)}` : " (senator not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDU ? () => setDistrictFilter({ kind: "SLDU", value: districtTags.SLDU! }) : undefined} />
-        </List>
-
-        <Divider sx={{ my: 2.5, borderColor: SHELL_HAIRLINE }} />
-
-        {/* 2. KEY INDICATORS */}
-        <SectionLabel>Key indicators</SectionLabel>
-        <Stack divider={<Divider sx={{ borderColor: alpha(SHELL_ON, 0.05) }} />}>
-          <Box>
-            <Typography sx={{ fontSize: 12, fontWeight: 600, color: SHELL_DIM }}>Co-location candidate</Typography>
-            <YesNo yes={coLocationEligible} why={coLocationWhy} />
-          </Box>
-          <Box>
-            <Typography sx={{ fontSize: 12, fontWeight: 600, color: SHELL_DIM }}>Persistently Low-Performing (PLP)</Typography>
-            <YesNo yes={plpEval.isPlp} why={plpEval.reason} />
-          </Box>
-        </Stack>
-        <Paper variant="outlined" sx={{ mt: 1.25, p: 1.5, borderRadius: 1.5, borderColor: sohEligible ? alpha(GREEN_MID, 0.35) : SHELL_HAIRLINE, bgcolor: sohEligible ? alpha(GREEN_MID, 0.06) : "transparent" }}>
-          <Typography sx={{ fontSize: 12, fontWeight: 700, color: sohEligible ? GREEN_MID : SHELL_DIM }}>
-            {sohEligible ? "A new School of Hope may open here" : "Not an eligible location for a new School of Hope"}
-          </Typography>
-          <Typography sx={{ fontSize: 12, color: SHELL_ON, mt: 0.4, lineHeight: 1.5 }}>
+      <div className="insp-body">
+        {/* 1. THE VERDICT FIRST. A site scout opens the inspector to learn one
+            thing: can a School of Hope open here? Lead with that answer, per the
+            content guide's altitude rule, before identity or districts. */}
+        <div className={`insp-verdict${sohEligible ? " insp-verdict--eligible" : ""}`}>
+          <div className="insp-verdict__head">
+            {sohEligible
+              ? <CheckCircleIcon size={18} style={{ color: GREEN, flex: "none" }} />
+              : <CancelIcon size={18} style={{ color: DIM, flex: "none" }} />}
+            <span className="insp-verdict__title" style={{ color: sohEligible ? GREEN : undefined }}>
+              {sohEligible ? "A School of Hope may open here" : "Not a location for a new School of Hope"}
+            </span>
+          </div>
+          <div className="insp-verdict__text">
             {plpEval.isPlp
-              ? "This is a PLP anchor: under F.S. 1002.333 a hope operator may open within a 5-mile radius."
+              ? "Persistently low-performing, so a School of Hope may open within 5 miles."
               : anchorsWithin.length > 0
-                ? <>Within 5 miles of {anchorsWithin.length} PLP anchor{anchorsWithin.length === 1 ? "" : "s"}, e.g.{" "}
-                    <Button size="small" onClick={() => selectSchool(anchorsWithin[0].msid)} sx={{ p: 0, minWidth: 0, textTransform: "none", fontWeight: 700, color: TEAL, fontSize: 12, verticalAlign: "baseline" }}>
-                      {anchorsWithin[0].name}
-                    </Button> ({anchorsWithin[0].miles.toFixed(1)} mi).</>
+                ? <>Within 5 miles of {anchorsWithin.length} persistently low-performing school{anchorsWithin.length === 1 ? "" : "s"}, the nearest being{" "}
+                    <button type="button" className="insp-link" onClick={() => selectSchool(anchorsWithin[0].msid)}>{anchorsWithin[0].name}</button> ({anchorsWithin[0].miles.toFixed(1)} mi).</>
                 : inOZ
-                  ? "Sits inside a designated Opportunity Zone, an eligible siting area under the “whichever is greater” clause."
-                  : "No PLP anchor within 5 miles and not in an Opportunity Zone."}
-          </Typography>
-          <Typography sx={{ fontSize: 11, color: SHELL_DIM, mt: 0.6, lineHeight: 1.5 }}>
-            {titleIDisqualifies
-              ? "A School of Hope must be Title I eligible; this school is not, so it is not SoH-eligible despite the siting area."
-              : inSitingArea
-                ? `Title I eligible: ${titleILabel(p.title_i)} (a School of Hope requirement).`
-                : ""}
-          </Typography>
-        </Paper>
+                  ? "Inside an Opportunity Zone, which counts as a siting area."
+                  : "No persistently low-performing school within 5 miles, and not in an Opportunity Zone."}
+          </div>
+          {titleIDisqualifies && (
+            <div className="insp-verdict__note">Not Title I eligible, so it does not qualify even inside a siting area.</div>
+          )}
+          {!inSitingArea && (
+            <div className="insp-verdict__caveat">Attendance-zone boundaries aren't loaded, so a school just outside 5 miles but inside a PLP school's zone could still qualify.</div>
+          )}
+          {(sohEligible || inSitingArea) && (
+            <div className="insp-verdict__cite">F.S. 1002.333</div>
+          )}
+        </div>
 
-        <Divider sx={{ my: 2.5, borderColor: SHELL_HAIRLINE }} />
+        <hr className="insp-divider" />
+
+        {/* 2. KEY INDICATORS: the verdicts that drive the decision, nothing else. */}
+        <p className="insp-label">Key indicators</p>
+        <div className="insp-inds">
+          <IndRow label="Co-location candidate" yes={coLocationEligible} />
+          <IndRow label="Persistently low-performing (PLP)" yes={plpEval.isPlp} />
+          <IndRow label="In an Opportunity Zone" yes={inOZ} />
+          <IndRow label="Title I eligible" yes={p.title_i === "yes"} unknown={p.title_i === "unknown"} />
+        </div>
+
+        <hr className="insp-divider" />
 
         {/* 3. ENROLLMENT & CAPACITY */}
-        <SectionLabel>Enrollment &amp; capacity</SectionLabel>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-          <Stack direction="row" spacing={0.75} alignItems="center">
-            <Typography sx={{ fontSize: 12, color: SHELL_DIM }}>Building utilization</Typography>
+        <p className="insp-label">Enrollment &amp; capacity</p>
+        <div className="insp-util-head">
+          <div className="insp-util-head__left">
+            <span className="insp-subhead" style={{ margin: 0 }}>Building utilization</span>
             {utilPct != null && (
-              <Box sx={{ px: 0.75, py: 0.15, borderRadius: 1, bgcolor: alpha(utilColor, 0.14), color: utilColor, fontSize: 11, fontWeight: 700, lineHeight: 1.5 }}>
-                {util.label}
-              </Box>
+              <span className="insp-util-tier" style={{ background: tint(utilColor, 14), color: utilColor }}>{util.label}</span>
             )}
-          </Stack>
-          <Typography sx={{ fontSize: 14, fontWeight: 700, color: utilColor, fontVariantNumeric: "tabular-nums" }}>
-            {utilPct != null ? `${Math.round(utilPct)}%` : "n/a"}
-          </Typography>
-        </Stack>
+          </div>
+          <span className="insp-util-pct" style={{ color: utilColor }}>{utilPct != null ? `${Math.round(utilPct)}%` : "n/a"}</span>
+        </div>
         {utilPct != null ? (
           <>
-            <LinearProgress variant="determinate" value={Math.min(100, utilPct)} sx={{ height: 6, borderRadius: 999, bgcolor: alpha(SHELL_ON, 0.06), "& .MuiLinearProgress-bar": { bgcolor: utilColor, borderRadius: 999 } }} />
-            <Typography sx={{ fontSize: 11, color: SHELL_DIM, mt: 0.5, fontVariantNumeric: "tabular-nums" }}>
-              {p.enrollment?.toLocaleString("en-US")} enrolled of {p.capacity?.toLocaleString("en-US")} capacity ({p.enrollment_year})
-            </Typography>
-            <Typography sx={{ fontSize: 11, color: SHELL_DIM, mt: 0.5, lineHeight: 1.4 }}>
-              Approximates the statutory Facility Utilization Rate (COFTE / FISH student stations, Rule 6A-1.0998271(1)(n)) using reported membership enrollment; it is a proxy, not the official COFTE-based rate.
-            </Typography>
+            <div className="insp-bar">
+              <div className="insp-bar__fill" style={{ width: `${Math.min(100, utilPct)}%`, background: utilColor }} />
+            </div>
+            <p className="insp-note">
+              {p.enrollment?.toLocaleString("en-US")} enrolled of {p.capacity?.toLocaleString("en-US")} capacity{p.enrollment_year ? ` (SY${p.enrollment_year})` : ""}
+            </p>
           </>
         ) : (
-          <Typography sx={{ fontSize: 12, color: SHELL_DIM }}>Enrollment or capacity not reported.</Typography>
+          <p className="insp-note">Enrollment or capacity not reported.</p>
         )}
         <EnrollmentTrend history={enrollHistory} capacity={p.capacity} />
 
-        <Divider sx={{ my: 2.5, borderColor: SHELL_HAIRLINE }} />
+        <hr className="insp-divider" />
 
         {/* Academic performance */}
-        <SectionLabel>Academic performance</SectionLabel>
-        <Typography sx={{ fontSize: 12, color: SHELL_DIM, mb: 0.5 }}>Historic letter grades</Typography>
+        <p className="insp-label">Academic performance</p>
+        <p className="insp-subhead">Historic letter grades</p>
         <GradeTimeline history={history} formulaChangeYears={formulaChangeYears} />
 
-        <Divider sx={{ my: 2.5, borderColor: SHELL_HAIRLINE }} />
+        <hr className="insp-divider" />
 
-        {/* 4. COMMUNITY CONTEXT */}
-        <SectionLabel>Community context</SectionLabel>
-        <List dense disablePadding>
-          <Kv label="Median household income (area)" value={income?.median_household_income != null ? `${formatIncomeWithMoe(income)}, tract ${income.geoid}` : "No tract data at this location"} />
-        </List>
-        <Stack divider={<Divider sx={{ borderColor: alpha(SHELL_ON, 0.05) }} />} sx={{ mt: 0.5 }}>
-          <Box>
-            <Typography sx={{ fontSize: 12, fontWeight: 600, color: SHELL_DIM }}>Located in an opportunity zone</Typography>
-            <YesNo yes={inOZ} why={inOZ ? `Designated QOZ tract ${oz?.geoid}` : "Not in a designated Opportunity Zone"} />
-          </Box>
-        </Stack>
-      </Box>
+        {/* 4. LOCATION & DISTRICTS: identity and representation, below the siting
+            decision the analyst came for. Each district row drills the whole view. */}
+        <p className="insp-label">Location &amp; districts</p>
+        <Kv label="Address" value={
+          <span className="insp-kv__addr">
+            <PlaceIcon size={14} style={{ color: DIM, marginTop: 2, flex: "none" }} />
+            <span>{p.address}</span>
+          </span>
+        } />
+        <Kv label="MSID" value={p.msid} mono />
+        <DistrictKv label="School board district" text={boardLabel} onFilter={districtTags?.board ? () => setDistrictFilter({ kind: "board", value: districtTags.board! }) : undefined} />
+        <DistrictKv label="Congressional district" text={cd ? `District ${cd.district_number}${cdRep ? `, ${repLabel(cdRep)}` : ""}` : "Not mapped for this location"} onFilter={districtTags?.CD ? () => setDistrictFilter({ kind: "CD", value: districtTags.CD! }) : undefined} />
+        <DistrictKv label="State House district" text={sldl ? `District ${sldl.district_number}${sldlRep ? `, ${repLabel(sldlRep)}` : " (representative not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDL ? () => setDistrictFilter({ kind: "SLDL", value: districtTags.SLDL! }) : undefined} />
+        <DistrictKv label="State Senate district" text={sldu ? `District ${sldu.district_number}${slduRep ? `, ${repLabel(slduRep)}` : " (senator not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDU ? () => setDistrictFilter({ kind: "SLDU", value: districtTags.SLDU! }) : undefined} />
+      </div>
 
-      {/* Footer */}
-      <Box sx={{ px: 2.5, py: 2, borderTop: `1px solid ${SHELL_HAIRLINE}`, bgcolor: SHELL_BG }}>
-        <Stack direction="row" spacing={1}>
-          <Tooltip title={!canPin ? `Compare holds up to ${MAX_COMPARE} sites` : ""}>
-            <span style={{ flex: 1 }}>
-              <Button fullWidth variant={pinned ? "contained" : "outlined"} color="primary" startIcon={<CompareArrowsIcon size={16} />} onClick={() => toggleComparePin(p.msid)} disabled={!canPin} sx={{ textTransform: "none", fontWeight: 600 }}>
-                {pinned ? "Pinned to compare" : "Add to compare"}
-              </Button>
-            </span>
-          </Tooltip>
+      {/* Footer: stacked full-width Carbon actions. Primary (pin) on top; Export
+          below; a jump to the shortlist last (it closes this panel so the tray
+          takes focus). */}
+      <div className="insp-footer">
+        <Button
+          kind={pinned ? "primary" : "tertiary"}
+          size="md"
+          disabled={!canPin}
+          title={!canPin ? `The shortlist holds up to ${MAX_COMPARE} sites` : undefined}
+          renderIcon={pinned ? BookmarkFilledIcon : BookmarkIcon}
+          onClick={() => toggleComparePin(p.msid)}
+        >
+          {pinned ? "On your shortlist" : "Add to shortlist"}
+        </Button>
+        <div>
           <ExportButton filenameBase={`school_${p.msid}`} headers={["Field", "Value"]} rows={exportRows} label="Export" />
-        </Stack>
-        {comparePinnedMsids.length >= 2 && (
+        </div>
+        {comparePinnedMsids.length >= 1 && (
           <Button
-            fullWidth
-            size="small"
-            startIcon={<CompareArrowsIcon size={16} />}
-            onClick={() => setViewMode("compare")}
-            sx={{ mt: 1, textTransform: "none", fontWeight: 600 }}
+            kind="ghost"
+            size="sm"
+            renderIcon={BookmarkIcon}
+            onClick={() => { setViewMode("map"); setShortlistOpen(true); selectSchool(null); }}
           >
-            Open compare ({comparePinnedMsids.length} sites)
+            Open shortlist ({comparePinnedMsids.length} site{comparePinnedMsids.length === 1 ? "" : "s"})
           </Button>
         )}
-      </Box>
-    </Paper>
+      </div>
+    </aside>
   );
 }

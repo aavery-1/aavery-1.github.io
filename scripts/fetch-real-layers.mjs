@@ -275,7 +275,9 @@ async function fetchLegislative(countyPolys) {
 
 // ─── school_enrollment_history ───────────────────────────────────────────────
 const URBAN = "https://educationdata.urban.org/api/v1/schools/ccd";
-// Through 2024-2025 (the latest year Urban's CCD enrollment mirror carries).
+// Urban's CCD `year` is the SPRING/ending year of the school year: year=Y is
+// school year (Y-1)-Y (so year=2024 is 2023-24, the newest mirror carries, which
+// matches refresh-schools-directory.py's YEAR=2024 -> "2023-24"). 2025 is empty.
 const ENROLL_YEARS = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
 async function fetchEnrollmentHistory() {
   console.log("school_enrollment_history: NCES CCD via Urban Institute…");
@@ -305,7 +307,7 @@ async function fetchEnrollmentHistory() {
         if (!ncesSet.has(r.ncessch)) continue;
         if (typeof r.enrollment !== "number" || r.enrollment < 0) continue;
         const msid = ncesToMsid[r.ncessch];
-        (byMsid[msid] ??= []).push({ year: `${year}-${year + 1}`, enrollment: r.enrollment });
+        (byMsid[msid] ??= []).push({ year: `${year - 1}-${year}`, enrollment: r.enrollment });
         n++;
       }
       next = j.next;
@@ -315,7 +317,7 @@ async function fetchEnrollmentHistory() {
   for (const msid of Object.keys(byMsid)) byMsid[msid].sort((a, b) => a.year.localeCompare(b.year));
 
   write("enrollment_history.json", {
-    vintage: `NCES CCD ${ENROLL_YEARS[0]}-${ENROLL_YEARS[ENROLL_YEARS.length - 1] + 1}`,
+    vintage: `NCES CCD ${ENROLL_YEARS[0] - 1}-${ENROLL_YEARS[ENROLL_YEARS.length - 1]}`,
     source: "NCES Common Core of Data via Urban Institute Education Data Portal",
     source_url: "https://educationdata.urban.org/documentation/schools.html#ccd_enrollment",
     retrieved: TODAY,

@@ -9,12 +9,12 @@ import { GeoJsonLayer, ScatterplotLayer, TextLayer, PathLayer, IconLayer } from 
 import type { Layer } from "@deck.gl/core";
 import { centroid, bboxClip, pointOnFeature, union } from "@turf/turf";
 import { layerById } from "../config/layers";
-import { useStore, utilizationBucket } from "../store";
+import { useStore, utilizationStyle, isUnderutilizedFacility, type UtilKey } from "../store";
 import type { MapBounds } from "../store";
 import { useData } from "../data/DataContext";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
-import { formatCoLocationReason } from "../data/derive/filters";
 import { resolveGradeStyle } from "./gradeEncoding";
+import { matchHopeOperator } from "../data/derive/hopeOperators";
 import { iconForShape, shapeForType } from "./markerShapes";
 import { geodesicBufferMiles } from "../geo/buffer";
 import type { SchoolFeature, LegislativeProps, SchoolOfHopeProps } from "../data/types";
@@ -58,25 +58,57 @@ export interface SchoolHoverInfo {
   grade: string;
   type: string;
   level: string;
-  enrollment: number | null;
-  capacity: number | null;
-  utilizationPct: number | null;
-  utilizationBucket: "over" | "target" | "under" | "unknown";
+  // The statutory Facility Utilization Rate (COFTE / permanent stations) from the
+  // shared utilizationStyle helper, so the tooltip agrees with the inspector, the
+  // dock, and the list. `utilPct` is that rate; when no COFTE is reported it falls
+  // back to an enrollment proxy, flagged by `utilBasis === "enrollment"`. We show
+  // the rate only (not a raw enrollment/stations pair) so nothing on the tooltip
+  // divides to a second, contradicting percentage.
+  utilPct: number | null;
+  utilKey: UtilKey;                 // under | inuse | full | unknown (statutory tiers)
+  utilBasis: "cofte" | "enrollment" | "none";
+  // The statutory underused test (FUR <= 75% OR >= 400 surplus stations), as an
+  // explicit yes/no; null when capacity is unreported so we can say so.
+  underutilized: boolean | null;
+  sohEligible: boolean;             // in a School of Hope siting area and Title I eligible
+  isPlp: boolean;                   // a persistently low-performing anchor
   coLocationEligible: boolean;
-  coLocationReason: string | null; // utilization + qualifying pathway, for candidates only
+  // Structured qualifying pathways for a co-location candidate, so the tooltip can
+  // list them as scannable rows instead of one run-on sentence.
+  coLocInOZ: boolean;
+  coLocNearestPlp: { msid: string; name: string; miles: number } | null;
+  coLocIsPlpAnchor: boolean;
 }
 
 export interface SohHoverInfo {
   x: number;
   y: number;
+  // "loanfund" = a site from the Revolving Loan Fund ledger; "operator" = a
+  // school in the main dataset run by a state-designated hope operator.
+  kind: "loanfund" | "operator";
   operator: string;
   address: string;
   amount: number;
   date: string;
   note: string;
+  // Set for operator schools: the school's own name (the ledger sites have none).
+  schoolName?: string;
 }
 
 type SohFeature = Feature<Point, SchoolOfHopeProps>;
+
+// A unified star datum: either a loan-fund ledger site or a designated-operator
+// school. Both draw the same amber star; the hover card tells them apart.
+type StarDatum = {
+  position: [number, number];
+  kind: "loanfund" | "operator";
+  operator: string;
+  address: string;
+  amount: number;
+  date: string;
+  note: string;
+  schoolName?: string;
+};
 
 // One GeoJsonLayer for a single legislative chamber, filtered from the shared
 // legislative source. Kept as a helper so the three chamber toggles stay
@@ -230,7 +262,6 @@ export function useDeckLayers(
   const radiusCenter = useStore((s) => s.radiusCenter);
   const radiusMiles = useStore((s) => s.radiusMiles);
   const measurePoints = useStore((s) => s.measurePoints);
-  const drawPoints = useStore((s) => s.drawPoints);
   const drawnBoundary = useStore((s) => s.drawnBoundary);
   const countySelection = useStore((s) => s.countySelection);
   const mapZoom = useStore((s) => s.mapZoom);
@@ -450,11 +481,25 @@ export function useDeckLayers(
         if (!onSchoolHover) return;
         if (info.object) {
           const p = info.object.properties;
-          const bucket = utilizationBucket(p.enrollment, p.capacity);
-          const pct = p.enrollment != null && p.capacity != null && p.capacity > 0 ? Math.round((p.enrollment / p.capacity) * 100) : null;
+          // Single source of truth for the utilization figure: the statutory
+          // COFTE-based FUR (same helper the inspector, dock, and list use), NOT a
+          // raw enrollment/capacity ratio. This is why the tooltip previously
+          // showed two different numbers for one building.
+          const us = utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
+          const underutilized = (p.capacity != null && p.capacity > 0)
+            ? isUnderutilizedFacility(p.enrollment, p.capacity, p.cofte, p.fish_surplus)
+            : null;
           const coLoc = ctx.coLocationMsids.has(p.msid);
           const reason = coLoc ? ctx.coLocationReasons.get(p.msid) : undefined;
-          onSchoolHover({ x: info.x, y: info.y, name: p.name, grade: p.current_grade, type: p.type, level: p.level, enrollment: p.enrollment, capacity: p.capacity, utilizationPct: pct, utilizationBucket: bucket, coLocationEligible: coLoc, coLocationReason: reason ? formatCoLocationReason(reason) : null });
+          onSchoolHover({
+            x: info.x, y: info.y, name: p.name, grade: p.current_grade, type: p.type, level: p.level,
+            utilPct: us.pct, utilKey: us.key, utilBasis: us.basis, underutilized,
+            sohEligible: ctx.sohEligibleMsids.has(p.msid), isPlp: ctx.plp.has(p.msid),
+            coLocationEligible: coLoc,
+            coLocInOZ: reason?.inOpportunityZone ?? false,
+            coLocNearestPlp: reason?.nearestPlp ?? null,
+            coLocIsPlpAnchor: reason?.isPlpAnchor ?? false,
+          });
         } else {
           onSchoolHover(null);
         }
@@ -652,67 +697,127 @@ export function useDeckLayers(
           }),
         });
       }
+
+      // Shortlist badges: a small numbered chip on each pinned site, in the same
+      // 1..N order as the shortlist tray cards, so the operator's shortlist is
+      // legible IN PLACE on the map, not only in the tray. Drawn above everything.
+      if (comparePinnedMsids.length) {
+        const order = new Map(comparePinnedMsids.map((m, i) => [m, i + 1]));
+        const badgeFeats = feats.filter((f) => order.has(f.properties.msid));
+        if (badgeFeats.length) {
+          built.push({
+            z: 106,
+            layer: new TextLayer<SchoolFeature>({
+              id: "school_shortlist_badge",
+              data: badgeFeats,
+              getPosition: (f) => f.geometry.coordinates as [number, number],
+              getText: (f) => String(order.get(f.properties.msid)),
+              characterSet: ["1", "2", "3", "4"],
+              getSize: 12,
+              getColor: [255, 255, 255, 255],
+              getPixelOffset: [-13, -13], // upper-left corner of the pin
+              fontFamily: "system-ui, sans-serif",
+              fontWeight: 700,
+              getTextAnchor: "middle",
+              getAlignmentBaseline: "center",
+              background: true,
+              getBackgroundColor: [17, 17, 17, 255], // matches PINNED_BLACK
+              backgroundPadding: [5, 4],
+              updateTriggers: { getText: [comparePinnedMsids], getPosition: [comparePinnedMsids] },
+              pickable: false,
+            }),
+          });
+        }
+      }
     }
 
-    // Existing Schools of Hope (loan-fund ledger): gold star markers drawn above
-    // the school pins so they read as distinct, notable reference points. Shown
-    // regardless of the school filters (a fixed reference overlay).
-    if (has("existing_soh") && schoolsOfHope) {
-      // Scope the reference layer to the tool's tri-county geography: the loan-fund
-      // ledger is statewide, and a star in Jacksonville or Tampa reads as noise on a
-      // Miami-Dade / Broward / Orange map. A pilot-county site is the ones the build
-      // script could place in one of the three counties (county tagged, not null).
-      const sohFeats = (schoolsOfHope.features as SohFeature[]).filter((f) => f.properties.county != null);
-      built.push({
-        z: 200,
-        layer: new ScatterplotLayer({
-          id: "existing_soh",
-          data: sohFeats,
-          pickable: activeTool === "none",
-          stroked: true,
-          filled: true,
-          radiusUnits: "pixels",
-          radiusMinPixels: 7,
-          getPosition: (f: SohFeature) => f.geometry.coordinates as [number, number],
-          getRadius: 10,
-          getFillColor: [245, 158, 11, 255], // Amber 500
-          getLineColor: [255, 255, 255, 255],
-          getLineWidth: 2,
-          lineWidthUnits: "pixels",
-          onClick: () => true,
-          onHover: (info: { object?: SohFeature; x: number; y: number }) => {
-            if (!onSohHover) return;
-            if (info.object) {
-              const p = info.object.properties;
-              onSohHover({ x: info.x, y: info.y, operator: p.operator, address: p.address, amount: p.amount, date: p.date, note: p.note });
-            } else {
-              onSohHover(null);
-            }
-          },
-        }),
-      });
-      built.push({
-        z: 201,
-        layer: new TextLayer({
-          id: "existing_soh_star",
-          data: sohFeats,
-          characterSet: ["★"],
-          getPosition: (f: SohFeature) => f.geometry.coordinates as [number, number],
-          getText: () => "★",
-          getSize: 11,
-          getColor: [124, 45, 18, 255], // Amber 900-ish for contrast on gold
-          fontFamily: "system-ui, sans-serif",
-          getTextAnchor: "middle",
-          getAlignmentBaseline: "center",
-          pickable: false,
-        }),
-      });
+    // Schools of Hope star overlay. Two sources, one gold-star treatment, shown
+    // regardless of the school-level filters (a fixed reference overlay):
+    //   1. Revolving Loan Fund ledger sites (F.S. 1001.292), scoped to the
+    //      tri-county geography so a star in Tampa/Jacksonville does not read as
+    //      noise on a Miami-Dade / Broward / Orange map.
+    //   2. Every loaded school run by a state-designated hope operator
+    //      (s. 1002.333(2); Mater, KIPP, IDEA, RCMA, Success, Renaissance/
+    //      Warrington). A school of hope IS a charter run by such an operator, so
+    //      the brief stars all of their schools. See data/derive/hopeOperators.ts.
+    if (has("existing_soh")) {
+      const stars: StarDatum[] = [];
+      if (schoolsOfHope) {
+        for (const f of (schoolsOfHope.features as SohFeature[])) {
+          if (f.properties.county == null) continue; // out of the pilot counties
+          const p = f.properties;
+          stars.push({
+            position: f.geometry.coordinates as [number, number],
+            kind: "loanfund", operator: p.operator, address: p.address,
+            amount: p.amount, date: p.date, note: p.note,
+          });
+        }
+      }
+      // Designated-operator schools come from the FULL loaded set (unfiltered), so
+      // toggling grade/type filters never hides the reference stars.
+      for (const f of all) {
+        const op = matchHopeOperator(f.properties.name);
+        if (!op) continue;
+        stars.push({
+          position: f.geometry.coordinates as [number, number],
+          kind: "operator", operator: op, address: f.properties.address ?? "",
+          amount: 0, date: "", note: "", schoolName: f.properties.name,
+        });
+      }
+      if (stars.length) {
+        built.push({
+          z: 200,
+          layer: new ScatterplotLayer<StarDatum>({
+            id: "existing_soh",
+            data: stars,
+            pickable: activeTool === "none",
+            stroked: true,
+            filled: true,
+            radiusUnits: "pixels",
+            radiusMinPixels: 7,
+            getPosition: (d) => d.position,
+            getRadius: 10,
+            getFillColor: [245, 158, 11, 255], // Amber 500
+            getLineColor: [255, 255, 255, 255],
+            getLineWidth: 2,
+            lineWidthUnits: "pixels",
+            onClick: () => true,
+            onHover: (info: { object?: StarDatum; x: number; y: number }) => {
+              if (!onSohHover) return;
+              if (info.object) {
+                const d = info.object;
+                onSohHover({ x: info.x, y: info.y, kind: d.kind, operator: d.operator, address: d.address, amount: d.amount, date: d.date, note: d.note, schoolName: d.schoolName });
+              } else {
+                onSohHover(null);
+              }
+            },
+          }),
+        });
+        built.push({
+          z: 201,
+          layer: new TextLayer<StarDatum>({
+            id: "existing_soh_star",
+            data: stars,
+            characterSet: ["★"],
+            getPosition: (d) => d.position,
+            getText: () => "★",
+            getSize: 11,
+            getColor: [124, 45, 18, 255], // Amber 900-ish for contrast on gold
+            fontFamily: "system-ui, sans-serif",
+            getTextAnchor: "middle",
+            getAlignmentBaseline: "center",
+            pickable: false,
+          }),
+        });
+      }
     }
 
-    // Committed hand-drawn boundary: a filled polygon with a bright cased
-    // outline so the selected area reads clearly (the technique that keeps a
-    // drawn boundary legible over a busy map). Persists until removed.
-    if (drawnBoundary && drawnBoundary.length >= 3) {
+    // Committed map-area filter: a filled circle (from the radius tool's "Filter
+    // to this area") with a bright cased outline so the selected area reads
+    // clearly over a busy map. Persists until removed. Suppressed while the
+    // radius tool is open, since the live radius ring below is the same circle
+    // and would otherwise double the outline.
+    if (drawnBoundary && drawnBoundary.length >= 3 && activeTool !== "radius") {
       const ring: [number, number][] = drawnBoundary.map((p) => [p.lng, p.lat]);
       ring.push(ring[0]);
       const poly = { type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring] } }] } as GeoJSON.FeatureCollection;
@@ -723,40 +828,6 @@ export function useDeckLayers(
       built.push({
         z: 880,
         layer: new GeoJsonLayer({ id: "drawn_boundary", data: poly, stroked: true, filled: true, getFillColor: [37, 99, 235, 20], getLineColor: [37, 99, 235, 245], getLineWidth: 2.5, lineWidthUnits: "pixels" }),
-      });
-    }
-
-    // In-progress drawing: preview polygon/path plus vertex dots. The first
-    // vertex is drawn larger so the user can see where to close the shape.
-    if (activeTool === "draw" && drawPoints.length) {
-      const coords: [number, number][] = drawPoints.map((p) => [p.lng, p.lat]);
-      if (drawPoints.length >= 3) {
-        const ring = [...coords, coords[0]];
-        const poly = { type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring] } }] } as GeoJSON.FeatureCollection;
-        built.push({
-          z: 916,
-          layer: new GeoJsonLayer({ id: "draw_preview", data: poly, stroked: true, filled: true, getFillColor: [37, 99, 235, 18], getLineColor: [37, 99, 235, 220], getLineWidth: 2, lineWidthUnits: "pixels" }),
-        });
-      } else if (drawPoints.length === 2) {
-        built.push({
-          z: 916,
-          layer: new PathLayer<{ path: [number, number][] }>({ id: "draw_preview_path", data: [{ path: coords }], getPath: (d) => d.path, getColor: [37, 99, 235, 220], getWidth: 2, widthUnits: "pixels" }),
-        });
-      }
-      built.push({
-        z: 917,
-        layer: new ScatterplotLayer({
-          id: "draw_vertices",
-          data: drawPoints,
-          getPosition: (p: { lng: number; lat: number }) => [p.lng, p.lat],
-          getRadius: (_p: unknown, info: { index: number }) => (info.index === 0 ? 6 : 4),
-          radiusUnits: "pixels",
-          getFillColor: (_p: unknown, info: { index: number }) => (info.index === 0 ? [37, 99, 235, 255] : [255, 255, 255, 255]),
-          stroked: true,
-          getLineColor: [37, 99, 235, 255],
-          getLineWidth: 1.5,
-          lineWidthUnits: "pixels",
-        }),
       });
     }
 
@@ -827,7 +898,7 @@ export function useDeckLayers(
     }
 
     return built.sort((a, b) => a.z - b.z).map((b) => b.layer);
-  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, schoolsOfHope, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, selectSchool, radiusCenter, radiusMiles, measurePoints, drawPoints, drawnBoundary, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover, onSohHover]);
+  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, schoolsOfHope, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnBoundary, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover, onSohHover]);
 }
 
 // PLP anchor centers among all loaded schools, restricted to the selected

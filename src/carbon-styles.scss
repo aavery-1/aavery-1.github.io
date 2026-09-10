@@ -26,6 +26,20 @@
 
 :root {
   @include theme.theme(themes.$g10);
+
+  // KIPP brand: recolor Carbon's interactive/brand tokens from Blue 60 to KIPP
+  // navy, so every Carbon component (buttons, links, focus rings, the brand pill)
+  // follows the brand. This is the Carbon half of the one brand color; the MUI
+  // half lives in muiTheme.ts (ACCENT) and plain CSS reads --focus from theme.ts.
+  // No em dashes in this file, per the prose style rule.
+  --cds-background-brand: #001e62;
+  --cds-interactive: #001e62;
+  --cds-link-primary: #001e62;
+  --cds-link-primary-hover: #001541;
+  --cds-button-primary: #001e62;
+  --cds-button-primary-hover: #001541;
+  --cds-button-primary-active: #000e2b;
+  --cds-focus: #001e62;
 }
 
 // The app owns the full viewport; let Carbon's Gray 10 background fill it.

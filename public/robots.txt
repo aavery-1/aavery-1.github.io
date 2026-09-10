@@ -1,0 +1,5 @@
+# Internal siting tool, not for public search indexing. If this becomes a
+# public, indexable site, replace the Disallow below with "Allow: /" and add a
+# Sitemap: line.
+User-agent: *
+Disallow: /
