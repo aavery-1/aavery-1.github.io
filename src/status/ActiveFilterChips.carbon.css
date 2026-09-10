@@ -101,3 +101,19 @@
     max-width: calc(100% - 220px);
   }
 }
+
+/* Phone: the Filters/Search cluster (top-left) and the control column (top-right)
+   both sit on the top row of the map, so the centered strip landed on top of
+   them and hid the Filters and Search buttons. Drop it just below the
+   Filters/Search row and stop it short of the right-hand control column instead
+   of centering it across the whole width. Matches the phone breakpoint that
+   mounts MapQuickActions. */
+@media (max-width: 599.95px) {
+  .active-filter-chips {
+    top: 64px;
+    left: 12px;
+    right: 60px;
+    transform: none;
+    max-width: none;
+  }
+}
