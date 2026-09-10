@@ -25,6 +25,7 @@ import { MapLegend } from "./map/MapLegend";
 import { MapLayersControl } from "./map/MapLayersControl";
 import { MapQuickActions } from "./map/MapQuickActions";
 import { useMapPersistence } from "./map/useMapPersistence";
+import { OverflowDebug } from "./debug/OverflowDebug";
 import { useStore } from "./store";
 import { Bookmark as BookmarkIcon } from "@carbon/icons-react";
 
@@ -166,6 +167,7 @@ export default function App() {
   // sideways when a child like the app bar overflows at a narrow width.
   return (
     <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "clip" }}>
+      <OverflowDebug />
       <TopNav onOpenAttribution={() => setAttributionOpen(true)} />
       <Box sx={{ flex: 1, display: "flex", minHeight: 0, position: "relative", pl: { sm: "64px" } }}>
         {/* Desktop rail: a thin icon rail that OVERLAYS the map when expanded

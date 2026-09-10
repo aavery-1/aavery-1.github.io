@@ -23,6 +23,29 @@ body {
   max-width: 100%;
   overflow-x: hidden;
 }
+/* iOS Safari auto-zooms the whole page whenever a form field with a font size
+   under 16px is focused (tapping Search, a filter, the MSID box), and it never
+   zooms back out. That leaves the map enlarged and panned so its right-edge
+   control stack and the header sit off-screen. Forcing every focusable field to
+   16px at phone widths prevents that zoom, without disabling user pinch-zoom (an
+   accessibility must-keep). Desktop keeps Carbon's 14px density. styles.css loads
+   after Carbon, so these equal-specificity rules win. */
+@media (max-width: 599px) {
+  input,
+  textarea,
+  select,
+  [contenteditable="true"],
+  .cds--text-input,
+  .cds--text-area,
+  .cds--search-input,
+  .cds--select-input,
+  .cds--number__input,
+  .cds--dropdown,
+  .cds--combo-box .cds--text-input,
+  .cds--list-box__field input {
+    font-size: 16px;
+  }
+}
 body {
   font-family: var(--font-sans);
   color: var(--text-primary);

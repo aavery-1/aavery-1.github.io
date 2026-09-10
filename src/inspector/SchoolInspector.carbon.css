@@ -76,6 +76,8 @@
 .insp-close { flex: none; margin: -6px -6px 0 0; }
 .insp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .insp-tags .cds--tag { margin: 0; }
+/* Muted vintage qualifier beside the PLP tag (official DOE list is 2024-25). */
+.insp-tag-asof { align-self: center; font-size: 12px; color: var(--cds-text-helper, #6f6f6f); }
 /* Co-location tag tinted to the KIPP navy (Carbon Tag has no navy preset). */
 .insp-tag-coloc.cds--tag {
   background: rgba(0, 30, 98, 0.1);

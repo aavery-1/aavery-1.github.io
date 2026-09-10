@@ -503,6 +503,7 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
         {(plpEval.isPlp || coLocationEligible) && (
           <div className="insp-tags">
             {plpEval.isPlp && <Tag type="red" size="md">PLP</Tag>}
+            {isOfficialPlp && <span className="insp-tag-asof">as of SY24-25</span>}
             {coLocationEligible && <Tag size="md" className="insp-tag-coloc">Co-location candidate</Tag>}
           </div>
         )}
