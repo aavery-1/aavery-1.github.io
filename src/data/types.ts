@@ -32,6 +32,12 @@ export function schoolTypeLabel(type: SchoolType | string): string {
 
 export interface SchoolProps {
   msid: string;
+  // Outcome-reporting MSID. Florida reports some multi-campus charters (every
+  // KIPP Miami campus, for one) under a SINGLE MSID, so their grade and
+  // enrollment history live under that shared key, not each campus's own msid.
+  // Defaults to msid; set it only when a school's outcomes are reported under a
+  // different MSID, so the inspector timelines populate across all the campuses.
+  report_msid?: string | null;
   name: string;
   level: SchoolLevel;
   type: SchoolType;

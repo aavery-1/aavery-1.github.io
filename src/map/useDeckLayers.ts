@@ -17,8 +17,7 @@ import { resolveGradeStyle } from "./gradeEncoding";
 import { matchHopeOperator } from "../data/derive/hopeOperators";
 import { iconForShape, shapeForType } from "./markerShapes";
 import { geodesicBufferMiles } from "../geo/buffer";
-import type { SchoolFeature, LegislativeProps, SchoolOfHopeProps } from "../data/types";
-import type { Feature, Point } from "geojson";
+import type { SchoolFeature, LegislativeProps } from "../data/types";
 
 const SOH_RADIUS_MILES = 5;
 
@@ -78,37 +77,11 @@ export interface SchoolHoverInfo {
   coLocInOZ: boolean;
   coLocNearestPlp: { msid: string; name: string; miles: number } | null;
   coLocIsPlpAnchor: boolean;
+  // The state-designated hope operator that runs this school (Mater, KIPP, ...),
+  // or null. When set, the school is an existing School of Hope and its marker
+  // carries a gold star. Surfaced on the tooltip so the star reads as meaning.
+  hopeOperator: string | null;
 }
-
-export interface SohHoverInfo {
-  x: number;
-  y: number;
-  // "loanfund" = a site from the Revolving Loan Fund ledger; "operator" = a
-  // school in the main dataset run by a state-designated hope operator.
-  kind: "loanfund" | "operator";
-  operator: string;
-  address: string;
-  amount: number;
-  date: string;
-  note: string;
-  // Set for operator schools: the school's own name (the ledger sites have none).
-  schoolName?: string;
-}
-
-type SohFeature = Feature<Point, SchoolOfHopeProps>;
-
-// A unified star datum: either a loan-fund ledger site or a designated-operator
-// school. Both draw the same amber star; the hover card tells them apart.
-type StarDatum = {
-  position: [number, number];
-  kind: "loanfund" | "operator";
-  operator: string;
-  address: string;
-  amount: number;
-  date: string;
-  note: string;
-  schoolName?: string;
-};
 
 // One GeoJsonLayer for a single legislative chamber, filtered from the shared
 // legislative source. Kept as a helper so the three chamber toggles stay
@@ -253,7 +226,6 @@ function chamberLayer(
 
 export function useDeckLayers(
   onSchoolHover?: (info: SchoolHoverInfo | null) => void,
-  onSohHover?: (info: SohHoverInfo | null) => void,
 ): Layer[] {
   const activeLayerIds = useStore((s) => s.activeLayerIds);
   const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
@@ -267,7 +239,7 @@ export function useDeckLayers(
   const mapZoom = useStore((s) => s.mapZoom);
   const mapBounds = useStore((s) => s.mapBounds);
   const activeTool = useStore((s) => s.activeTool);
-  const { income, boardDistricts, isochrones, populationGrowth, opportunityZones, legislative, schoolsOfHope } = useData();
+  const { income, boardDistricts, isochrones, populationGrowth, opportunityZones, legislative } = useData();
   const { features: filteredFeats, all, ctx } = useFilteredSchools();
 
   // The selected school (from search, the list, or the dock) and any
@@ -499,6 +471,7 @@ export function useDeckLayers(
             coLocInOZ: reason?.inOpportunityZone ?? false,
             coLocNearestPlp: reason?.nearestPlp ?? null,
             coLocIsPlpAnchor: reason?.isPlpAnchor ?? false,
+            hopeOperator: matchHopeOperator(p.name),
           });
         } else {
           onSchoolHover(null);
@@ -601,6 +574,55 @@ export function useDeckLayers(
             getText: (f: SchoolFeature) => resolveGradeStyle(f.properties.current_grade).letter,
             getSize: Math.max(9, Math.round(FILL_PX * 0.5)),
             getColor: (f: SchoolFeature) => resolveGradeStyle(f.properties.current_grade).letterColor,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 700,
+            getTextAnchor: "middle",
+            getAlignmentBaseline: "center",
+            pickable: false,
+          }),
+        });
+      }
+
+      // School of Hope flag: a gold star on every school run by a state-
+      // designated hope operator. A School of Hope IS a charter run by such an
+      // operator, so these markers already carry the Charter shape and flow
+      // through the type filter as charters; the star is only a visual flag, no
+      // longer a separate toggleable layer. Drawn from the filtered feats, so a
+      // star hides with its school when a filter excludes it. A white halo keeps
+      // it legible over imagery. See data/derive/hopeOperators.ts.
+      const hopeFeats = feats.filter((f) => matchHopeOperator(f.properties.name));
+      if (hopeFeats.length) {
+        const starOffset: [number, number] = [12, -12]; // upper-right of the pin
+        const starPos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
+        built.push({
+          z: 105,
+          layer: new TextLayer<SchoolFeature>({
+            id: "school_soh_star_halo",
+            data: hopeFeats,
+            getPosition: starPos,
+            getText: () => "★",
+            characterSet: ["★"],
+            getSize: 17,
+            getColor: [255, 255, 255, 255],
+            getPixelOffset: starOffset,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 700,
+            getTextAnchor: "middle",
+            getAlignmentBaseline: "center",
+            pickable: false,
+          }),
+        });
+        built.push({
+          z: 105.1,
+          layer: new TextLayer<SchoolFeature>({
+            id: "school_soh_star",
+            data: hopeFeats,
+            getPosition: starPos,
+            getText: () => "★",
+            characterSet: ["★"],
+            getSize: 13,
+            getColor: [180, 83, 9, 255], // Amber 700, matches the legend star
+            getPixelOffset: starOffset,
             fontFamily: "system-ui, sans-serif",
             fontWeight: 700,
             getTextAnchor: "middle",
@@ -731,87 +753,6 @@ export function useDeckLayers(
       }
     }
 
-    // Schools of Hope star overlay. Two sources, one gold-star treatment, shown
-    // regardless of the school-level filters (a fixed reference overlay):
-    //   1. Revolving Loan Fund ledger sites (F.S. 1001.292), scoped to the
-    //      tri-county geography so a star in Tampa/Jacksonville does not read as
-    //      noise on a Miami-Dade / Broward / Orange map.
-    //   2. Every loaded school run by a state-designated hope operator
-    //      (s. 1002.333(2); Mater, KIPP, IDEA, RCMA, Success, Renaissance/
-    //      Warrington). A school of hope IS a charter run by such an operator, so
-    //      the brief stars all of their schools. See data/derive/hopeOperators.ts.
-    if (has("existing_soh")) {
-      const stars: StarDatum[] = [];
-      if (schoolsOfHope) {
-        for (const f of (schoolsOfHope.features as SohFeature[])) {
-          if (f.properties.county == null) continue; // out of the pilot counties
-          const p = f.properties;
-          stars.push({
-            position: f.geometry.coordinates as [number, number],
-            kind: "loanfund", operator: p.operator, address: p.address,
-            amount: p.amount, date: p.date, note: p.note,
-          });
-        }
-      }
-      // Designated-operator schools come from the FULL loaded set (unfiltered), so
-      // toggling grade/type filters never hides the reference stars.
-      for (const f of all) {
-        const op = matchHopeOperator(f.properties.name);
-        if (!op) continue;
-        stars.push({
-          position: f.geometry.coordinates as [number, number],
-          kind: "operator", operator: op, address: f.properties.address ?? "",
-          amount: 0, date: "", note: "", schoolName: f.properties.name,
-        });
-      }
-      if (stars.length) {
-        built.push({
-          z: 200,
-          layer: new ScatterplotLayer<StarDatum>({
-            id: "existing_soh",
-            data: stars,
-            pickable: activeTool === "none",
-            stroked: true,
-            filled: true,
-            radiusUnits: "pixels",
-            radiusMinPixels: 7,
-            getPosition: (d) => d.position,
-            getRadius: 10,
-            getFillColor: [245, 158, 11, 255], // Amber 500
-            getLineColor: [255, 255, 255, 255],
-            getLineWidth: 2,
-            lineWidthUnits: "pixels",
-            onClick: () => true,
-            onHover: (info: { object?: StarDatum; x: number; y: number }) => {
-              if (!onSohHover) return;
-              if (info.object) {
-                const d = info.object;
-                onSohHover({ x: info.x, y: info.y, kind: d.kind, operator: d.operator, address: d.address, amount: d.amount, date: d.date, note: d.note, schoolName: d.schoolName });
-              } else {
-                onSohHover(null);
-              }
-            },
-          }),
-        });
-        built.push({
-          z: 201,
-          layer: new TextLayer<StarDatum>({
-            id: "existing_soh_star",
-            data: stars,
-            characterSet: ["★"],
-            getPosition: (d) => d.position,
-            getText: () => "★",
-            getSize: 11,
-            getColor: [124, 45, 18, 255], // Amber 900-ish for contrast on gold
-            fontFamily: "system-ui, sans-serif",
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "center",
-            pickable: false,
-          }),
-        });
-      }
-    }
-
     // Committed map-area filter: a filled circle (from the radius tool's "Filter
     // to this area") with a bright cased outline so the selected area reads
     // clearly over a busy map. Persists until removed. Suppressed while the
@@ -898,7 +839,7 @@ export function useDeckLayers(
     }
 
     return built.sort((a, b) => a.z - b.z).map((b) => b.layer);
-  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, schoolsOfHope, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnBoundary, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover, onSohHover]);
+  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnBoundary, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover]);
 }
 
 // PLP anchor centers among all loaded schools, restricted to the selected

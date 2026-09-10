@@ -84,9 +84,9 @@ const GROUPS: Group[] = [
         source: "U.S. Census Bureau Population Estimates Program (Vintage 2024) + ACS 5-year",
         vintage: "2023 to 2024",
         note: "County level." },
-      { label: "Existing Schools of Hope", tag: "Official",
-        source: "FL DOE Schools of Hope Revolving Loan Fund ledger (F.S. 1001.292)",
-        note: "12 loan-fund sites statewide; the 3 within the pilot counties (all Miami-Dade) are mapped. The ledger lists none in Broward or Orange. Loan-fund recipients only, not the full FL DOE list of approved or operating Schools of Hope." },
+      { label: "Schools of Hope", tag: "Official",
+        source: "FL DOE designated hope operators (s. 1002.333(2), F.S.)",
+        note: "A School of Hope is a charter run by a state-designated hope operator (Mater, KIPP, IDEA, RCMA, Success, Renaissance/Warrington). These schools are charters for every filter and count, and carry a gold star on their marker. No longer a separate map layer." },
     ],
   },
   {

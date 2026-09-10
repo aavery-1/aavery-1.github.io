@@ -49,15 +49,11 @@ export const MAP_LAYERS: MapLayerDef[] = [
     swatch: { kind: "outline", color: "#D32F2F" },
     needs: "schools",
   },
-  {
-    id: "existing_soh",
-    label: "Schools of Hope",
-    group: "Schools",
-    description: "Gold stars: existing Schools of Hope, plus every school run by a state-designated hope operator (Mater, KIPP, IDEA, RCMA, Success, Renaissance/Warrington).",
-    swatch: { kind: "dot", color: "#F59E0B" },
-    needs: "schools",
-    defaultOn: true,
-  },
+  // NOTE: Schools of Hope are no longer a separate toggleable layer. Schools run
+  // by a state-designated hope operator (Mater, KIPP, IDEA, RCMA, Success,
+  // Renaissance/Warrington) are charter schools for every logic purpose (filters,
+  // shape, counts) and carry a gold star flag drawn on their marker whenever the
+  // School locations layer is on. See useDeckLayers.ts and data/derive/hopeOperators.ts.
 
   // ---- Boundaries ----
   {

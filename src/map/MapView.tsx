@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GoogleMapsOverlay } from "@deck.gl/google-maps";
 import { useGoogleMaps } from "./useGoogleMaps";
-import { useDeckLayers, type SchoolHoverInfo, type SohHoverInfo } from "./useDeckLayers";
+import { useDeckLayers, type SchoolHoverInfo } from "./useDeckLayers";
 import { resolveGradeStyle, rgbaToCss } from "./gradeEncoding";
 import { useData } from "../data/DataContext";
 import { schoolTypeLabel } from "../data/types";
@@ -39,7 +39,6 @@ export function MapView() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mouse, setMouse] = useState<LatLng | null>(null);
   const [hover, setHover] = useState<SchoolHoverInfo | null>(null);
-  const [sohHover, setSohHover] = useState<SohHoverInfo | null>(null);
 
   // The school tooltip is interactive (its PLP anchor is a link), so leaving the
   // marker must not hide it instantly: the cursor has to cross a small gap of bare
@@ -58,8 +57,7 @@ export function MapView() {
     if (info) setHover(info);
     else hideTimer.current = window.setTimeout(() => setHover(null), 160);
   }, [cancelHide]);
-  const onSohHover = useCallback((info: SohHoverInfo | null) => setSohHover(info), []);
-  const layers = useDeckLayers(onSchoolHover, onSohHover);
+  const layers = useDeckLayers(onSchoolHover);
   const { schools } = useData();
 
   const zoomBy = useCallback((delta: number) => {
@@ -330,6 +328,12 @@ export function MapView() {
           <div className="pin-tooltip-sub">
             {hover.level} school &middot; {schoolTypeLabel(hover.type)}
           </div>
+          {hover.hopeOperator && (
+            <div className="pin-tooltip-sub" style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
+              <StarFilled size={13} style={{ color: "#B45309", flex: "none" }} aria-hidden={true} />
+              <span>School of Hope &middot; {hover.hopeOperator}</span>
+            </div>
+          )}
 
           {/* A labeled fact list: one row per question a scout asks, each with a
               plainly-labeled value. The facility rate is the statutory COFTE-based
@@ -398,26 +402,6 @@ export function MapView() {
           )}
 
           <div className="pin-tooltip-cta">Click the pin to inspect &rarr;</div>
-        </div>
-      )}
-      {sohHover && (
-        <div className="pin-tooltip soh-tooltip" style={{ left: sohHover.x + 14, top: sohHover.y + 14 }}>
-          <div className="pin-tooltip-head">
-            <StarFilled size={16} className="soh-tooltip-star" style={{ color: "#B45309" }} aria-hidden={true} />
-            <span className="pin-tooltip-name">{sohHover.kind === "operator" ? sohHover.schoolName : sohHover.operator}</span>
-          </div>
-          {sohHover.kind === "operator" ? (
-            <>
-              <div className="pin-tooltip-sub">Hope Operator: {sohHover.operator}</div>
-              {sohHover.address && <div className="pin-tooltip-sub" style={{ marginTop: 3 }}>{sohHover.address}</div>}
-            </>
-          ) : (
-            <>
-              <div className="pin-tooltip-sub">Existing School of Hope</div>
-              <div className="pin-tooltip-sub" style={{ marginTop: 3 }}>{sohHover.address}</div>
-              {sohHover.note && <div className="pin-tooltip-sub" style={{ marginTop: 3, fontStyle: "italic" }}>{sohHover.note}</div>}
-            </>
-          )}
         </div>
       )}
       <div className="map-furniture">

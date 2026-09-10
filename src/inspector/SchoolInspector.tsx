@@ -375,9 +375,13 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   // Exact district-filter keys for this school (same source the filter uses), so
   // the district rows below can drill the whole view into a district.
   const districtTags = data.schoolDistricts.tagOf(p.msid);
-  const history = data.grades?.schools[p.msid] ?? [];
+  // Outcomes are keyed by the reporting MSID: multi-campus charters like KIPP
+  // Miami report grade and enrollment history under one shared MSID, so every
+  // campus resolves its timelines through report_msid (defaults to its own msid).
+  const reportMsid = p.report_msid ?? p.msid;
+  const history = data.grades?.schools[reportMsid] ?? [];
   const formulaChangeYears = data.grades?.formula_change_years ?? [];
-  const enrollHistory = data.enrollment?.schools[p.msid] ?? [];
+  const enrollHistory = data.enrollment?.schools[reportMsid] ?? [];
   const pinned = comparePinnedMsids.includes(p.msid);
   const canPin = pinned || comparePinnedMsids.length < MAX_COMPARE;
 

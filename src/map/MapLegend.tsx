@@ -92,7 +92,7 @@ export function MapLegend() {
     has("state_house_districts") || has("board_districts");
   const hasAreas = has("opportunity_zones") || has("drive_time_reach");
   const empty =
-    !showMarkers && !has("existing_soh") && !has("plp_radius") &&
+    !showMarkers && !has("plp_radius") &&
     !has("household_income") && !has("population_growth") && !hasAreas && !hasBoundaries;
 
   return (
@@ -147,31 +147,15 @@ export function MapLegend() {
                     </span>
                     <span>Co-location candidate</span>
                   </li>
-                  {has("existing_soh") && (
-                    <li className="map-legend-row">
-                      <span className="map-legend-swatch">
-                        <StarFilled size={15} className="map-legend-star" style={{ color: SOH_AMBER }} />
-                      </span>
-                      <span>School of Hope</span>
-                    </li>
-                  )}
+                  <li className="map-legend-row" title="A school run by a state-designated hope operator (Mater, KIPP, IDEA, RCMA, Success, Renaissance/Warrington). These are charter schools, flagged with a gold star.">
+                    <span className="map-legend-swatch">
+                      <StarFilled size={15} className="map-legend-star" style={{ color: SOH_AMBER }} />
+                    </span>
+                    <span>School of Hope</span>
+                  </li>
                 </ul>
               </section>
             </>
-          )}
-
-          {!showMarkers && has("existing_soh") && (
-            <section className="map-legend-section">
-              <span className="map-legend-label">Markers</span>
-              <ul className="map-legend-rows">
-                <li className="map-legend-row">
-                  <span className="map-legend-swatch">
-                    <StarFilled size={15} className="map-legend-star" style={{ color: SOH_AMBER }} />
-                  </span>
-                  <span>School of Hope</span>
-                </li>
-              </ul>
-            </section>
           )}
 
           {has("plp_radius") && (
