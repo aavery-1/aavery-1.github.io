@@ -38,7 +38,11 @@ export function MapQuickActions() {
 
       <span className="map-quick-actions__sep" aria-hidden />
 
-      <Popover open={searchOpen} onRequestClose={() => setSearchOpen(false)} align="bottom-left" dropShadow>
+      {/* caret + dropShadow off: the panel is repositioned to the map's left margin
+          in CSS (so it clears the right-hand controls and never runs off-screen),
+          and Carbon's dropShadow filter would make its wrapper the containing block
+          for that fixed panel. A plain box-shadow on the panel replaces it. */}
+      <Popover open={searchOpen} onRequestClose={() => setSearchOpen(false)} align="bottom-left" caret={false} dropShadow={false}>
         <button
           type="button"
           className="map-quick-actions__btn"

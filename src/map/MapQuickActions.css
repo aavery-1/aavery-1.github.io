@@ -11,7 +11,11 @@
   background: var(--card);
   border: 1px solid var(--hairline);
   box-shadow: var(--shadow-card);
-  overflow: hidden;
+  /* No overflow:hidden here. The Search button opens a Carbon Popover whose
+     results dropdown renders BELOW this 42px-tall row; clipping to the row hid
+     every result (the field showed, the list did not). The card has sharp
+     (0-radius) corners and the buttons sit inside the 1px border, so their hover
+     fills stay contained without a clip. */
 }
 .map-quick-actions__btn {
   position: relative;
@@ -63,6 +67,28 @@
   color: #fff;
 }
 .map-quick-actions__search {
-  width: min(340px, calc(100vw - 32px));
+  width: 100%;
+  box-sizing: border-box;
   padding: 8px;
+}
+/* The results dropdown must clear the right-hand map controls and never run off
+   the screen. Anchored to the Search button (which sits mid-cluster), the 340px
+   field ran past the right edge and clipped every school name. Pin the popover to
+   the map's left margin instead and let it fill the map width. The component only
+   mounts on phone, so this needs no media query. The caret is turned off in the
+   JSX since the repositioned panel no longer points at the button. */
+.map-quick-actions .cds--popover-content {
+  /* !important: Carbon positions this content with a higher-specificity rule
+     (.cds--popover--bottom-left > .cds--popover > .cds--popover-content) that
+     translates it below the trigger. We deliberately take over its placement to
+     pin it to the map's left margin, so we must outrank that rule. */
+  position: fixed !important;
+  left: 12px !important;
+  top: 60px !important;
+  transform: none !important;
+  width: calc(100vw - 24px);
+  max-width: 380px;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-card);
 }
