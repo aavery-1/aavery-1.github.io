@@ -85,6 +85,15 @@
   position: fixed !important;
   left: 12px !important;
   top: 60px !important;
+  /* Carbon (via floating-ui) sets all four inset values, e.g.
+     inset: 60px 38px -4px 12px. We only override top/left, so its bottom/right
+     survive, and a fixed box with BOTH top and bottom pinned stretches to fill
+     the viewport height (a ~880px white panel over the map) no matter how short
+     its content is. Release bottom/right to auto so the panel sizes to the
+     field it holds. */
+  right: auto !important;
+  bottom: auto !important;
+  height: auto !important;
   transform: none !important;
   width: calc(100vw - 24px);
   max-width: 380px;
