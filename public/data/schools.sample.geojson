@@ -1230,10 +1230,10 @@
         "current_grade_year": "2023-2024",
         "enrollment": 401,
         "enrollment_year": "2026-2027",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 1478,
+        "cofte": 656.8,
+        "fish_surplus": 821.2,
+        "fish_vintage": "FISH Level of Service, Broward, 2025-26 (reported 2026-04-01)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": false,
@@ -1243,7 +1243,8 @@
         "address": "700 SW 26th ST, Fort Lauderdale, FL, 33315",
         "frl_rate": 0.6681127982646423,
         "frl_denominator": 461,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 1478
       }
     },
     {
@@ -1931,10 +1932,10 @@
         "current_grade_year": "2023-2024",
         "enrollment": 55,
         "enrollment_year": "2026-2027",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 256,
+        "cofte": 37.8,
+        "fish_surplus": 218.2,
+        "fish_vintage": "FISH Level of Service, Broward, 2025-26 (reported 2026-04-01)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": false,
@@ -1944,7 +1945,8 @@
         "address": "1251 SW 42nd Ave, Fort Lauderdale, FL, 33317",
         "frl_rate": 0.9215686274509801,
         "frl_denominator": 51,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 256
       }
     },
     {
@@ -14251,10 +14253,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 348,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 611,
+        "cofte": 318.0,
+        "fish_surplus": 293.0,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "no",
         "title_i_eligible": false,
         "title_i_schoolwide": false,
@@ -14264,7 +14266,8 @@
         "address": "9250 SW 52nd Ter, Miami, FL, 33165",
         "frl_rate": 0.6057971014492753,
         "frl_denominator": 345,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 611
       }
     },
     {
@@ -14367,10 +14370,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 452,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 848,
+        "cofte": 441.0,
+        "fish_surplus": 407.0,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -14380,7 +14383,8 @@
         "address": "2530 W 10th Ave, Hialeah, FL, 33010",
         "frl_rate": 0.9530516431924881,
         "frl_denominator": 426,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 848
       }
     },
     {
@@ -19830,10 +19834,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 154,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 735,
+        "cofte": 138.5,
+        "fish_surplus": 596.5,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -19843,7 +19847,8 @@
         "address": "3125 NW 176th ST, Miami Gardens, FL, 33056",
         "frl_rate": 1.0,
         "frl_denominator": 160,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 735
       }
     },
     {
@@ -28477,10 +28482,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 392,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 1097,
+        "cofte": 381.0,
+        "fish_surplus": 716.0,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -28490,7 +28495,8 @@
         "address": "900 NE 23rd Ave, Homestead, FL, 33033",
         "frl_rate": 0.6938775510204082,
         "frl_denominator": 392,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 1097
       }
     },
     {
@@ -28668,10 +28674,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 489,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 500,
+        "cofte": 5.1,
+        "fish_surplus": 494.9,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "no",
         "title_i_eligible": false,
         "title_i_schoolwide": false,
@@ -28681,7 +28687,8 @@
         "address": "14301 Bay Vista Blvd, North Miami, FL, 33181",
         "frl_rate": 0.37837837837837845,
         "frl_denominator": 518,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 500
       }
     },
     {
@@ -30314,10 +30321,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 511,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 1107,
+        "cofte": 433.8,
+        "fish_surplus": 673.2,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "no",
         "title_i_eligible": false,
         "title_i_schoolwide": false,
@@ -30327,7 +30334,8 @@
         "address": "1220 NW 1st Ave, Homestead, FL, 33030",
         "frl_rate": 0.7048611111111112,
         "frl_denominator": 576,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 1107
       }
     },
     {
@@ -31009,10 +31017,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 1653,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 1995,
+        "cofte": 1614.6,
+        "fish_surplus": 380.4,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -31022,7 +31030,8 @@
         "address": "1193 NW 193rd ST, Miami, FL, 33169",
         "frl_rate": 0.895216400911162,
         "frl_denominator": 1756,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 1995
       }
     },
     {
@@ -33011,10 +33020,10 @@
         "current_grade_year": "2023-2024",
         "enrollment": 70,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 278,
+        "cofte": 61.5,
+        "fish_surplus": 216.5,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "no",
         "title_i_eligible": false,
         "title_i_schoolwide": false,
@@ -33024,7 +33033,8 @@
         "address": "3300 NW 27th Ave, Miami, FL, 33142",
         "frl_rate": 0.1551724137931034,
         "frl_denominator": 58,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 278
       }
     },
     {
@@ -34231,10 +34241,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 2650,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 2782,
+        "cofte": 2410.3,
+        "fish_surplus": 371.7,
+        "fish_vintage": "FISH Level of Service, Orange, 2025-26 (reported 2026-04-01)",
         "title_i": "no",
         "title_i_eligible": false,
         "title_i_schoolwide": false,
@@ -34244,7 +34254,8 @@
         "address": "1000 E Kaley ST, Orlando, FL, 32806",
         "frl_rate": 0.4603941985868353,
         "frl_denominator": 2689,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 2782
       }
     },
     {
@@ -35731,10 +35742,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 625,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 754,
+        "cofte": 603.0,
+        "fish_surplus": 150.9,
+        "fish_vintage": "FISH Level of Service, Orange, 2025-26 (reported 2026-04-01)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -35744,7 +35755,8 @@
         "address": "5353 Metrowest Blvd, Orlando, FL, 32811",
         "frl_rate": 1.0,
         "frl_denominator": 560,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 754
       }
     },
     {
@@ -37754,10 +37766,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 588,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 832,
+        "cofte": 575.1,
+        "fish_surplus": 256.9,
+        "fish_vintage": "FISH Level of Service, Orange, 2025-26 (reported 2026-04-01)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -37767,7 +37779,8 @@
         "address": "2448 29th ST, Orlando, FL, 32805",
         "frl_rate": 1.0,
         "frl_denominator": 551,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 832
       }
     },
     {
@@ -40084,10 +40097,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 872,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 1145,
+        "cofte": 871.4,
+        "fish_surplus": 273.6,
+        "fish_vintage": "FISH Level of Service, Orange, 2025-26 (reported 2026-04-01)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -40097,7 +40110,8 @@
         "address": "150 Amidon LN, Orlando, FL, 32809",
         "frl_rate": 0.9696169088507267,
         "frl_denominator": 757,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 1145
       }
     },
     {
@@ -40706,10 +40720,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 523,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 664,
+        "cofte": 481.9,
+        "fish_surplus": 182.1,
+        "fish_vintage": "FISH Level of Service, Orange, 2025-26 (reported 2026-04-01)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -40719,7 +40733,8 @@
         "address": "602 E Story Road, Winter Garden, FL, 34787",
         "frl_rate": 0.8242424242424241,
         "frl_denominator": 495,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 664
       }
     },
     {
@@ -43121,10 +43136,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 954,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 1057,
+        "cofte": 921.5,
+        "fish_surplus": 135.5,
+        "fish_vintage": "FISH Level of Service, Orange, 2025-26 (reported 2026-04-01)",
         "title_i": "no",
         "title_i_eligible": false,
         "title_i_schoolwide": false,
@@ -43134,7 +43149,8 @@
         "address": "5240 Keenes Pheasant DR, Windermere, FL, 34786",
         "frl_rate": 0.18853362734288864,
         "frl_denominator": 907,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 859
       }
     },
     {
@@ -43510,10 +43526,10 @@
         "current_grade_year": "2023-2024",
         "enrollment": 82,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 262,
+        "cofte": 7.4,
+        "fish_surplus": 254.6,
+        "fish_vintage": "FISH Level of Service, Orange, 2025-26 (reported 2026-04-01)",
         "title_i": "no",
         "title_i_eligible": false,
         "title_i_schoolwide": false,
@@ -43523,7 +43539,8 @@
         "address": "2500 Bruton Blvd, Orlando, FL, 32805",
         "frl_rate": 0.9253731343283582,
         "frl_denominator": 67,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 262
       }
     },
     {

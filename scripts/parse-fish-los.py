@@ -43,6 +43,23 @@ COUNTIES = {
 ALIASES = {
     "13-5931": "PHILLIS WHEATLEY ELEMENTARY",                 # tool spells it "Phyllis"; FISH uses the historical "Phillis" -> token match fails
     "13-8151": "ROBERT RENICK EDUCATION CENTER",              # tool says "Educational Center"; FISH says "Education Center" -> token match fails
+    "13-7381": "MIAMI NORLAND SENIOR",                        # tool "...Senior High School"; FISH drops "High School"
+    "13-7021": "CENTER FOR INTERNATIONAL EDUCATION: A CAMBRIDGE ASSOC",  # both names truncated differently (tool "...Associate SC", FISH "...ASSOC")
+    "13-0481": "JAMES H BRIGHT ELEMENTARY",                   # tool carries dual name "James H. Bright/J.W. Johnson"; FISH lists the one building as James H Bright
+    "13-8141": "JUVENILE JUSTICE CENTER",                     # tool "...Alt ED"; FISH drops the suffix
+    "13-7171": "MEDICAL ACADEMY FOR SCIENCE AND TECHNOLOGY AT HOMESTEAD",  # tool "(M.A.S.T.) @ Hom" (truncated)
+    "13-7031": "MAST@FIU BISCAYNE BAY CAMPUS",                # tool "Mast@fiu" (truncated)
+    "13-3581": "MYRTLE GROVE K-8 CENTER",                     # was Myrtle Grove Elementary (Elementary -> K-8 reconfig, same building)
+    "13-0441": "BLUE LAKES K-8 CENTER",                       # was Blue Lakes Elementary (Elementary -> K-8 reconfig, same building)
+    "06-0452": "WHIDDON-ROGERS EDUCATION CENTER",            # tool spells "Whiddon Rodgers"; FISH "Whiddon-Rogers"
+    "06-0653": "PINE RIDGE EDUCATION CENTER",                 # tool "Pine Ridge Alternative Center"; FISH "Education Center" (same alt-ed site)
+    "48-0701": "CATALINA ELEMENTARY (NEW)",                   # FISH appends "(NEW)"
+    "48-1151": "WALKER MIDDLE",                               # tool "Judson B Walker Middle"; FISH drops honorific
+    "48-0111": "BOONE HIGH",                                  # tool "William R Boone High"; FISH drops honorific
+    "48-1881": "WASHINGTON SHORES PLC",                       # tool spells out "Primary Learning Center"; FISH abbreviates PLC
+    "48-1791": "KEENE'S CROSSING ELEMENTARY",                # tool "Keenes Crossing" (missing apostrophe)
+    "48-1321": "MAXEY ELEMENTARY (NEW)",                     # tool "William S Maxey Elementary"; use the (NEW) row, not the (OLD) 0-capacity row
+    "48-0236": "EAGLE'S NEST ELEMENTARY",                    # tool "Eagles Nest" (missing apostrophe)
     "06-0121": "HOLLYWOOD CENTRAL PREPARATORY K-8",           # was Hollywood Central Elementary
     "06-0501": "BROWARD ESTATES EARLY LEARNING AND RESOURCE CENTER",  # was Broward Estates Elementary
     "06-1421": "COCONUT CREEK K-8 ACADEMY OF EXCELLENCE",     # was Coconut Creek Elementary
