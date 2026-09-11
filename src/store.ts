@@ -11,6 +11,7 @@
 import { create } from "zustand";
 import { DEFAULT_ACTIVE_LAYER_IDS, EXCLUSIVE_CHOROPLETH_IDS } from "./config/mapLayers";
 import type { CountyName, SchoolLevel, SchoolType, TitleIState } from "./data/types";
+import { SCHOOL_TYPES } from "./data/types";
 import type { DistrictKind } from "./data/derive/districts";
 
 // A single active district filter: one district of one kind (board / CD / SLDU /
@@ -386,10 +387,15 @@ export const useStore = create<AppState>((set) => ({
   clearLevels: () => set({ levelSelection: new Set<SchoolLevel>() }),
   toggleType: (t) =>
     set((s) => {
-      const next = new Set(s.typeSelection);
+      // Empty is the "all types on" sentinel (see passesFilters: empty = no
+      // constraint), and the type checkboxes render as all-checked in that state.
+      // So a click while all-on begins an explicit selection of everyone ELSE,
+      // and re-checking the last box collapses back to the empty sentinel so no
+      // stray active-filter chip lingers when every type is on again.
+      const next = s.typeSelection.size === 0 ? new Set<SchoolType>(SCHOOL_TYPES) : new Set(s.typeSelection);
       if (next.has(t)) next.delete(t);
       else next.add(t);
-      return { typeSelection: next };
+      return { typeSelection: next.size === SCHOOL_TYPES.length ? new Set<SchoolType>() : next };
     }),
   clearTypes: () => set({ typeSelection: new Set<SchoolType>() }),
   toggleTitleI: (t) =>

@@ -591,7 +591,7 @@ function SchoolFacets() {
       {/* School type */}
       <FacetSection title="School type" icon={<CategoriesIcon size={15} />} activeCount={typeSelection.size} onClear={typeSelection.size ? clearTypes : undefined}>
         {presentTypes.map((t) => (
-          <CheckboxRow key={t} label={schoolTypeLabel(t)} checked={typeSelection.has(t)} count={counts.type[t] ?? 0} onToggle={() => toggleType(t)} />
+          <CheckboxRow key={t} label={schoolTypeLabel(t)} checked={typeSelection.size === 0 || typeSelection.has(t)} count={counts.type[t] ?? 0} onToggle={() => toggleType(t)} />
         ))}
       </FacetSection>
 
