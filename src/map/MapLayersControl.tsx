@@ -49,32 +49,18 @@ export function MapLayersControl() {
         <div className="map-layers-panel">
           <h3 className="map-layers-heading">Map style</h3>
 
-          <div className="map-layers-views">
-            {VIEWS.map((v) => {
-              const selected = baseMapType === v.value;
-              const Ico = v.icon;
-              return (
-                <div
-                  key={v.value}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setBaseMapType(v.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setBaseMapType(v.value); } }}
-                  className="map-layers-view"
-                >
-                  <div
-                    className={`map-layers-view__swatch${selected ? " map-layers-view__swatch--selected" : ""}`}
-                    style={{ background: v.bg }}
-                  >
-                    <Ico size={20} style={{ color: v.fg }} />
-                  </div>
-                  <span className={`map-layers-view__label${selected ? " map-layers-view__label--selected" : ""}`}>
-                    {v.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <span className="map-layers-section">Base map</span>
+          <RadioButtonGroup
+            className="map-layers-basemap"
+            name="base-map"
+            orientation="vertical"
+            valueSelected={baseMapType}
+            onChange={(value) => setBaseMapType(value as BaseMapType)}
+          >
+            {VIEWS.map((v) => (
+              <RadioButton key={v.value} id={`base-map-${v.value}`} labelText={v.label} value={v.value} />
+            ))}
+          </RadioButtonGroup>
 
           <hr className="map-layers-rule" />
 
