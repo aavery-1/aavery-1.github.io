@@ -50,8 +50,8 @@ const GROUPS: Group[] = [
         vintage: "2020-2021 through 2024-2025",
         note: "The authoritative enrollment used for FEFP funding. Each school's number is its most recent Final Survey 2 total (2024-25 for nearly all schools), with the year shown per school; the inspector trend spans all five years. Schools with no FL DOE PK-12 membership record (adult/technical colleges, detention centers, planned or placeholder entries, and multi-campus charters reported under a single shared MSID such as KIPP Miami) show enrollment as N/A rather than a fabricated or carried-forward value." },
       { label: "Capacity, COFTE & surplus", tag: "Official",
-        source: "FL DOE FISH Level of Service reports, per county: Miami-Dade (reported 2026-04-10), Broward (2022-23), Orange (2023-24)",
-        note: "Authoritative student stations, capital-outlay FTE enrollment (COFTE), and surplus for 741 district-operated schools, matched by name. Utilization and co-location use the statutory COFTE-based Facility Utilization Rate (Rule 6A-1.0998271(1)(n)). Charters/virtual and a few unmatched schools show 'not reported' (co-location applies only to district facilities). The Broward and Orange reports predate the Miami-Dade one." },
+        source: "FL DOE FISH Level of Service reports, SY2025-26, per county: Miami-Dade (reported 2026-04-10), Broward (2026-04-01), Orange (2026-04-01)",
+        note: "Authoritative student stations, capital-outlay FTE enrollment (COFTE), and surplus for 746 district-operated schools, matched by name (all three counties now on the current SY2025-26 report). Utilization and co-location use the statutory COFTE-based Facility Utilization Rate (Rule 6A-1.0998271(1)(n)). Charters/virtual and a few unmatched schools show 'not reported' (co-location applies only to district facilities). Seven Broward campuses renamed in the 2024-25 K-8 conversion (e.g. Hollywood Central Elementary, now Hollywood Central Preparatory K-8) are matched to their current FISH facility by MSID." },
     ],
   },
   {

@@ -9,3 +9,4 @@ dist-ssr
 coverage
 *.log
 .vite
+__pycache__/
