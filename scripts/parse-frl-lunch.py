@@ -103,7 +103,14 @@ def main():
         else:
             counts["absent"] += 1  # not in the report at all
 
-    SCHOOLS_PATH.write_text(json.dumps(geo))
+    payload = json.dumps(geo)
+    SCHOOLS_PATH.write_text(payload)
+    # Keep the built copy in sync so `vite preview` and the deploy (which serve
+    # dist/, not public/) show the refreshed data without a full rebuild.
+    dist_copy = ROOT / "dist" / "data" / "schools.sample.geojson"
+    if dist_copy.exists():
+        dist_copy.write_text(payload)
+        print(f"Also synced {dist_copy.relative_to(ROOT)}")
 
     total = sum(counts.values())
     print(f"FL DOE FS2 lunch-status rows: {len(lunch)}")
