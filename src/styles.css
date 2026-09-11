@@ -1619,6 +1619,41 @@ code {
 .map-topright > * {
   pointer-events: auto;
 }
+
+/* Phone: the Legend and Base map flyouts are Carbon Popovers anchored
+   bottom-right of the top-right control column, so on a narrow screen they open
+   directly ON TOP of the layers / ruler / tool buttons and sprawl off the right
+   edge (a 264px card pinned to a button ~12px from the edge). Re-pin them to the
+   map's left margin, just below the top-left Filters/Search cluster, and cap the
+   height so a long legend scrolls inside the card instead of being cut off. This
+   clears the right control column, the bottom zoom stack, and the dock.
+
+   The wrapper's filter:drop-shadow (Carbon's dropShadow prop) establishes a
+   containing block, so a position:fixed child would resolve against IT, not the
+   viewport, and land off-screen. Drop that filter here and carry the elevation
+   as a box-shadow on the content instead. */
+@media (max-width: 599.95px) {
+  .cds--popover:has(.map-legend-panel),
+  .cds--popover:has(.map-layers-panel) {
+    filter: none !important;
+  }
+  .cds--popover-content:has(.map-legend-panel),
+  .cds--popover-content:has(.map-layers-panel) {
+    position: fixed !important;
+    left: 12px !important;
+    top: 144px !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.18) !important;
+  }
+  .map-legend-panel,
+  .map-layers-panel {
+    max-height: calc(100dvh - 200px);
+    overflow-y: auto;
+  }
+}
+
 /* Attribution button, top-left of the map */
 .attribution-fab {
   position: absolute;

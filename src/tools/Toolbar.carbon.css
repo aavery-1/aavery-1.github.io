@@ -25,6 +25,15 @@
     right: 372px;
   }
 }
+/* Phone: the top-left Filters/Search cluster (MapQuickActions) lives at the same
+   top:12/left:12 spot, so the active-tool bar opened right on top of it. Drop the
+   bar just below that 42px cluster row so the two never overlap; it still clears
+   the right control column via right:76. */
+@media (max-width: 599.95px) {
+  .toolbar-active {
+    top: 60px;
+  }
+}
 
 /* The slim horizontal bar */
 .toolbar-bar {
