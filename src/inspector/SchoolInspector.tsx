@@ -467,6 +467,19 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   const operatorLine = [p.type === "Traditional" ? "District school" : p.type, operatorName, p.level]
     .filter(Boolean).join(", ");
 
+  // Municipality: the postal city parsed from the address ("street, city, FL,
+  // zip"), normalizing the "Ft." abbreviation. A display-only locator; the
+  // authoritative geography stays the address and county.
+  const municipality = (() => {
+    const parts = p.address.split(",").map((s) => s.trim());
+    const fi = parts.findIndex((s) => s.toUpperCase() === "FL");
+    const city = fi > 0 ? parts[fi - 1] : parts.length >= 3 ? parts[parts.length - 2] : "";
+    return city ? city.replace(/^Ft\.?\s+/i, "Fort ") : "";
+  })();
+
+  // Short school-year for the small enrollment-year badge: "2024-2025" -> "2024-25".
+  const syShort = (s: string) => (/^\d{4}-\d{4}$/.test(s) ? `${s.slice(0, 4)}-${s.slice(7)}` : s);
+
   // CSV export.
   const exportRows: Array<[string, string]> = [
     ["MSID", p.msid], ["Name", p.name], ["Level", p.level], ["Type", p.type],
@@ -572,18 +585,26 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
           </div>
           <span className="insp-util-pct" style={{ color: utilColor }}>{utilPct != null ? `${Math.round(utilPct)}%` : "n/a"}</span>
         </div>
-        {utilPct != null ? (
-          <>
-            <div className="insp-bar">
-              <div className="insp-bar__fill" style={{ width: `${Math.min(100, utilPct)}%`, background: utilColor }} />
-            </div>
-            <p className="insp-note">
-              {p.enrollment?.toLocaleString("en-US")} enrolled of {p.capacity?.toLocaleString("en-US")} capacity{p.enrollment_year ? ` (SY${p.enrollment_year})` : ""}
-            </p>
-          </>
-        ) : (
-          <p className="insp-note">Enrollment or capacity not reported.</p>
+        {utilPct != null && (
+          <div className="insp-bar">
+            <div className="insp-bar__fill" style={{ width: `${Math.min(100, utilPct)}%`, background: utilColor }} />
+          </div>
         )}
+        <p className="insp-note">
+          {p.enrollment != null ? (
+            <>
+              <strong className="insp-note__lead">{p.enrollment.toLocaleString("en-US")}</strong> enrolled
+              {p.enrollment_year && (
+                <span className="insp-year" title={`Most recent enrollment year (SY${p.enrollment_year})`}>SY{syShort(p.enrollment_year)}</span>
+              )}
+              {p.capacity != null && <> of {p.capacity.toLocaleString("en-US")} capacity</>}
+            </>
+          ) : p.capacity != null ? (
+            <><strong className="insp-note__lead">{p.capacity.toLocaleString("en-US")}</strong> capacity; enrollment not reported</>
+          ) : (
+            <>Enrollment and capacity not reported</>
+          )}
+        </p>
         {p.permanent_capacity != null && (
           <div
             className="insp-perm"
@@ -627,6 +648,7 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
         {/* 4. LOCATION & DISTRICTS: identity and representation, below the siting
             decision the analyst came for. Each district row drills the whole view. */}
         <p className="insp-label">Location &amp; districts</p>
+        {municipality && <Kv label="Municipality" value={municipality} />}
         <Kv label="Address" value={
           <span className="insp-kv__addr">
             <PlaceIcon size={14} style={{ color: DIM, marginTop: 2, flex: "none" }} />
