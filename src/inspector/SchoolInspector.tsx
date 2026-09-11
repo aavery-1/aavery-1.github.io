@@ -437,7 +437,7 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
         </p>
       )}
       <p className="insp-demo__foot">
-        Estimate, not a count. Source: {meta.source}. The small figure under each value is the ACS 90% margin of error. Median income is household-weighted across block groups (a median cannot be summed exactly); "K-8 age" is the ACS 5-14 age bracket, the closest proxy for K-8 grades.
+        Estimate, not a count. Source: {meta.source}.
       </p>
     </div>
   );
