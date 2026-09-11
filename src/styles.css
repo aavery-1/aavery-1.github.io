@@ -614,13 +614,20 @@ code {
   white-space: nowrap;
 }
 /* The school-search menu carries two-line options; Carbon's default single-line
-   item height crams the two lines together (they overlapped the row below). Let
-   the option size to its content with real vertical padding so name and sub-line
-   never collide. Scoped to menus that hold a .school-option. */
+   item height crams the two lines together (they overlapped the row below). Both
+   the <li> row AND its inner option default to a fixed 40px height, so a 60px
+   two-line option overflows and the next row's divider (the option's gray
+   border-top) is drawn straight through the previous sub-line. Let BOTH the row
+   and the option size to their content, then add real vertical padding so the
+   divider always lands between rows and never crosses the text. Scoped to menus
+   that hold a .school-option. */
+.cds--list-box__menu-item:has(.school-option) {
+  height: auto;
+}
 .cds--list-box__menu-item__option:has(.school-option) {
   height: auto;
-  padding-top: 9px;
-  padding-bottom: 9px;
+  padding-top: 14px;
+  padding-bottom: 14px;
 }
 .school-option__name {
   line-height: 1.25;
