@@ -30,6 +30,7 @@ import {
 } from "../data/derive/contextReads";
 import { ExportButton } from "../tools/ExportButton";
 import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated } from "../data/derive/filters";
+import { isKippSchool } from "../data/derive/hopeOperators";
 import { evaluatePlp, plpMsids } from "../data/derive/plp";
 import { distanceMiles, type LngLat } from "../geo/measure";
 import { titleILabel } from "../data/types";
@@ -442,9 +443,12 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
   );
 }
 
-export function SchoolInspector({ compact = false }: { compact?: boolean } = {}) {
+export function SchoolInspector({ compact = false, overrideMsid }: { compact?: boolean; overrideMsid?: string } = {}) {
   const data = useData();
-  const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
+  const storeSelectedMsid = useStore((s) => s.selectedSchoolMsid);
+  // During the slide-away close the store selection is already null, so an
+  // overrideMsid lets the panel keep rendering the school it is animating out.
+  const selectedSchoolMsid = overrideMsid ?? storeSelectedMsid;
   const selectSchool = useStore((s) => s.selectSchool);
   const comparePinnedMsids = useStore((s) => s.comparePinnedMsids);
   const toggleComparePin = useStore((s) => s.toggleComparePin);
@@ -469,6 +473,14 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   const enrollHistory = data.enrollment?.schools[reportMsid] ?? [];
   const pinned = comparePinnedMsids.includes(p.msid);
   const canPin = pinned || comparePinnedMsids.length < MAX_COMPARE;
+
+  // KIPP schools (KIPP Miami's campuses) show a reduced inspector: identity,
+  // letter grade history, and location and districts only. They are existing
+  // Schools of Hope added without facility or enrollment data, so the siting
+  // verdict ("can a School of Hope open here") is moot and the capacity /
+  // utilization / FRL / demographics sections would be empty. The map tooltip uses
+  // the same predicate, so the two agree. See data/derive/hopeOperators.ts.
+  const isKipp = isKippSchool(p.name);
 
   // Districts + representatives (always available via the eagerly-built indexes).
   const legDistricts = legislativeDistrictsAtPoint(data.legislativeIndex, here);
@@ -631,6 +643,8 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
 
       {/* Body */}
       <div className="insp-body">
+        {!isKipp && (
+        <>
         {/* 1. THE VERDICT FIRST. A site scout opens the inspector to learn one
             thing: can a School of Hope open here? Lead with that answer, per the
             content guide's altitude rule, before identity or districts. */}
@@ -740,6 +754,8 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
         </div>
 
         <hr className="insp-divider" />
+        </>
+        )}
 
         {/* Academic performance */}
         <p className="insp-label">Academic performance</p>
@@ -748,7 +764,7 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
 
         {/* 4. NEIGHBORHOOD DEMOGRAPHICS: who lives around this site, by distance.
             Real Census data; every number labeled as an estimate with its error. */}
-        {demo && data.schoolDemographics && (
+        {!isKipp && demo && data.schoolDemographics && (
           <>
             <hr className="insp-divider" />
             <NeighborhoodDemographics entry={demo} meta={data.schoolDemographics} />

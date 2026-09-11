@@ -9,8 +9,11 @@ import { SchoolInspector } from "../inspector/SchoolInspector";
 
 // `compact` renders the inspector as a lighter, narrower floating card (used on
 // the map, where it should sit as a companion and not claim a full-height slab).
-export function RightColumn({ compact = false }: { compact?: boolean } = {}) {
+// `overrideMsid` keeps the panel rendering a school after it has been deselected,
+// so the caller can play a slide-away close animation before unmounting.
+export function RightColumn({ compact = false, overrideMsid }: { compact?: boolean; overrideMsid?: string } = {}) {
   const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
-  if (!selectedSchoolMsid) return null;
-  return <SchoolInspector compact={compact} />;
+  const msid = overrideMsid ?? selectedSchoolMsid;
+  if (!msid) return null;
+  return <SchoolInspector compact={compact} overrideMsid={msid} />;
 }

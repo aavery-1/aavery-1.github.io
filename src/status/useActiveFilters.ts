@@ -30,6 +30,7 @@ export function useActiveFilters(): ActiveFilter[] {
   }
   if (s.districtFilter) filters.push({ key: "district", section: "Geography", label: districtFilterLabel(s.districtFilter), onClear: () => s.setDistrictFilter(null) });
   if (s.drawnBoundary && s.drawnBoundary.length >= 3) filters.push({ key: "boundary", section: "Geography", label: "Map area", onClear: () => s.clearDrawnBoundary() });
+  if (s.drawnCircle) filters.push({ key: "circle", section: "Geography", label: `Within ${s.drawnCircle.radiusMiles} mi of a point`, onClear: () => s.clearDrawnCircle() });
 
   if (s.plpOnly) filters.push({ key: "plp", section: "Schools", label: "Persistently low-performing", onClear: () => s.setPlpOnly(false) });
   if (s.coLocationOnly) filters.push({ key: "coloc", section: "Schools", label: "Co-location candidate", onClear: () => s.setCoLocationOnly(false) });

@@ -95,8 +95,10 @@ export function OverviewDock() {
   const [query, setQuery] = useState("");
   const isLarge = useMediaQuery("(min-width: 1200px)");
   const isMobile = usePhone();
-  // Desktop: collapsed to the peek by default so the map stays clear.
-  const [open, setOpen] = useState(false);
+  // Desktop: collapsed to the peek by default so the map stays clear. Lifted to the
+  // store so a click on the bare map can collapse it (click-outside to dismiss).
+  const open = useStore((s) => s.dockExpanded);
+  const setOpen = useStore((s) => s.setDockExpanded);
 
   // Phone sheet state: snap index (0 peek / 1 half / 2 full) and a transient drag
   // height in px. The map area height is tracked so the fractional detents stay
@@ -406,7 +408,7 @@ export function OverviewDock() {
         <button
           type="button"
           className="dock-bar"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-label={open ? "Collapse schools in view" : "Expand schools in view"}
           disabled={empty}

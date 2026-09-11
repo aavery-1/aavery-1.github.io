@@ -207,15 +207,28 @@ export interface AppState {
   comparePinnedMsids: string[]; // the shortlist, up to 4
   shortlistOpen: boolean;       // whether the map's shortlist tray is expanded
   shortlistFullTableOpen: boolean; // the tray's "Full table" matrix modal
+  // Whether the desktop "schools in view" dock is expanded. Lifted to the store so
+  // a click on the bare map can collapse it (the click-outside-to-dismiss behavior
+  // shared by the inspector and shortlist). Phone uses its own drag snap state.
+  dockExpanded: boolean;
   activeTool: ActiveTool;
   measurePoints: LatLng[];
   radiusCenter: LatLng | null;
   radiusMiles: number;
-  // Committed map-area filter: a closed polygon ring (a geodesic circle from the
-  // radius tool's "Filter to this area") that limits the school set to points
-  // inside it. Session-only (not persisted in the URL). Kept as a generic ring so
-  // the filter (pointInPolygon) and rendering stay shape-agnostic.
+  // Committed map-area filter: a closed polygon ring that limits the school set to
+  // points inside it. Session-only (not persisted in the URL). Kept as a generic
+  // ring so the filter (pointInPolygon) and rendering stay shape-agnostic. No UI
+  // sets this today (the freehand tool was removed); the radius tool commits a
+  // drawnCircle instead, which is mathematically exact. Retained for the generic
+  // polygon-filter capability and its unit test.
   drawnBoundary: LatLng[] | null;
+  // Committed radius-area filter: the EXACT geodesic disk the radius tool draws,
+  // stored as its center and radius (not an approximating polygon). The filter
+  // keeps a school iff its geodesic distance to the center is at or below the
+  // radius, so the set that passes is exactly the set inside the circle the user
+  // sees (no inscribed-polygon rounding at the edge). Session-only. See
+  // src/geo/measure.ts (distanceMiles) and src/geo/buffer.ts (the drawn ring).
+  drawnCircle: { center: LatLng; radiusMiles: number } | null;
   mapCenter: LatLng;
   mapZoom: number;
   mapBounds: MapBounds | null;
@@ -269,6 +282,7 @@ export interface AppState {
   clearCompare: () => void;
   setShortlistOpen: (open: boolean) => void;
   setShortlistFullTableOpen: (open: boolean) => void;
+  setDockExpanded: (open: boolean) => void;
   setTool: (tool: ActiveTool) => void;
   addMeasurePoint: (p: LatLng) => void;
   undoMeasurePoint: () => void;
@@ -277,6 +291,8 @@ export interface AppState {
   setRadiusMiles: (miles: number) => void;
   setDrawnBoundary: (ring: LatLng[] | null) => void;
   clearDrawnBoundary: () => void;
+  setDrawnCircle: (circle: { center: LatLng; radiusMiles: number } | null) => void;
+  clearDrawnCircle: () => void;
   setMapView: (center: LatLng, zoom: number) => void;
   setMapBounds: (bounds: MapBounds) => void;
   hydrate: (partial: Partial<AppState>) => void;
@@ -310,11 +326,13 @@ export const useStore = create<AppState>((set) => ({
   comparePinnedMsids: [],
   shortlistOpen: false,
   shortlistFullTableOpen: false,
+  dockExpanded: false,
   activeTool: "none",
   measurePoints: [],
   radiusCenter: null,
   radiusMiles: 3,
   drawnBoundary: null,
+  drawnCircle: null,
   mapCenter: DEFAULT_CENTER,
   mapZoom: DEFAULT_ZOOM,
   mapBounds: null,
@@ -408,6 +426,7 @@ export const useStore = create<AppState>((set) => ({
       districtFilter: null,
       facilityUseSelection: new Set<FacilityUseKey>(),
       drawnBoundary: null,
+      drawnCircle: null,
     }),
 
   // Clear every FILTER (geography, all school facets, the district and the
@@ -431,6 +450,7 @@ export const useStore = create<AppState>((set) => ({
       frlMin: null,
       frlMax: null,
       drawnBoundary: null,
+      drawnCircle: null,
       activeTool: "none",
       radiusCenter: null,
       radiusMiles: 3,
@@ -456,6 +476,7 @@ export const useStore = create<AppState>((set) => ({
       // true clean slate: no lingering measurement circle or drawn-area overlay
       // left on the map after the filter behind it is gone.
       drawnBoundary: null,
+      drawnCircle: null,
       activeTool: "none",
       radiusCenter: null,
       radiusMiles: 3,
@@ -493,6 +514,8 @@ export const useStore = create<AppState>((set) => ({
 
   setShortlistFullTableOpen: (open) => set({ shortlistFullTableOpen: open }),
 
+  setDockExpanded: (open) => set({ dockExpanded: open }),
+
   setTool: (tool) =>
     set((s) => ({
       activeTool: tool,
@@ -511,6 +534,8 @@ export const useStore = create<AppState>((set) => ({
 
   setDrawnBoundary: (ring) => set({ drawnBoundary: ring }),
   clearDrawnBoundary: () => set({ drawnBoundary: null }),
+  setDrawnCircle: (circle) => set({ drawnCircle: circle }),
+  clearDrawnCircle: () => set({ drawnCircle: null }),
 
   setMapView: (center, zoom) => set({ mapCenter: center, mapZoom: zoom }),
   setMapBounds: (bounds) => set({ mapBounds: bounds }),

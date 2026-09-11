@@ -89,3 +89,15 @@ export function hopeOperatorMsids(schools: SchoolCollection | null | undefined):
 export function isHopeOperatorSchool(f: SchoolFeature): boolean {
   return matchHopeOperator(f.properties.name) !== null;
 }
+
+// A KIPP-network school (KIPP Miami's campuses in the loaded tri-county data).
+// These are existing Schools of Hope added without facility or enrollment data, so
+// the tool shows them a reduced inspector and tooltip (identity, letter grade
+// history, location and districts): the "can a School of Hope open here" verdict is
+// moot for a site that already operates one, and the capacity / utilization / FRL /
+// demographics sections would be empty. This is the single predicate the inspector
+// and the map tooltip share, so the two can never disagree. Keyed on the same
+// operator match as the gold star, so it stays in step with the roster above.
+export function isKippSchool(name: string): boolean {
+  return matchHopeOperator(name) === "KIPP";
+}

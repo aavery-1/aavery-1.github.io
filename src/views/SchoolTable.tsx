@@ -37,7 +37,7 @@ const CO_LOC_BLUE = "#1D4ED8";  // co-location target
 const TITLE_I_PURPLE = "#7C3AED"; // economic-disadvantage proxy (Title I)
 
 type Order = "asc" | "desc";
-type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "enrollment" | "capacity" | "utilization";
+type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "enrollment" | "capacity" | "emptySeats" | "utilization";
 
 interface Row {
   feature: SchoolFeature;
@@ -51,6 +51,7 @@ interface Row {
   frl: number | null; // free/reduced-price lunch rate (0-1), null when not reported
   enrollment: number | null;
   capacity: number | null;
+  emptySeats: number | null; // permanent stations minus most recent enrollment; null when either is missing
   utilization: number | null;
   bucket: "over" | "target" | "under" | "unknown";
   isPlp: boolean;
@@ -166,6 +167,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           frl: p.frl_rate ?? null,
           enrollment: p.enrollment,
           capacity: p.capacity,
+          emptySeats: p.permanent_capacity != null && p.enrollment != null ? p.permanent_capacity - p.enrollment : null,
           utilization: util,
           bucket: utilizationBucket(p.enrollment, p.capacity),
           isPlp: ctx.plp.has(p.msid),
@@ -340,6 +342,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
             <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
             <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
             <MenuItem value="capacity" sx={{ fontSize: 13 }}>Capacity</MenuItem>
+            <MenuItem value="emptySeats" sx={{ fontSize: 13 }}>Empty seats</MenuItem>
             <MenuItem value="level" sx={{ fontSize: 13 }}>Level</MenuItem>
             <MenuItem value="type" sx={{ fontSize: 13 }}>Type</MenuItem>
           </Select>
@@ -493,6 +496,10 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             <span className="school-card__fact-label">F/R lunch</span>
                             <span className="school-card__fact-value"><FrlCell rate={r.frl} /></span>
                           </div>
+                          <div className="school-card__fact">
+                            <span className="school-card__fact-label">Empty seats</span>
+                            <span className="school-card__fact-value"><EmptySeatsCell value={r.emptySeats} /></span>
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -593,6 +600,9 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                         {r.capacity != null ? r.capacity.toLocaleString("en-US") : "-"}
                       </Typography>
                     </TableCell>
+                  )}
+                  {!compact && (
+                    <TableCell align="right"><EmptySeatsCell value={r.emptySeats} /></TableCell>
                   )}
                   {/* On phone the actions stack and use a 44px touch target (Fluent
                       minimum); on desktop they stay compact inline icons. */}
@@ -700,6 +710,20 @@ function FrlCell({ rate }: { rate: number | null }) {
   );
 }
 
+// Empty seats: permanent student stations minus the most recent enrollment. A
+// right-aligned count; null (either figure missing) reads as a muted "-", and a
+// negative value (enrollment past the permanent building) is tinted so it reads as
+// a deficit, not slack.
+function EmptySeatsCell({ value }: { value: number | null }) {
+  if (value == null) return <Typography variant="body2" color="text.secondary">-</Typography>;
+  const negative = value < 0;
+  return (
+    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums", color: negative ? "#B71C1C" : "text.primary" }}>
+      {value.toLocaleString("en-US")}
+    </Typography>
+  );
+}
+
 // `fill` (phone card) makes the bar flex to fill its container instead of a fixed
 // right-aligned width, so it never overflows a tight row and collides with a label.
 function UtilizationCell({ util, bucket, dense, fill }: { util: number | null; bucket: Row["bucket"]; dense: boolean; fill?: boolean }) {
@@ -742,5 +766,6 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
   { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count." },
   { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Total FISH student stations (permanent plus portable), the statutory measure. The inspector also shows the permanent-only figure." },
+  { key: "emptySeats", label: "Empty seats", numeric: true, tier: "full", width: 98, help: "Permanent student stations minus the most recent enrollment. Negative means enrollment exceeds the permanent building (portables in use)." },
   { key: "actions", label: "", numeric: true, width: 86 },
 ];

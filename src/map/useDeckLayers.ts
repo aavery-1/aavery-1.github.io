@@ -14,7 +14,7 @@ import type { MapBounds } from "../store";
 import { useData } from "../data/DataContext";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { resolveGradeStyle } from "./gradeEncoding";
-import { matchHopeOperator } from "../data/derive/hopeOperators";
+import { matchHopeOperator, isKippSchool } from "../data/derive/hopeOperators";
 import { iconForShape, shapeForType } from "./markerShapes";
 import { geodesicBufferMiles } from "../geo/buffer";
 import type { SchoolFeature, LegislativeProps } from "../data/types";
@@ -81,6 +81,10 @@ export interface SchoolHoverInfo {
   // or null. When set, the school is an existing School of Hope and its marker
   // carries a gold star. Surfaced on the tooltip so the star reads as meaning.
   hopeOperator: string | null;
+  // A KIPP school: shows a reduced tooltip (the letter grade instead of the
+  // facility facts), matching the inspector's reduced view. Same predicate the
+  // inspector uses, so the two never disagree. See data/derive/hopeOperators.ts.
+  isKipp: boolean;
 }
 
 // One GeoJsonLayer for a single legislative chamber, filtered from the shared
@@ -234,7 +238,7 @@ export function useDeckLayers(
   const radiusCenter = useStore((s) => s.radiusCenter);
   const radiusMiles = useStore((s) => s.radiusMiles);
   const measurePoints = useStore((s) => s.measurePoints);
-  const drawnBoundary = useStore((s) => s.drawnBoundary);
+  const drawnCircle = useStore((s) => s.drawnCircle);
   const countySelection = useStore((s) => s.countySelection);
   const mapZoom = useStore((s) => s.mapZoom);
   const mapBounds = useStore((s) => s.mapBounds);
@@ -472,6 +476,7 @@ export function useDeckLayers(
             coLocNearestPlp: reason?.nearestPlp ?? null,
             coLocIsPlpAnchor: reason?.isPlpAnchor ?? false,
             hopeOperator: matchHopeOperator(p.name),
+            isKipp: isKippSchool(p.name),
           });
         } else {
           onSchoolHover(null);
@@ -753,15 +758,15 @@ export function useDeckLayers(
       }
     }
 
-    // Committed map-area filter: a filled circle (from the radius tool's "Filter
-    // to this area") with a bright cased outline so the selected area reads
-    // clearly over a busy map. Persists until removed. Suppressed while the
-    // radius tool is open, since the live radius ring below is the same circle
-    // and would otherwise double the outline.
-    if (drawnBoundary && drawnBoundary.length >= 3 && activeTool !== "radius") {
-      const ring: [number, number][] = drawnBoundary.map((p) => [p.lng, p.lat]);
-      ring.push(ring[0]);
-      const poly = { type: "FeatureCollection", features: [{ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring] } }] } as GeoJSON.FeatureCollection;
+    // Committed radius-area filter: the exact geodesic disk (from the radius
+    // tool's "Filter to this area"), drawn as a finely sampled ring so the outline
+    // the user sees coincides with the distance test that filters the schools.
+    // A bright cased outline reads clearly over a busy map. Persists until removed.
+    // Suppressed while the radius tool is open, since the live radius ring below is
+    // the same circle and would otherwise double the outline.
+    if (drawnCircle && activeTool !== "radius") {
+      const ring = geodesicBufferMiles([drawnCircle.center.lng, drawnCircle.center.lat], drawnCircle.radiusMiles, 256);
+      const poly = { type: "FeatureCollection", features: [ring] } as GeoJSON.FeatureCollection;
       built.push({
         z: 879.8,
         layer: new GeoJsonLayer({ id: "drawn_boundary_casing", data: poly, stroked: true, filled: false, getLineColor: [255, 255, 255, 220], getLineWidth: 6, lineWidthUnits: "pixels" }),
@@ -772,9 +777,10 @@ export function useDeckLayers(
       });
     }
 
-    // Radius ring: a true geodesic buffer, not a pixel circle.
+    // Radius ring: a true geodesic buffer, not a pixel circle. Sampled finely so
+    // the ring the analyst sees is the same disk the distance filter tests.
     if (radiusCenter) {
-      const ring = geodesicBufferMiles([radiusCenter.lng, radiusCenter.lat], radiusMiles);
+      const ring = geodesicBufferMiles([radiusCenter.lng, radiusCenter.lat], radiusMiles, 256);
       built.push({
         z: 900,
         layer: new GeoJsonLayer({
@@ -839,7 +845,7 @@ export function useDeckLayers(
     }
 
     return built.sort((a, b) => a.z - b.z).map((b) => b.layer);
-  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnBoundary, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover]);
+  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover]);
 }
 
 // PLP anchor centers among all loaded schools, restricted to the selected

@@ -122,6 +122,17 @@ export function buildCompareSections(
     const p = schools[i].properties;
     return utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus).label;
   };
+  // Empty seats = permanent student stations minus the most recent enrollment.
+  // A negative value means enrollment exceeds the permanent building (portables in
+  // use), shown honestly rather than clamped. Null when either figure is missing.
+  const emptySeatsValue = (i: number) => {
+    const p = schools[i].properties;
+    if (p.permanent_capacity == null || p.enrollment == null) return "Not reported";
+    const empty = p.permanent_capacity - p.enrollment;
+    return empty >= 0
+      ? `${empty.toLocaleString("en-US")}`
+      : `${empty.toLocaleString("en-US")} (over permanent capacity)`;
+  };
   const frlValue = (i: number) => {
     const p = schools[i].properties;
     return p.frl_rate != null ? `${Math.round(p.frl_rate * 100)}%` : "Not reported";
@@ -160,6 +171,7 @@ export function buildCompareSections(
         build("enroll", "Enrollment", enrollValue, "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count."),
         build("capacity", "FISH capacity", capacityValue, "Total student stations (permanent plus portable), from the FISH Level of Service report. This is the statute's measure for the utilization and co-location tests (Rule 6A-1.0998271)."),
         build("permanent", "Permanent stations", permanentValue, "Student stations in permanent buildings only, excluding portables. A disclosed reference; the statutory tests use total student stations above."),
+        build("emptyseats", "Empty seats (permanent)", emptySeatsValue, "Permanent student stations minus the most recent enrollment. A rough measure of room in the permanent building; a negative value means enrollment exceeds the permanent stations (portables in use)."),
         build("util", "Utilization (enrollment / capacity)", utilValue, "Enrollment divided by total FISH student stations."),
         build("facility", "Facility use tier", facilityUseValue, "The statutory tier: underused (at or below 75%, or 400+ surplus stations), in use, or fully used (90% or above)."),
       ],

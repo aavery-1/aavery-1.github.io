@@ -223,9 +223,17 @@ export function MapView() {
     map.addListener("click", (e: google.maps.MapMouseEvent) => {
       if (!e.latLng) return;
       const p = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-      const tool = useStore.getState().activeTool;
-      if (tool === "measure") addMeasurePoint(p);
-      else if (tool === "radius") setRadius(p);
+      const st = useStore.getState();
+      const tool = st.activeTool;
+      if (tool === "measure") { addMeasurePoint(p); return; }
+      if (tool === "radius") { setRadius(p); return; }
+      // No tool: a click on the bare map (deck consumes marker clicks, and the
+      // floating panels sit above the map surface) dismisses whichever floating
+      // surface is open, so clicking outside a card slides it away. One at a time,
+      // most transient first: inspector, then the shortlist tray, then the dock.
+      if (st.selectedSchoolMsid) { st.selectSchool(null); return; }
+      if (st.shortlistOpen) { st.setShortlistOpen(false); return; }
+      if (st.dockExpanded) { st.setDockExpanded(false); return; }
     });
 
     // Tear down fully. Without this, React 18 StrictMode's dev-only double
@@ -368,6 +376,21 @@ export function MapView() {
             </div>
           )}
 
+          {/* KIPP schools: the facility / PLP / co-location questions do not apply
+              (an existing School of Hope with no facility data), so the card shows
+              the one fact that is real for them, the letter grade, matching the
+              inspector's reduced view. Same predicate, so the two never disagree. */}
+          {hover.isKipp ? (
+            <dl className="pin-tooltip-facts">
+              <div className="pin-tooltip-fact">
+                <dt>Letter grade</dt>
+                <dd className="tt-grade" title={resolveGradeStyle(hover.grade).description}>
+                  {resolveGradeStyle(hover.grade).letter}
+                </dd>
+              </div>
+            </dl>
+          ) : (
+          <>
           {/* A labeled fact list: one row per question a scout asks, each with a
               plainly-labeled value. The facility rate is the statutory COFTE-based
               FUR (utilizationStyle), the single figure used across the tool, so
@@ -432,6 +455,8 @@ export function MapView() {
                 <li>At a persistently low-performing school</li>
               )}
             </ul>
+          )}
+          </>
           )}
 
           <div className="pin-tooltip-cta">Click the pin to inspect &rarr;</div>

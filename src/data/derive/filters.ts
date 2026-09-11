@@ -134,7 +134,12 @@ export interface SchoolFilterInput {
   // that end. A school with no reported rate cannot satisfy a set band.
   frlMin: number | null;
   frlMax: number | null;
-  boundary: LatLng[] | null; // a hand-drawn polygon; when set, only points inside pass
+  boundary: LatLng[] | null; // a generic polygon; when set, only points inside pass
+  // The radius tool's committed area, as the EXACT geodesic disk (center + radius
+  // in miles). When set, only schools whose geodesic distance to the center is at
+  // or below the radius pass. This tests the true circle the map draws, so the set
+  // that passes is exactly the set inside the visible ring (no polygon rounding).
+  circle: { center: LatLng; radiusMiles: number } | null;
   // MSIDs inside the active board/legislative district, or null for no district
   // filter. Precomputed by the district-tagging spatial join (see districts.ts).
   districtMsids: Set<string> | null;
@@ -259,10 +264,18 @@ export function passesFilters(
   // Board / legislative district (matched set precomputed by the spatial join).
   if (input.districtMsids && !input.districtMsids.has(p.msid)) return false;
 
-  // Hand-drawn boundary: keep only schools whose point falls inside the polygon.
+  // Generic drawn boundary: keep only schools whose point falls inside the polygon.
   if (input.boundary && input.boundary.length >= 3) {
     const [lng, lat] = f.geometry.coordinates as LngLat;
     if (!pointInPolygon(lng, lat, input.boundary)) return false;
+  }
+
+  // Radius area: keep only schools within the exact geodesic disk. This is the
+  // same ellipsoidal distance the ring is drawn from and the toolbar counts with,
+  // so the drawn circle, the count, and the filtered set are one and the same.
+  if (input.circle && input.circle.radiusMiles > 0) {
+    const center: LngLat = [input.circle.center.lng, input.circle.center.lat];
+    if (distanceMiles(center, f.geometry.coordinates as LngLat) > input.circle.radiusMiles) return false;
   }
 
   // Facility-use tier (OR within the facet). A school's tier is the statutory

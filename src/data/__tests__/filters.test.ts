@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import { buildFilterContext, passesFilters, formatCoLocationReason, type SchoolFilterInput } from "../derive/filters";
+import { distanceMiles } from "../../geo/measure";
 import type { SchoolFeature, SchoolCollection, GradesFile, CountyName, SchoolLevel, SchoolType, TitleIState } from "../types";
 import type { Grade } from "../../map/gradeEncoding";
 import type { FacilityUseKey } from "../../store";
@@ -123,6 +124,7 @@ describe("filterSchools composition", () => {
     frlMin: null,
     frlMax: null,
     boundary: null,
+    circle: null,
     districtMsids: null,
   };
 
@@ -348,5 +350,26 @@ describe("filterSchools composition", () => {
     expect(passesFilters(nearAnchor, input, ctx)).toBe(true);   // -80.28, 25.86 inside
     expect(passesFilters(farFromAnchor, input, ctx)).toBe(false); // -80.10 east of box
     expect(passesFilters(brw, input, ctx)).toBe(false);         // 26.15 north of box
+  });
+
+  it("a radius circle keeps only schools within its geodesic radius", () => {
+    // A 3-mile disk centered on the anchor: the anchor (0 mi) and nearAnchor
+    // (~2 mi) are inside; farFromAnchor and the Broward school are far outside.
+    const input: SchoolFilterInput = { ...base, circle: { center: { lat: 25.85, lng: -80.25 }, radiusMiles: 3 } };
+    expect(passesFilters(anchor, input, ctx)).toBe(true);
+    expect(passesFilters(nearAnchor, input, ctx)).toBe(true);
+    expect(passesFilters(farFromAnchor, input, ctx)).toBe(false);
+    expect(passesFilters(brw, input, ctx)).toBe(false);
+  });
+
+  it("a radius circle's edge is the exact geodesic distance (no polygon rounding)", () => {
+    // nearAnchor sits ~2 mi from the anchor. A radius just under that distance
+    // excludes it; a radius just over includes it, proving the boundary is the
+    // true distance, not an inscribed-polygon approximation.
+    const d = distanceMiles([-80.25, 25.85], [-80.28, 25.86]);
+    const justInside: SchoolFilterInput = { ...base, circle: { center: { lat: 25.85, lng: -80.25 }, radiusMiles: d + 0.001 } };
+    const justOutside: SchoolFilterInput = { ...base, circle: { center: { lat: 25.85, lng: -80.25 }, radiusMiles: d - 0.001 } };
+    expect(passesFilters(nearAnchor, justInside, ctx)).toBe(true);
+    expect(passesFilters(nearAnchor, justOutside, ctx)).toBe(false);
   });
 });

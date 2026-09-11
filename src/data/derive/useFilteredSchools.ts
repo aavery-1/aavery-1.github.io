@@ -59,6 +59,7 @@ export function useFilteredSchools(): FilteredSchools {
   const frlMin = useStore((s) => s.frlMin);
   const frlMax = useStore((s) => s.frlMax);
   const drawnBoundary = useStore((s) => s.drawnBoundary);
+  const drawnCircle = useStore((s) => s.drawnCircle);
   const mapBounds = useStore((s) => s.mapBounds);
 
   const ctx = useMemo(() => buildFilterContext(schools, grades, plp, ozIndex), [schools, grades, plp, ozIndex]);
@@ -85,9 +86,10 @@ export function useFilteredSchools(): FilteredSchools {
       frlMin,
       frlMax,
       boundary: drawnBoundary,
+      circle: drawnCircle,
       districtMsids,
     }),
-    [countySelection, gradeSelection, levelSelection, typeSelection, titleISelection, plpOnly, coLocationOnly, facilityUseSelection, utilMin, utilMax, frlMin, frlMax, drawnBoundary, districtMsids],
+    [countySelection, gradeSelection, levelSelection, typeSelection, titleISelection, plpOnly, coLocationOnly, facilityUseSelection, utilMin, utilMax, frlMin, frlMax, drawnBoundary, drawnCircle, districtMsids],
   );
 
   return useMemo(() => {

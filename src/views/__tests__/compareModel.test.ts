@@ -12,6 +12,7 @@ import type { Grade } from "../../map/gradeEncoding";
 function school(o: {
   msid: string; name?: string; county?: CountyName; grade?: Grade;
   enrollment?: number | null; capacity?: number | null; operator?: string | null;
+  permanent_capacity?: number | null;
 }): SchoolFeature {
   return {
     type: "Feature",
@@ -30,6 +31,7 @@ function school(o: {
       enrollment: o.enrollment === undefined ? 1000 : o.enrollment,
       enrollment_year: "2024-2025",
       capacity: o.capacity === undefined ? 1200 : o.capacity,
+      permanent_capacity: o.permanent_capacity === undefined ? null : o.permanent_capacity,
       cofte: null,
       fish_surplus: null,
       title_i: "yes",
@@ -87,6 +89,22 @@ describe("buildCompareSections", () => {
     expect(rowByKey(secs, "grade")!.diff).toBe(true);   // A vs C
     expect(rowByKey(secs, "county")!.diff).toBe(false); // both Miami-Dade
     expect(rowByKey(secs, "level")!.diff).toBe(false);  // both High
+  });
+
+  it("computes empty seats as permanent stations minus enrollment", () => {
+    const secs = buildCompareSections(
+      [
+        school({ msid: "A", permanent_capacity: 800, enrollment: 500 }), // 300 free
+        school({ msid: "B", permanent_capacity: 800, enrollment: 900 }), // over by 100
+        school({ msid: "C", permanent_capacity: null, enrollment: 500 }), // no permanent figure
+      ],
+      ctx(),
+      data,
+    );
+    const row = rowByKey(secs, "emptyseats")!;
+    expect(row.values[0]).toBe("300");
+    expect(row.values[1]).toBe("-100 (over permanent capacity)");
+    expect(row.values[2]).toBe("Not reported");
   });
 
   it("reads yes/no eligibility rows from the context sets, per site", () => {

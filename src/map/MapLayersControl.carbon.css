@@ -21,6 +21,19 @@
 .map-layers-panel {
   padding: 16px;
   width: 268px;
+  /* Smooth open, mirroring the legend: the panel scales up from the trigger and
+     fades in on every open (a transition on the popover open class). */
+  transform-origin: top right;
+  opacity: 0;
+  transform: scale(0.94) translateY(-6px);
+  transition: opacity 150ms ease, transform 200ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.cds--popover--open .map-layers-panel {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-layers-panel { transition: none; transform: none; opacity: 1; }
 }
 .map-layers-heading {
   margin: 0 0 12px;

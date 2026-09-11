@@ -64,6 +64,53 @@ function ShortlistMapButton() {
   );
 }
 
+// The desktop inspector as a floating panel that SLIDES AWAY on close instead of
+// vanishing. It stays mounted through a short slide-out whenever the selection
+// clears (from the X, Escape, a click on the bare map, or opening the shortlist),
+// so dismissing a card is a smooth motion. `overrideMsid` keeps the last school
+// rendered during that animation. On the map it is a compact top-right companion
+// card; on the list it is the full-height right column over a dimming scrim whose
+// click dismisses it. Reduced motion unmounts at once.
+function FloatingInspector() {
+  const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
+  const selectSchool = useStore((s) => s.selectSchool);
+  const viewMode = useStore((s) => s.viewMode);
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const [renderMsid, setRenderMsid] = useState<string | null>(selectedSchoolMsid);
+  const [closing, setClosing] = useState(false);
+  useEffect(() => {
+    if (selectedSchoolMsid) { setRenderMsid(selectedSchoolMsid); setClosing(false); return; }
+    if (!renderMsid) return;
+    if (reduceMotion) { setRenderMsid(null); return; }
+    setClosing(true);
+    const t = setTimeout(() => { setClosing(false); setRenderMsid(null); }, 280);
+    return () => clearTimeout(t);
+  }, [selectedSchoolMsid, renderMsid, reduceMotion]);
+  if (!renderMsid) return null;
+  const onMap = viewMode === "map";
+  const done = () => { setClosing(false); setRenderMsid(null); };
+  return (
+    <>
+      {!onMap && (
+        <Box
+          className="inspector-scrim"
+          onClick={() => selectSchool(null)}
+          sx={{ position: "absolute", inset: 0, zIndex: 30, bgcolor: "rgba(15,23,42,0.32)", animation: "scrimFade 180ms ease-out" }}
+        />
+      )}
+      <Box
+        className={`insp-float${onMap ? " insp-float--map" : " insp-float--list"}${closing ? " insp-float--closing" : ""}`}
+        onAnimationEnd={(e) => { if (e.target === e.currentTarget && closing) done(); }}
+        sx={onMap
+          ? { position: "absolute", top: 12, right: 64, zIndex: 31, maxWidth: "calc(100% - 76px)" }
+          : { position: "absolute", top: 0, right: 0, height: "100%", zIndex: 31 }}
+      >
+        <RightColumn compact={onMap} overrideMsid={renderMsid} />
+      </Box>
+    </>
+  );
+}
+
 // Shown in a view's place while its code chunk downloads. Deliberately quiet: a
 // centered spinner on the app's own surface, so a lazy view never flashes a
 // blank or a layout jump.
@@ -215,51 +262,7 @@ export default function App() {
             the panel reads as a companion card, like a Google Maps place card.
             The selected school is fly-to centered, so it sits clear of the
             right-edge panel. Close from the map is the X button or Escape. */}
-        {!isMobile && selectedSchoolMsid && (
-          <>
-            {viewMode !== "map" && (
-              <Box
-                className="inspector-scrim"
-                onClick={() => selectSchool(null)}
-                sx={{
-                  position: "absolute", inset: 0, zIndex: 30,
-                  bgcolor: "rgba(15,23,42,0.32)",
-                  animation: "scrimFade 180ms ease-out",
-                }}
-              />
-            )}
-            {viewMode === "map" ? (
-              // Map: a lighter companion card, anchored top-right and inset from
-              // the edges so the map stays visible around it and reads as the
-              // primary surface. No bottom anchor: the card sizes to its content
-              // (capped by the panel's own maxHeight), so it never stretches over
-              // the bottom dock, the map controls, or Google's logo.
-              <Box
-                sx={{
-                  // Inset past the 40px top-right control column (right:12, ~52px
-                  // wide with margins) so the shortlist button, legend, map style
-                  // and tools stay visible and clickable while the inspector is
-                  // open, and the shortlist "pop" is never hidden behind the card.
-                  position: "absolute", top: 12, right: 64, zIndex: 31,
-                  maxWidth: "calc(100% - 76px)",
-                  boxShadow: "0 8px 28px rgba(15,23,42,0.18)",
-                }}
-              >
-                <RightColumn compact />
-              </Box>
-            ) : (
-              // List: the full-height detail column over the scrim.
-              <Box
-                sx={{
-                  position: "absolute", top: 0, right: 0, height: "100%", zIndex: 31,
-                  boxShadow: "-10px 0 30px rgba(15,23,42,0.20)",
-                }}
-              >
-                <RightColumn />
-              </Box>
-            )}
-          </>
-        )}
+        {!isMobile && <FloatingInspector />}
 
         {/* Mobile inspector: bottom sheet, only when a school is selected */}
         {isMobile && (

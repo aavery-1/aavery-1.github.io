@@ -112,34 +112,28 @@ function MeasureControls() {
   );
 }
 
-// The current radius circle as a closed LatLng ring, for committing as the area
-// filter. geodesicBufferMiles returns a GeoJSON polygon; take its outer ring.
-function circleRing(center: LngLat, miles: number): { lat: number; lng: number }[] {
-  return geodesicBufferMiles(center, miles).geometry.coordinates[0].map(([lng, lat]) => ({ lat, lng }));
-}
-
 function RadiusControls() {
   const radiusCenter = useStore((s) => s.radiusCenter);
   const radiusMiles = useStore((s) => s.radiusMiles);
   const setRadiusMiles = useStore((s) => s.setRadiusMiles);
   const setRadius = useStore((s) => s.setRadius);
-  const drawnBoundary = useStore((s) => s.drawnBoundary);
-  const setDrawnBoundary = useStore((s) => s.setDrawnBoundary);
-  const clearDrawnBoundary = useStore((s) => s.clearDrawnBoundary);
+  const drawnCircle = useStore((s) => s.drawnCircle);
+  const setDrawnCircle = useStore((s) => s.setDrawnCircle);
+  const clearDrawnCircle = useStore((s) => s.clearDrawnCircle);
   const { schools, income } = useData();
 
-  const filtering = Boolean(drawnBoundary && drawnBoundary.length >= 3);
+  const filtering = Boolean(drawnCircle);
 
   // Keep a committed filter in sync while the circle is edited: moving the center
-  // or changing the radius re-commits the ring. Reads the live flag so it never
-  // resurrects a filter the user just cleared, and never loops (deps exclude the
-  // boundary it writes).
+  // or changing the radius re-commits the exact disk. Reads the live flag so it
+  // never resurrects a filter the user just cleared, and never loops (deps exclude
+  // the circle it writes).
   useEffect(() => {
     if (!radiusCenter) return;
-    if (useStore.getState().drawnBoundary) {
-      setDrawnBoundary(circleRing([radiusCenter.lng, radiusCenter.lat], radiusMiles));
+    if (useStore.getState().drawnCircle) {
+      setDrawnCircle({ center: radiusCenter, radiusMiles });
     }
-  }, [radiusCenter, radiusMiles, setDrawnBoundary]);
+  }, [radiusCenter, radiusMiles, setDrawnCircle]);
 
   const analysis = useMemo(() => {
     if (!radiusCenter) return null;
@@ -182,8 +176,8 @@ function RadiusControls() {
             kind={filtering ? "tertiary" : "primary"}
             size="sm"
             onClick={() => filtering
-              ? clearDrawnBoundary()
-              : setDrawnBoundary(circleRing([radiusCenter.lng, radiusCenter.lat], radiusMiles))}
+              ? clearDrawnCircle()
+              : setDrawnCircle({ center: radiusCenter, radiusMiles })}
           >
             {filtering ? "Stop filtering" : "Filter to this area"}
           </Button>
