@@ -584,6 +584,23 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
         ) : (
           <p className="insp-note">Enrollment or capacity not reported.</p>
         )}
+        {p.permanent_capacity != null && (
+          <div
+            className="insp-perm"
+            title="Permanent building student stations, from the FISH Level of Service report; portable classrooms are excluded. The utilization and co-location tests above use total student stations (permanent plus portable), which is the statute's measure (Rule 6A-1.0998271)."
+          >
+            <span className="insp-perm__label">Permanent student stations</span>
+            <span className="insp-perm__val">
+              {p.permanent_capacity.toLocaleString("en-US")}
+              {p.capacity != null && p.capacity !== p.permanent_capacity && (
+                <span className="insp-perm__sub">
+                  {" "}of {p.capacity.toLocaleString("en-US")} total (
+                  {(p.capacity - p.permanent_capacity).toLocaleString("en-US")} in portables)
+                </span>
+              )}
+            </span>
+          </div>
+        )}
         <EnrollmentTrend history={enrollHistory} capacity={p.capacity} />
 
         <div className="insp-frl">

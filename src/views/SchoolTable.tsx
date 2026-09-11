@@ -741,6 +741,6 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "frl", label: "F/R lunch", numeric: true, tier: "full", width: 92, help: "Share of students on free or reduced-price meals, the school-level poverty measure (FL DOE Fall Survey 2, 2025-26)." },
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
   { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count." },
-  { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Permanent FISH student stations (FL DOE)." },
+  { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Total FISH student stations (permanent plus portable), the statutory measure. The inspector also shows the permanent-only figure." },
   { key: "actions", label: "", numeric: true, width: 86 },
 ];

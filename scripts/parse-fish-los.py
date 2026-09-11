@@ -100,14 +100,25 @@ def parse(pdf):
             break
         if not all(is_num(x) for x in toks[i:i + 6]):
             i += 1; continue
-        cap = to_num(toks[i]); i += 6      # cap, permanent, dining, yearround, utilfactor, pct
+        # The 6 numeric columns after the name are, in order:
+        #   SCHOOL CAPACITY, PERMANENT CAPACITY, DINING CAPACITY, YEAR ROUND
+        #   CAPACITY, UTILIZATION FACTOR, PERCENTAGE UTILIZATION.
+        # SCHOOL CAPACITY = total student stations (permanent + relocatable) and
+        # is the statute's "total student stations" (Rule 6A-1.0998271(1)(n),(f));
+        # it is the denominator for the FUR, surplus, and co-location tests.
+        # PERMANENT CAPACITY = the permanent building's student stations only
+        # (excludes portables); surfaced as a disclosed secondary figure, never
+        # used in the statutory tests.
+        cap = to_num(toks[i]); perm = to_num(toks[i + 1]); i += 6
         while i < n and not is_num(toks[i]):   # primary use (text, may be multi-word)
             i += 1
         if i + 2 > n:
             break
         cofte = to_num(toks[i]); surplus = to_num(toks[i + 1]); i += 2
         if name:
-            recs.append({"name": " ".join(name), "capacity": int(round(cap)), "cofte": round(cofte, 1), "surplus": round(surplus, 1)})
+            recs.append({"name": " ".join(name), "capacity": int(round(cap)),
+                         "permanent_capacity": int(round(perm)),
+                         "cofte": round(cofte, 1), "surplus": round(surplus, 1)})
     return recs
 
 def toks_of(s):
@@ -167,15 +178,23 @@ def main():
             filled += 1
         elif p.get("capacity") != c["capacity"]:
             overwritten += 1
-        p["capacity"] = c["capacity"]
+        p["capacity"] = c["capacity"]                      # total student stations (statutory)
+        p["permanent_capacity"] = c["permanent_capacity"]  # permanent building only (disclosed)
         p["cofte"] = c["cofte"]
         p["fish_surplus"] = c["surplus"]
         p["fish_vintage"] = COUNTIES[d]["vintage"]
-    SCHOOLS.write_text(json.dumps(sg, indent=2) + "\n")
+    payload = json.dumps(sg, indent=2) + "\n"
+    SCHOOLS.write_text(payload)
+    # Keep the built copy in sync so `vite preview` and the deploy (which serve
+    # dist/, not public/) show the refreshed data without a full rebuild.
+    dist_copy = ROOT / "dist" / "data" / SCHOOLS.name
+    if dist_copy.exists():
+        dist_copy.write_text(payload)
     total_cap = sum(1 for f in sg["features"] if f["properties"].get("capacity") is not None)
+    perm_cnt = sum(1 for f in sg["features"] if f["properties"].get("permanent_capacity") is not None)
     cofte_cnt = sum(1 for f in sg["features"] if f["properties"].get("cofte") is not None)
     print(f"\nmatched {matched} schools to FISH LOS (filled {filled} null capacities, updated {overwritten} to the LOS figure)")
-    print(f"schools with capacity now: {total_cap}/{len(sg['features'])}; with statutory COFTE: {cofte_cnt}")
+    print(f"schools with capacity now: {total_cap}/{len(sg['features'])}; permanent_capacity: {perm_cnt}; statutory COFTE: {cofte_cnt}")
     print(f"wrote {SCHOOLS}")
 
 if __name__ == "__main__":

@@ -49,7 +49,16 @@ export interface SchoolProps {
   current_grade_year: string;
   enrollment: number | null;
   enrollment_year: string;
+  // capacity = FISH SCHOOL CAPACITY = total student stations (permanent +
+  // relocatable). This is the statute's "total student stations" (Rule
+  // 6A-1.0998271(1)(n),(f)) and the denominator for every FUR / surplus /
+  // co-location test.
   capacity: number | null;
+  // permanent_capacity = FISH PERMANENT CAPACITY = the permanent building's
+  // student stations only (excludes portables/relocatables). Disclosed as a
+  // secondary figure in the inspector/table/compare; NEVER used in the statutory
+  // tests, which the rule defines on total student stations.
+  permanent_capacity?: number | null;
   // FISH Level of Service figures (district-operated schools only), the statutory
   // co-location inputs per Rule 6A-1.0998271: cofte = capital-outlay FTE
   // enrollment (the FUR numerator), fish_surplus = student stations - COFTE (the

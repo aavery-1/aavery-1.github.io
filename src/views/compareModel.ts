@@ -110,6 +110,14 @@ export function buildCompareSections(
     const p = schools[i].properties;
     return p.capacity != null ? `${p.capacity.toLocaleString("en-US")} stations` : "Not reported";
   };
+  const permanentValue = (i: number) => {
+    const p = schools[i].properties;
+    if (p.permanent_capacity == null) return "Not reported";
+    const portables = p.capacity != null ? p.capacity - p.permanent_capacity : 0;
+    return portables > 0
+      ? `${p.permanent_capacity.toLocaleString("en-US")} (${portables.toLocaleString("en-US")} in portables)`
+      : `${p.permanent_capacity.toLocaleString("en-US")}`;
+  };
   const facilityUseValue = (i: number) => {
     const p = schools[i].properties;
     return utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus).label;
@@ -150,8 +158,9 @@ export function buildCompareSections(
       title: "Enrollment and capacity",
       rows: [
         build("enroll", "Enrollment", enrollValue, "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count."),
-        build("capacity", "FISH capacity", capacityValue, "Permanent FISH student stations (FL DOE)."),
-        build("util", "Utilization (enrollment / capacity)", utilValue, "Enrollment divided by FISH student stations."),
+        build("capacity", "FISH capacity", capacityValue, "Total student stations (permanent plus portable), from the FISH Level of Service report. This is the statute's measure for the utilization and co-location tests (Rule 6A-1.0998271)."),
+        build("permanent", "Permanent stations", permanentValue, "Student stations in permanent buildings only, excluding portables. A disclosed reference; the statutory tests use total student stations above."),
+        build("util", "Utilization (enrollment / capacity)", utilValue, "Enrollment divided by total FISH student stations."),
         build("facility", "Facility use tier", facilityUseValue, "The statutory tier: underused (at or below 75%, or 400+ surplus stations), in use, or fully used (90% or above)."),
       ],
     },
