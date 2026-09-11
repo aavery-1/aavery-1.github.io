@@ -8,8 +8,8 @@
 // Real IBM Carbon: Popover + IconButton + Toggle, no MUI. No em dashes.
 
 import { useState } from "react";
-import { IconButton, Popover, PopoverContent, Toggle } from "@carbon/react";
-import { Map as MapIcon, Satellite as SatelliteAltIcon, Mountain as TerrainIcon } from "@carbon/icons-react";
+import { IconButton, Popover, PopoverContent, Toggle, RadioButtonGroup, RadioButton } from "@carbon/react";
+import { Map as MapIcon } from "@carbon/icons-react";
 import { useStore, type BaseMapType, type MapOverlays } from "../store";
 import "./MapLayersControl.carbon.css";
 
@@ -19,10 +19,10 @@ const OVERLAYS: Array<{ key: keyof MapOverlays; label: string }> = [
   { key: "bicycling", label: "Bicycling" },
 ];
 
-const VIEWS: Array<{ value: BaseMapType; label: string; icon: typeof MapIcon; bg: string; fg: string }> = [
-  { value: "roadmap", label: "Default", icon: MapIcon, bg: "linear-gradient(135deg,#EAF1E6 0%,#DCE7F5 100%)", fg: "#5B7C8A" },
-  { value: "satellite", label: "Satellite", icon: SatelliteAltIcon, bg: "linear-gradient(135deg,#3B4A3A 0%,#5C6B58 100%)", fg: "#E8EFE4" },
-  { value: "terrain", label: "Terrain", icon: TerrainIcon, bg: "linear-gradient(135deg,#EDE6D8 0%,#D8E0CE 100%)", fg: "#7A6E52" },
+const VIEWS: Array<{ value: BaseMapType; label: string }> = [
+  { value: "roadmap", label: "Default" },
+  { value: "satellite", label: "Satellite" },
+  { value: "terrain", label: "Terrain" },
 ];
 
 export function MapLayersControl() {
