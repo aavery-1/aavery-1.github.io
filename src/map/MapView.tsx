@@ -161,7 +161,8 @@ export function MapView() {
     // without the camera moving.
     let ro: ResizeObserver | null = null;
     let roTimer: ReturnType<typeof setTimeout> | null = null;
-    const kickTimers: ReturnType<typeof setTimeout>[] = [];
+    let paintPoll: ReturnType<typeof setInterval> | null = null;
+    let paintStop: ReturnType<typeof setTimeout> | null = null;
     const nudge = () => {
       const m = mapRef.current;
       const c = m?.getCenter();
@@ -179,15 +180,29 @@ export function MapView() {
       Array.from(mapEl.current.querySelectorAll("canvas")).some(
         (cv) => cv.width > 300 || cv.height > 150,
       );
-    // Staggered first-paint attempts: keep nudging until the map has painted,
-    // then stop. Each nudge is invisible and the series is self-limiting.
-    for (const delay of [150, 450, 1000, 2000, 3500]) {
-      kickTimers.push(
-        setTimeout(() => {
-          if (!painted()) nudge();
-        }, delay),
-      );
-    }
+    // First-paint retries: keep nudging until the map has painted, then stop. A
+    // fixed short series (the old [150..3500]ms) gave up too early on a slow cold
+    // load -- Vite still compiling the map chunk, tiles arriving late -- and once
+    // it stopped, nothing re-poked the map, so the basemap AND every deck pin
+    // stayed blank with no self-heal until a manual window resize. Poll on an
+    // interval long enough to outlast a cold start instead, and stop the instant
+    // the map paints (or after a hard cap, so a genuinely dead GL context does
+    // not poll forever).
+    const stopPaintPoll = () => {
+      if (paintPoll !== null) { clearInterval(paintPoll); paintPoll = null; }
+      if (paintStop !== null) { clearTimeout(paintStop); paintStop = null; }
+    };
+    paintPoll = setInterval(() => {
+      if (painted()) stopPaintPoll();
+      else nudge();
+    }, 350);
+    paintStop = setTimeout(stopPaintPoll, 20000);
+    // The first tiles landing is the surest moment deck can size its canvas and
+    // draw the pins, so poke it then too -- this often fires after the old timer
+    // series would have expired.
+    google.maps.event.addListenerOnce(map, "tilesloaded", () => {
+      if (!painted()) nudge();
+    });
     if (mapEl.current) {
       // Later container resizes (not first paint): debounce so a burst of
       // ResizeObserver callbacks collapses into one nudge.
@@ -246,7 +261,7 @@ export function MapView() {
     return () => {
       if (ro) ro.disconnect();
       if (roTimer !== null) clearTimeout(roTimer);
-      for (const t of kickTimers) clearTimeout(t);
+      stopPaintPoll();
       google.maps.event.clearInstanceListeners(map);
       overlay.finalize();
       overlayRef.current = null;
