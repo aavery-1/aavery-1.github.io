@@ -19,6 +19,7 @@ import type {
   OrangeBoardFile,
   EnrollmentHistoryFile,
   SchoolsOfHopeCollection,
+  SchoolDemographicsFile,
 } from "./types";
 import type { PlpFile } from "./adapters/plp";
 import { getAdapter } from "./adapters";
@@ -48,6 +49,7 @@ export interface DataContextValue {
   reps: RepresentativesFile | null;
   enrollment: EnrollmentHistoryFile | null;
   schoolsOfHope: SchoolsOfHopeCollection | null;
+  schoolDemographics: SchoolDemographicsFile | null;
   incomeIndex: PolygonIndex | null;
   boardIndex: PolygonIndex | null;
   growthIndex: PolygonIndex | null;
@@ -70,7 +72,7 @@ export const EAGER_IDS = [
   "board_districts", "drive_time_reach",
   "population_growth", "opportunity_zones", "legislative_districts",
   "representatives", "school_enrollment_history", "existing_soh",
-  "orange_board_districts",
+  "orange_board_districts", "school_demographics",
 ];
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -129,6 +131,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const enrollment = dataOf<EnrollmentHistoryFile>("school_enrollment_history");
   const schoolsOfHope = dataOf<SchoolsOfHopeCollection>("existing_soh");
   const orangeBoard = dataOf<OrangeBoardFile>("orange_board_districts");
+  const schoolDemographics = dataOf<SchoolDemographicsFile>("school_demographics");
 
   // Spatial indexes built once per loaded polygon layer, reused by every
   // inspector point-in-polygon lookup.
@@ -160,6 +163,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     reps,
     enrollment,
     schoolsOfHope,
+    schoolDemographics,
     incomeIndex,
     boardIndex,
     growthIndex,

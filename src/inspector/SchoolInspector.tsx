@@ -33,7 +33,7 @@ import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated } from "../d
 import { evaluatePlp, plpMsids } from "../data/derive/plp";
 import { distanceMiles, type LngLat } from "../geo/measure";
 import { titleILabel } from "../data/types";
-import type { LegislativeProps, Representative } from "../data/types";
+import type { LegislativeProps, Representative, DemographicsRing, SchoolDemographicsEntry, SchoolDemographicsFile } from "../data/types";
 import "./SchoolInspector.carbon.css";
 
 // Local color constants (Carbon roles / brand), so the inspector needs no MUI.
@@ -357,6 +357,91 @@ function repLabel(r: Representative | undefined): string {
   return `${r.name}${r.party ? ` (${r.party[0]})` : ""}`;
 }
 
+// Neighborhood demographics: the population living around this school within
+// each radius ring, from the precomputed dasymetric aggregation (2020 Census
+// blocks weighting ACS 2019-2023 block-group estimates). Every value is an
+// estimate; counts carry an ACS 90% margin of error (shown as a muted second
+// line), median income is a household-weighted approximation, and "K-8 age" is
+// the ACS 5-14 bracket. Nulls read as an honest "n/a", never a fabricated zero.
+const intFmt = (n: number) => n.toLocaleString("en-US");
+const moeFmt = (n: number) => `±${n.toLocaleString("en-US")}`;
+
+function DemoCell({ value, moe }: { value: React.ReactNode; moe?: string | null }) {
+  return (
+    <td className="insp-demo__cell">
+      <span className="insp-demo__val">{value}</span>
+      {moe ? <span className="insp-demo__moe">{moe}</span> : null}
+    </td>
+  );
+}
+
+function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEntry; meta: SchoolDemographicsFile }) {
+  const rings = entry.rings;
+  const anyPartial = rings.some((r) => r.coverage_pct < 0.995);
+  // Row renderers keyed off each ring, in the fixed radius order the file carries.
+  const cell = (r: DemographicsRing, render: (r: DemographicsRing) => { value: React.ReactNode; moe?: string | null }) => {
+    const { value, moe } = render(r);
+    return <DemoCell key={r.r} value={value} moe={moe} />;
+  };
+
+  return (
+    <div className="insp-demo">
+      <p className="insp-label" style={{ marginBottom: 4 }}>Neighborhood demographics</p>
+      <p className="insp-subhead" style={{ fontWeight: 400 }}>
+        Who lives around this school, by distance. Estimated from where residents actually live (2020 Census blocks) using {meta.vintage.split(";")[0]} data.
+      </p>
+      <div className="insp-demo__scroll">
+        <table className="insp-demo__table">
+          <thead>
+            <tr>
+              <th scope="col" className="insp-demo__rowhead"> </th>
+              {rings.map((r) => (
+                <th key={r.r} scope="col" className="insp-demo__colhead">{r.r} mi</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" className="insp-demo__rowhead">Population</th>
+              {rings.map((r) => cell(r, (x) => ({ value: intFmt(x.total_pop), moe: x.total_pop > 0 ? moeFmt(x.total_pop_moe) : null })))}
+            </tr>
+            <tr>
+              <th scope="row" className="insp-demo__rowhead">K-8 age <span className="insp-demo__hint">(5-14)</span></th>
+              {rings.map((r) => cell(r, (x) => ({ value: intFmt(x.k8_pop), moe: x.k8_pop > 0 ? moeFmt(x.k8_pop_moe) : null })))}
+            </tr>
+            <tr>
+              <th scope="row" className="insp-demo__rowhead">Median income</th>
+              {rings.map((r) => cell(r, (x) => x.median_income == null
+                ? { value: <span className="insp-demo__na">n/a</span>, moe: null }
+                : { value: `$${intFmt(x.median_income)}`, moe: x.median_income_moe != null ? moeFmt(x.median_income_moe) : null }))}
+            </tr>
+            <tr>
+              <th scope="row" className="insp-demo__rowhead">% Black</th>
+              {rings.map((r) => cell(r, (x) => x.pct_black == null
+                ? { value: <span className="insp-demo__na">n/a</span>, moe: null }
+                : { value: `${x.pct_black.toFixed(1)}%`, moe: x.pct_black_moe != null ? `±${x.pct_black_moe.toFixed(1)}` : null }))}
+            </tr>
+            <tr>
+              <th scope="row" className="insp-demo__rowhead">% Hispanic</th>
+              {rings.map((r) => cell(r, (x) => x.pct_hispanic == null
+                ? { value: <span className="insp-demo__na">n/a</span>, moe: null }
+                : { value: `${x.pct_hispanic.toFixed(1)}%`, moe: x.pct_hispanic_moe != null ? `±${x.pct_hispanic_moe.toFixed(1)}` : null }))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      {anyPartial && (
+        <p className="insp-demo__warn">
+          Some rings reach beyond the mapped county data; those totals are partial and understated.
+        </p>
+      )}
+      <p className="insp-demo__foot">
+        Estimate, not a count. Source: {meta.source}. The small figure under each value is the ACS 90% margin of error. Median income is household-weighted across block groups (a median cannot be summed exactly); "K-8 age" is the ACS 5-14 age bracket, the closest proxy for K-8 grades.
+      </p>
+    </div>
+  );
+}
+
 export function SchoolInspector({ compact = false }: { compact?: boolean } = {}) {
   const data = useData();
   const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
@@ -398,6 +483,10 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   const boardLabel = boardHere
     ? `District ${boardHere.district_number} (${boardHere.county})${boardHere.member_name ? `, ${boardHere.member_name}` : ""}`
     : p.board_district ? `District ${p.board_district}` : "Not mapped for this location";
+
+  // Neighborhood demographics (precomputed per school; null for schools not in
+  // the build, e.g. added after the last data refresh).
+  const demo = data.schoolDemographics?.schools[p.msid] ?? null;
 
   // Community facts (always available).
   const income = incomeAtPoint(data.incomeIndex, here);
@@ -502,6 +591,20 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
     ["Longitude", String(school.geometry.coordinates[0])],
     ["Latitude", String(school.geometry.coordinates[1])],
   ];
+  // Append neighborhood demographics, one block of fields per radius ring, so the
+  // export carries the same estimates (and their margins) shown in the panel.
+  if (demo) {
+    for (const r of demo.rings) {
+      const tag = `within ${r.r} mi`;
+      exportRows.push(
+        [`Total population (${tag})`, `${r.total_pop}${r.total_pop > 0 ? ` (MOE +/-${r.total_pop_moe})` : ""}`],
+        [`K-8 age population, ages 5-14 (${tag})`, `${r.k8_pop}${r.k8_pop > 0 ? ` (MOE +/-${r.k8_pop_moe})` : ""}`],
+        [`Median household income (${tag})`, r.median_income != null ? `${r.median_income}${r.median_income_moe != null ? ` (MOE +/-${r.median_income_moe})` : ""}` : "n/a"],
+        [`Percent Black (${tag})`, r.pct_black != null ? `${r.pct_black}${r.pct_black_moe != null ? ` (MOE +/-${r.pct_black_moe})` : ""}` : "n/a"],
+        [`Percent Hispanic (${tag})`, r.pct_hispanic != null ? `${r.pct_hispanic}${r.pct_hispanic_moe != null ? ` (MOE +/-${r.pct_hispanic_moe})` : ""}` : "n/a"],
+      );
+    }
+  }
 
   return (
     <aside className={`insp ${compact ? "insp--compact" : "insp--full"}`} aria-label={`Inspector for ${p.name}`}>
@@ -643,9 +746,18 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
         <p className="insp-subhead">Historic letter grades</p>
         <GradeTimeline history={history} formulaChangeYears={formulaChangeYears} />
 
+        {/* 4. NEIGHBORHOOD DEMOGRAPHICS: who lives around this site, by distance.
+            Real Census data; every number labeled as an estimate with its error. */}
+        {demo && data.schoolDemographics && (
+          <>
+            <hr className="insp-divider" />
+            <NeighborhoodDemographics entry={demo} meta={data.schoolDemographics} />
+          </>
+        )}
+
         <hr className="insp-divider" />
 
-        {/* 4. LOCATION & DISTRICTS: identity and representation, below the siting
+        {/* 5. LOCATION & DISTRICTS: identity and representation, below the siting
             decision the analyst came for. Each district row drills the whole view. */}
         <p className="insp-label">Location &amp; districts</p>
         {municipality && <Kv label="Municipality" value={municipality} />}

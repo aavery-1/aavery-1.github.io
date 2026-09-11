@@ -27,6 +27,7 @@
     "data:tenthday": "python3 scripts/parse-broward-tenthday.py",
     "data:flood": "node scripts/fetch-flood.mjs",
     "data:income": "node --env-file=.env scripts/build-acs-income.mjs",
+    "data:demographics": "node --env-file=.env scripts/build-school-demographics.mjs",
     "data:soh": "node scripts/build-schools-of-hope.mjs"
   },
   "dependencies": {

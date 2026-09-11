@@ -20,6 +20,7 @@ import { loadPlp } from "./plp";
 import { loadPopulationGrowth } from "./populationGrowth";
 import { loadEnrollmentHistory } from "./enrollment";
 import { loadSchoolsOfHope } from "./schoolsOfHope";
+import { loadSchoolDemographics } from "./schoolDemographics";
 
 export type AnyLoader = () => Promise<LoadResult<unknown>>;
 
@@ -41,6 +42,7 @@ export const ADAPTERS: Record<string, AnyLoader> = {
   representatives: loadReps as AnyLoader,
   school_enrollment_history: loadEnrollmentHistory as AnyLoader,
   orange_board_districts: loadOrangeBoard as AnyLoader,
+  school_demographics: loadSchoolDemographics as AnyLoader,
 };
 
 export function getAdapter(id: string): AnyLoader | undefined {

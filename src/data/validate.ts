@@ -19,6 +19,7 @@ import {
   type PopulationGrowthCollection,
   type OpportunityZoneCollection,
   type LegislativeCollection,
+  type SchoolDemographicsFile,
 } from "./types";
 import { GRADE_DOMAIN } from "../map/gradeEncoding";
 import { isInFloridaBbox, countyPolygon } from "../geo/countyBounds";
@@ -130,6 +131,41 @@ export function validateIncome(data: unknown, file = "income.sample.geojson"): I
     if (typeof p.school_age_population !== "number" || p.school_age_population < 0) throw new SchemaError(file, `${where}.school_age_population`, "is negative or non-numeric");
   });
   return fc;
+}
+
+// School neighborhood demographics: a plain object (not a FeatureCollection)
+// keyed by MSID, each with one ring row per radius. We validate the envelope and
+// spot-check ring shape/ranges; a bad percentage or negative count fails loud so
+// a miscomputed build never renders as if it were authoritative.
+export function validateSchoolDemographics(data: unknown, file = "school_demographics.json"): SchoolDemographicsFile {
+  if (!data || typeof data !== "object") throw new SchemaError(file, "<root>", "is not an object");
+  const d = data as Record<string, unknown>;
+  if (!Array.isArray(d.radii_miles) || d.radii_miles.length === 0) throw new SchemaError(file, "radii_miles", "is missing or empty");
+  if (!d.schools || typeof d.schools !== "object") throw new SchemaError(file, "schools", "is missing");
+  const schools = d.schools as Record<string, unknown>;
+  for (const [msid, entryRaw] of Object.entries(schools)) {
+    const entry = entryRaw as Record<string, unknown>;
+    if (typeof entry?.lon !== "number" || typeof entry?.lat !== "number") throw new SchemaError(file, `schools.${msid}`, "has non-numeric lon/lat");
+    if (!Array.isArray(entry.rings)) throw new SchemaError(file, `schools.${msid}.rings`, "is not an array");
+    (entry.rings as Array<Record<string, unknown>>).forEach((ring, i) => {
+      const where = `schools.${msid}.rings[${i}]`;
+      if (typeof ring.r !== "number" || ring.r <= 0) throw new SchemaError(file, `${where}.r`, "is not a positive number");
+      for (const key of ["total_pop", "total_pop_moe", "k8_pop", "k8_pop_moe"] as const) {
+        if (typeof ring[key] !== "number" || (ring[key] as number) < 0) throw new SchemaError(file, `${where}.${key}`, "is negative or non-numeric");
+      }
+      for (const key of ["pct_black", "pct_hispanic"] as const) {
+        const v = ring[key];
+        if (v != null && (typeof v !== "number" || v < 0 || v > 100)) throw new SchemaError(file, `${where}.${key}`, "is outside 0-100");
+      }
+      if (ring.median_income != null && (typeof ring.median_income !== "number" || (ring.median_income as number) < 0)) {
+        throw new SchemaError(file, `${where}.median_income`, "is negative or non-numeric");
+      }
+      if (typeof ring.coverage_pct !== "number" || (ring.coverage_pct as number) < 0 || (ring.coverage_pct as number) > 1) {
+        throw new SchemaError(file, `${where}.coverage_pct`, "is outside 0-1");
+      }
+    });
+  }
+  return data as SchoolDemographicsFile;
 }
 
 export function validateBoardDistricts(data: unknown, file = "board_districts.sample.geojson"): BoardDistrictCollection {
