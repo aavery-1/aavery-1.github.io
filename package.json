@@ -24,6 +24,7 @@
     "data:titlei": "python3 scripts/parse-title-i-tipa.py",
     "data:titlei:ccd": "node scripts/fetch-title-i.mjs",
     "data:frl": "python3 scripts/parse-frl-lunch.py",
+    "data:tenthday": "python3 scripts/parse-broward-tenthday.py",
     "data:flood": "node scripts/fetch-flood.mjs",
     "data:income": "node --env-file=.env scripts/build-acs-income.mjs",
     "data:soh": "node scripts/build-schools-of-hope.mjs"

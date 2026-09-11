@@ -3,7 +3,9 @@
 // Feeds the inspector's enrollment trend. Source: FL DOE "Membership by School
 // by Grade" (Final Survey 2, the October count used for FEFP funding), keyed by
 // MSID to match the school points. Built to public/data/enrollment_history.json
-// by scripts/parse-fldoe-membership.py.
+// by scripts/parse-fldoe-membership.py. Broward schools additionally carry a
+// SY2026-27 point from the district's Tenth Day Enrollment Count
+// (scripts/parse-broward-tenthday.py) -- the newest point in their trend.
 
 import { loadValidated } from "./base";
 import type { LoadResult, EnrollmentHistoryFile } from "../types";
@@ -19,7 +21,7 @@ function validateEnrollment(data: unknown, file = "enrollment_history.json"): En
 
 export function loadEnrollmentHistory(): Promise<LoadResult<EnrollmentHistoryFile>> {
   return loadValidated(SOURCE_URL, validateEnrollment, {
-    source: "FL DOE Membership by School by Grade (Survey 2)",
-    vintage: "Final Survey 2 (October membership), 2020-21 through 2024-25",
+    source: "FL DOE Membership by School by Grade (Survey 2); Broward SY2026-27 Tenth Day count",
+    vintage: "Final Survey 2 (October membership), 2020-21 through 2024-25; Broward through 2026-27",
   });
 }
