@@ -37,7 +37,7 @@ const CO_LOC_BLUE = "#1D4ED8";  // co-location target
 const TITLE_I_PURPLE = "#7C3AED"; // economic-disadvantage proxy (Title I)
 
 type Order = "asc" | "desc";
-type SortKey = "name" | "type" | "county" | "level" | "titleI" | "enrollment" | "capacity" | "utilization";
+type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "enrollment" | "capacity" | "utilization";
 
 interface Row {
   feature: SchoolFeature;
@@ -48,6 +48,7 @@ interface Row {
   level: string;
   grade: string;
   titleI: string;
+  frl: number | null; // free/reduced-price lunch rate (0-1), null when not reported
   enrollment: number | null;
   capacity: number | null;
   utilization: number | null;
@@ -162,6 +163,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           level: p.level,
           grade: p.current_grade,
           titleI: p.title_i_schoolwide ? "Schoolwide" : titleILabel(p.title_i),
+          frl: p.frl_rate ?? null,
           enrollment: p.enrollment,
           capacity: p.capacity,
           utilization: util,
@@ -335,6 +337,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
             <MenuItem value="name" sx={{ fontSize: 13 }}>Name</MenuItem>
             <MenuItem value="county" sx={{ fontSize: 13 }}>County</MenuItem>
             <MenuItem value="titleI" sx={{ fontSize: 13 }}>Title I</MenuItem>
+            <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
             <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
             <MenuItem value="capacity" sx={{ fontSize: 13 }}>Capacity</MenuItem>
             <MenuItem value="level" sx={{ fontSize: 13 }}>Level</MenuItem>
@@ -486,6 +489,10 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             <span className="school-card__fact-label">Title I</span>
                             <span className="school-card__fact-value"><TitleICell value={r.titleI} /></span>
                           </div>
+                          <div className="school-card__fact">
+                            <span className="school-card__fact-label">F/R lunch</span>
+                            <span className="school-card__fact-value"><FrlCell rate={r.frl} /></span>
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -564,6 +571,9 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                   )}
                   {!ultraCompact && (
                     <TableCell><TitleICell value={r.titleI} /></TableCell>
+                  )}
+                  {!compact && (
+                    <TableCell align="right"><FrlCell rate={r.frl} /></TableCell>
                   )}
                   {!phone && (
                     <TableCell align="right">
@@ -681,6 +691,15 @@ function TitleICell({ value }: { value: string }) {
   );
 }
 
+// Free/reduced-price lunch rate. A right-aligned percent; null (suppressed or not
+// in the FL DOE report) reads as a muted "n/a", never a fake 0%.
+function FrlCell({ rate }: { rate: number | null }) {
+  if (rate == null) return <Typography variant="body2" color="text.secondary">n/a</Typography>;
+  return (
+    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>{Math.round(rate * 100)}%</Typography>
+  );
+}
+
 // `fill` (phone card) makes the bar flex to fill its container instead of a fixed
 // right-aligned width, so it never overflows a tight row and collides with a label.
 function UtilizationCell({ util, bucket, dense, fill }: { util: number | null; bucket: Row["bucket"]; dense: boolean; fill?: boolean }) {
@@ -718,7 +737,8 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "county", label: "County", tier: "mid", width: 100 },
   { key: "level", label: "Level", tier: "full", width: 90 },
   { key: "type", label: "Type", tier: "full", width: 92 },
-  { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Federal Title I eligibility (NCES CCD)." },
+  { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Title I eligibility (FL DOE Title I Part A list, 2025-26)." },
+  { key: "frl", label: "F/R lunch", numeric: true, tier: "full", width: 92, help: "Share of students on free or reduced-price meals, the school-level poverty measure (FL DOE Fall Survey 2, 2025-26)." },
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
   { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "Survey 2 membership enrollment (FL DOE), with its year." },
   { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Permanent FISH student stations (FL DOE)." },

@@ -130,6 +130,10 @@ export interface SchoolFilterInput {
   // for precise thresholds the tiers cannot express. null = open on that end.
   utilMin: number | null;
   utilMax: number | null;
+  // Custom free/reduced-price lunch band as % (frl_rate * 100). null = open on
+  // that end. A school with no reported rate cannot satisfy a set band.
+  frlMin: number | null;
+  frlMax: number | null;
   boundary: LatLng[] | null; // a hand-drawn polygon; when set, only points inside pass
   // MSIDs inside the active board/legislative district, or null for no district
   // filter. Precomputed by the district-tagging spatial join (see districts.ts).
@@ -277,6 +281,15 @@ export function passesFilters(
     const pct = (p.enrollment / p.capacity) * 100;
     if (input.utilMin != null && pct < input.utilMin) return false;
     if (input.utilMax != null && pct > input.utilMax) return false;
+  }
+
+  // Custom free/reduced-price lunch band (%). A school with no reported rate
+  // (suppressed or absent from the FL DOE report) cannot satisfy a set band.
+  if (input.frlMin != null || input.frlMax != null) {
+    if (p.frl_rate == null) return false;
+    const frlPct = p.frl_rate * 100;
+    if (input.frlMin != null && frlPct < input.frlMin) return false;
+    if (input.frlMax != null && frlPct > input.frlMax) return false;
   }
 
   return true;

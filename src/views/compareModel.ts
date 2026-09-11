@@ -114,6 +114,10 @@ export function buildCompareSections(
     const p = schools[i].properties;
     return utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus).label;
   };
+  const frlValue = (i: number) => {
+    const p = schools[i].properties;
+    return p.frl_rate != null ? `${Math.round(p.frl_rate * 100)}%` : "Not reported";
+  };
 
   const build = (key: string, label: string, fn: (i: number) => string, help?: string): CompareRow => {
     const values = schools.map((_, i) => fn(i));
@@ -139,7 +143,7 @@ export function buildCompareSections(
         yesNo("soh", "In a School of Hope siting area", ctx.sohEligibleMsids, "Within a siting area: 5 miles of a persistently low-performing school or in an Opportunity Zone, and Title I eligible (F.S. 1002.333)."),
         yesNo("plp", "Persistently low-performing (PLP) anchor", ctx.plp, "A school on the state's persistently low-performing list. A hope operator may open nearby to serve its students."),
         yesNo("coloc", "Co-location candidate", ctx.coLocationMsids, "An underused district building (use at or below 75%, or 400+ surplus stations) inside a siting area. One test we can't check: buildings under 4 years old don't qualify, so this is a candidate, not confirmed."),
-        build("titlei", "Title I eligibility", (i) => titleILabel(schools[i].properties.title_i), "Federal Title I eligibility (NCES CCD)."),
+        build("titlei", "Title I eligibility", (i) => titleILabel(schools[i].properties.title_i), "Title I eligibility (FL DOE Title I Part A list, 2025-26)."),
       ],
     },
     {
@@ -163,6 +167,7 @@ export function buildCompareSections(
     {
       title: "Community context",
       rows: [
+        build("frl", "Free/reduced-price lunch", frlValue, "Share of students certified for free or reduced-price meals, the school-level poverty measure (FL DOE Fall Survey 2, 2025-26)."),
         build("income", "Median household income (area)", incomeValue, "American Community Survey median household income for the school's census tract, with margin of error."),
         build("oz", "In an Opportunity Zone", ozValue, "Whether the school's tract is a designated Qualified Opportunity Zone."),
       ],

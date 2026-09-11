@@ -22,6 +22,7 @@ type FeatOpts = {
   capacity?: number | null;
   cofte?: number | null;
   fishSurplus?: number | null;
+  frl?: number | null;
   lng?: number;
   lat?: number;
 };
@@ -48,6 +49,9 @@ const school = (o: FeatOpts): SchoolFeature => ({
     title_i: o.titleI ?? "yes",
     title_i_schoolwide: false,
     title_i_eligible: (o.titleI ?? "yes") === "yes",
+    frl_rate: o.frl === undefined ? null : o.frl,
+    frl_denominator: null,
+    frl_year: o.frl === undefined ? null : "2025-2026",
     address: "n/a",
     geocode_source: "test",
   },
@@ -116,6 +120,8 @@ describe("filterSchools composition", () => {
     facilityUse: new Set<FacilityUseKey>(),
     utilMin: null,
     utilMax: null,
+    frlMin: null,
+    frlMax: null,
     boundary: null,
     districtMsids: null,
   };
@@ -183,6 +189,27 @@ describe("filterSchools composition", () => {
     expect(passesFilters(overUtil, multiInput, ctx2)).toBe(true);
     expect(passesFilters(underUtil, multiInput, ctx2)).toBe(true);
     expect(passesFilters(targetUtil, multiInput, ctx2)).toBe(false);
+  });
+
+  it("free/reduced-price lunch band keeps schools inside the % range and drops unreported rates", () => {
+    const high = school({ msid: "FH", frl: 0.9 });   // 90%
+    const mid = school({ msid: "FM", frl: 0.6 });     // 60%
+    const low = school({ msid: "FL", frl: 0.2 });     // 20%
+    const none = school({ msid: "FN", frl: null });   // suppressed / not reported
+    const fc = collection([high, mid, low, none]);
+    const c = buildFilterContext(fc, grades);
+    // "at or above 75%"
+    const minInput: SchoolFilterInput = { ...base, frlMin: 75 };
+    expect(passesFilters(high, minInput, c)).toBe(true);
+    expect(passesFilters(mid, minInput, c)).toBe(false);
+    expect(passesFilters(none, minInput, c)).toBe(false); // no rate never satisfies a set band
+    // bounded band 50-80%
+    const bandInput: SchoolFilterInput = { ...base, frlMin: 50, frlMax: 80 };
+    expect(passesFilters(mid, bandInput, c)).toBe(true);
+    expect(passesFilters(high, bandInput, c)).toBe(false);
+    expect(passesFilters(low, bandInput, c)).toBe(false);
+    // no band keeps unreported rates
+    expect(passesFilters(none, base, c)).toBe(true);
   });
 
   it("plpOnly keeps only PLP anchors", () => {

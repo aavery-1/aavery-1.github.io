@@ -196,6 +196,11 @@ export interface AppState {
   // both null = no constraint. Composes (AND) with everything else.
   utilMin: number | null;
   utilMax: number | null;
+  // Custom free/reduced-price lunch band (%), for targeting by student poverty
+  // (e.g. "at or above 75%"). Same semantics as the utilization band: null bound
+  // = open on that end; both null = no constraint. Composes (AND) with everything.
+  frlMin: number | null;
+  frlMax: number | null;
 
   // ---- Selection / tools / view ----
   selectedSchoolMsid: string | null;
@@ -248,6 +253,7 @@ export interface AppState {
   setFacilityUse: (keys: FacilityUseKey[]) => void;
   clearFacilityUse: () => void;
   setUtilRange: (min: number | null, max: number | null) => void;
+  setFrlRange: (min: number | null, max: number | null) => void;
   resetSchoolFilters: () => void;
   clearAllFilters: () => void;
   resetAll: () => void;
@@ -297,6 +303,8 @@ export const useStore = create<AppState>((set) => ({
   facilityUseSelection: new Set<FacilityUseKey>(),
   utilMin: null,
   utilMax: null,
+  frlMin: null,
+  frlMax: null,
 
   selectedSchoolMsid: null,
   comparePinnedMsids: [],
@@ -387,6 +395,7 @@ export const useStore = create<AppState>((set) => ({
   setFacilityUse: (keys) => set({ facilityUseSelection: new Set(keys) }),
   clearFacilityUse: () => set({ facilityUseSelection: new Set<FacilityUseKey>() }),
   setUtilRange: (min, max) => set({ utilMin: min, utilMax: max }),
+  setFrlRange: (min, max) => set({ frlMin: min, frlMax: max }),
 
   resetSchoolFilters: () =>
     set({
@@ -419,6 +428,8 @@ export const useStore = create<AppState>((set) => ({
       facilityUseSelection: new Set<FacilityUseKey>(),
       utilMin: null,
       utilMax: null,
+      frlMin: null,
+      frlMax: null,
       drawnBoundary: null,
       activeTool: "none",
       radiusCenter: null,
@@ -439,6 +450,8 @@ export const useStore = create<AppState>((set) => ({
       facilityUseSelection: new Set<FacilityUseKey>(),
       utilMin: null,
       utilMax: null,
+      frlMin: null,
+      frlMax: null,
       // Clear the spatial filter AND the tool that draws it, so "Clear all" is a
       // true clean slate: no lingering measurement circle or drawn-area overlay
       // left on the map after the filter behind it is gone.

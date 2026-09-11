@@ -88,6 +88,7 @@ export function validateSchools(data: unknown, file = "schools.sample.geojson"):
     if (!(SCHOOL_TYPES as readonly string[]).includes(p.type)) throw new SchemaError(file, `${where}.type`, `"${p.type}" is not an allowed type`);
     if (p.enrollment != null && (typeof p.enrollment !== "number" || p.enrollment < 0)) throw new SchemaError(file, `${where}.enrollment`, "is negative or non-numeric");
     if (p.capacity != null && (typeof p.capacity !== "number" || p.capacity < 0)) throw new SchemaError(file, `${where}.capacity`, "is negative or non-numeric");
+    if (p.frl_rate != null && (typeof p.frl_rate !== "number" || p.frl_rate < 0 || p.frl_rate > 1)) throw new SchemaError(file, `${where}.frl_rate`, "is outside the 0-1 range or non-numeric");
     // Every school must fall inside its declared county polygon.
     const county = p.county as CountyName;
     if (!(county in { "Miami-Dade": 1, Broward: 1, Orange: 1 })) throw new SchemaError(file, `${where}.county`, `"${county}" is not a pilot county`);

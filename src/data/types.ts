@@ -61,6 +61,14 @@ export interface SchoolProps {
   title_i: TitleIState;
   title_i_schoolwide: boolean;
   title_i_eligible: boolean;
+  // Free/reduced-price lunch rate (0-1), the school-level poverty measure, from
+  // FL DOE Fall Survey 2 lunch status. The published rate already carries the
+  // USDA CEP multiplier where applicable. Null = suppressed (small count) or the
+  // school is absent from the report; never coerced to 0. frl_denominator is the
+  // student count the rate is over. See scripts/parse-frl-lunch.py.
+  frl_rate?: number | null;
+  frl_denominator?: number | null;
+  frl_year?: string | null;
   address: string;
   geocode_source: string;
 }

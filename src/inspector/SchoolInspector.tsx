@@ -446,6 +446,9 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
   const util = utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
   const utilPct = util.pct;
   const utilColor = util.color;
+  // Free/reduced-price lunch: the real student-poverty rate. Null (suppressed or
+  // not in the FL DOE report) reads as "Not reported", never a fake 0.
+  const frlPct = p.frl_rate != null ? Math.round(p.frl_rate * 100) : null;
   // Co-location eligibility follows Rule 6A-1.0998271(5)(e): a district facility
   // is usable by a hope operator when its utilization is <=75% OR it has a
   // surplus of >=400 student stations. "District facility" = any district-run
@@ -474,6 +477,7 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
     ["State Senate district", sldu ? sldu.district_number : ""],
     ["Current grade", `${p.current_grade} (${p.current_grade_year})`],
     ["Title I eligible", titleILabel(p.title_i)],
+    ["Free/reduced-price lunch rate", frlPct != null ? `${frlPct}%` : ""],
     ["Co-location candidate", coLocationEligible ? "yes" : "no"],
     ["PLP", plpEval.isPlp ? "yes" : "no"],
     ["In School of Hope siting area", sohEligible ? "yes" : "no"],
@@ -581,6 +585,18 @@ export function SchoolInspector({ compact = false }: { compact?: boolean } = {})
           <p className="insp-note">Enrollment or capacity not reported.</p>
         )}
         <EnrollmentTrend history={enrollHistory} capacity={p.capacity} />
+
+        <div className="insp-frl">
+          <span className="insp-frl__label" title="Share of students certified for free or reduced-price meals. FL DOE Fall Survey 2, 2025-26.">Free/reduced-price lunch</span>
+          {frlPct != null ? (
+            <span className="insp-frl__val">
+              {frlPct}%
+              {p.frl_denominator != null && <span className="insp-frl__of"> of {p.frl_denominator.toLocaleString("en-US")} students</span>}
+            </span>
+          ) : (
+            <span className="insp-frl__val insp-frl__val--none">Not reported</span>
+          )}
+        </div>
 
         <hr className="insp-divider" />
 

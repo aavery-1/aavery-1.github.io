@@ -25,6 +25,7 @@ import {
   Building as BuildingIcon, Money as MoneyIcon, Categories as CategoriesIcon,
   Education as EducationIcon, Report as ReportIcon, MapBoundary as MapBoundaryIcon,
   ZoomIn as ZoomToIcon, Filter as FilterFunnelIcon, Reset as ResetIcon,
+  Restaurant as MealIcon,
 } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useStore, ALL_COUNTIES, FACILITY_USE_TIERS, utilizationStyle, type FacilityUseKey, type LatLng } from "../store";
@@ -401,6 +402,10 @@ function SchoolFacets() {
   const utilMax = useStore((s) => s.utilMax);
   const setUtilRange = useStore((s) => s.setUtilRange);
   const utilRangeActive = utilMin != null || utilMax != null;
+  const frlMin = useStore((s) => s.frlMin);
+  const frlMax = useStore((s) => s.frlMax);
+  const setFrlRange = useStore((s) => s.setFrlRange);
+  const frlRangeActive = frlMin != null || frlMax != null;
 
   // Only offer options that actually occur in the loaded data.
   const presentLevels = SCHOOL_LEVELS.filter((l) => all.some((f) => f.properties.level === l));
@@ -497,6 +502,42 @@ function SchoolFacets() {
         {TITLE_I_STATES.map((t) => (
           <CheckboxRow key={t} label={titleILabel(t)} checked={titleISelection.has(t)} count={counts.titleI[t] ?? 0} onToggle={() => toggleTitleI(t)} />
         ))}
+      </FacetSection>
+
+      <FacetDivider />
+
+      {/* Free/reduced-price lunch: the real student-poverty rate (a range band, so
+          an analyst can target the highest-need schools, e.g. "at or above 75%").
+          Schools with no reported rate drop out when a bound is set. */}
+      <FacetSection
+        title="Free/reduced-price lunch"
+        icon={<MealIcon size={15} />}
+        info="Share of students certified for free or reduced-price meals (FL DOE Fall Survey 2, 2025-26)."
+        activeCount={frlRangeActive ? 1 : 0}
+        onClear={frlRangeActive ? () => setFrlRange(null, null) : undefined}
+      >
+        <Box sx={{ pl: 0.25 }}>
+          <Typography sx={{ fontSize: 12, color: SHELL_DIM, mb: 0.5 }}>Custom range (% of students)</Typography>
+          <Stack direction="row" spacing={0.75} alignItems="center">
+            <TextField
+              size="small" type="number" placeholder="Min"
+              value={frlMin ?? ""}
+              onChange={(e) => { const v = e.target.value; setFrlRange(v === "" ? null : Math.min(100, Math.max(0, Number(v))), frlMax); }}
+              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
+              inputProps={{ min: 0, max: 100, "aria-label": "Minimum free/reduced-price lunch percent", style: { fontSize: 13, padding: "6px 8px" } }}
+              sx={{ width: 92 }}
+            />
+            <Typography sx={{ fontSize: 13, color: SHELL_DIM }}>to</Typography>
+            <TextField
+              size="small" type="number" placeholder="Max"
+              value={frlMax ?? ""}
+              onChange={(e) => { const v = e.target.value; setFrlRange(frlMin, v === "" ? null : Math.min(100, Math.max(0, Number(v)))); }}
+              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
+              inputProps={{ min: 0, max: 100, "aria-label": "Maximum free/reduced-price lunch percent", style: { fontSize: 13, padding: "6px 8px" } }}
+              sx={{ width: 92 }}
+            />
+          </Stack>
+        </Box>
       </FacetSection>
 
       <FacetDivider />

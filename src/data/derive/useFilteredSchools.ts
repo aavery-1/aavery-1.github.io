@@ -56,6 +56,8 @@ export function useFilteredSchools(): FilteredSchools {
   const facilityUseSelection = useStore((s) => s.facilityUseSelection);
   const utilMin = useStore((s) => s.utilMin);
   const utilMax = useStore((s) => s.utilMax);
+  const frlMin = useStore((s) => s.frlMin);
+  const frlMax = useStore((s) => s.frlMax);
   const drawnBoundary = useStore((s) => s.drawnBoundary);
   const mapBounds = useStore((s) => s.mapBounds);
 
@@ -80,10 +82,12 @@ export function useFilteredSchools(): FilteredSchools {
       facilityUse: facilityUseSelection,
       utilMin,
       utilMax,
+      frlMin,
+      frlMax,
       boundary: drawnBoundary,
       districtMsids,
     }),
-    [countySelection, gradeSelection, levelSelection, typeSelection, titleISelection, plpOnly, coLocationOnly, facilityUseSelection, utilMin, utilMax, drawnBoundary, districtMsids],
+    [countySelection, gradeSelection, levelSelection, typeSelection, titleISelection, plpOnly, coLocationOnly, facilityUseSelection, utilMin, utilMax, frlMin, frlMax, drawnBoundary, districtMsids],
   );
 
   return useMemo(() => {

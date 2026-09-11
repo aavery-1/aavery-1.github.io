@@ -47,6 +47,12 @@ export function useActiveFilters(): ActiveFilter[] {
       : s.utilMin != null ? `Utilization >= ${s.utilMin}%` : `Utilization <= ${s.utilMax}%`;
     filters.push({ key: "utilrange", section: "Schools", label, onClear: () => s.setUtilRange(null, null) });
   }
+  if (s.frlMin != null || s.frlMax != null) {
+    const label = s.frlMin != null && s.frlMax != null
+      ? `Free/reduced lunch ${s.frlMin}-${s.frlMax}%`
+      : s.frlMin != null ? `Free/reduced lunch >= ${s.frlMin}%` : `Free/reduced lunch <= ${s.frlMax}%`;
+    filters.push({ key: "frlrange", section: "Schools", label, onClear: () => s.setFrlRange(null, null) });
+  }
   if (s.titleISelection.size > 0) filters.push({ key: "titlei", section: "Schools", label: `Title I: ${[...s.titleISelection].map(titleILabel).join(", ")}`, onClear: s.clearTitleI });
 
   return filters;

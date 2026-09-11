@@ -146,6 +146,16 @@
 .insp-bar__fill { height: 100%; border-radius: 999px; }
 .insp-note { font-size: 12px; color: var(--cds-text-secondary, #525252); margin-top: 6px; line-height: 1.45; font-variant-numeric: tabular-nums; }
 
+/* Free/reduced-price lunch: one compact fact line under the enrollment trend. */
+.insp-frl {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--cds-border-subtle, #e0e0e0);
+}
+.insp-frl__label { font-size: 12px; font-weight: 600; color: var(--cds-text-secondary, #525252); cursor: help; }
+.insp-frl__val { font-size: 14px; font-weight: 600; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; text-align: right; }
+.insp-frl__of { font-size: 12px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
+.insp-frl__val--none { font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
+
 /* ---- Enrollment trend chart ---- */
 .insp-trend { margin-top: 14px; }
 /* Header row: left-aligned title, with the paging arrows pushed to the right. */
