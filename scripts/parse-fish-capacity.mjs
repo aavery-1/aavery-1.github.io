@@ -26,9 +26,9 @@
 //   public/data/fish_capacity.json         (keyed by school MSID; feeds backend)
 //   public/data/schools.sample.geojson     (patched: capacity populated in place)
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { basename, dirname, resolve } from "node:path";
 import XLSX from "xlsx";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -204,16 +204,25 @@ function main() {
   }
 
   schools.vintage_capacity = "FISH satisfactory student stations, FL DOE, May 2026";
-  writeFileSync(SCHOOLS_FILE, JSON.stringify(schools, null, 2) + "\n");
-
-  writeFileSync(OUT_FILE, JSON.stringify({
+  const schoolsPayload = JSON.stringify(schools, null, 2) + "\n";
+  const capacityPayload = JSON.stringify({
     vintage: "FISH data reported as satisfactory, May 2026",
     source: "Florida Inventory of School Houses (FISH), FL DOE Office of Educational Facilities",
     source_note: "FacilityData sheet; 'Capacity' is the utilization-adjusted permanent capacity used for the Facility Utilization Rate.",
     join_note: "Keyed by school MSID. Matched to school points by unique normalized name within district (FISH facility numbers are not the NCES MSID); ambiguous names skipped.",
     unit: "students (permanent capacity)",
     schools: capacityByMsid,
-  }, null, 2) + "\n");
+  }, null, 2) + "\n";
+
+  writeFileSync(SCHOOLS_FILE, schoolsPayload);
+  writeFileSync(OUT_FILE, capacityPayload);
+
+  // Keep the built copy in sync so `vite preview` and the deploy (which serve
+  // dist/, not public/) show the refreshed data without a full rebuild.
+  for (const [src, payload] of [[SCHOOLS_FILE, schoolsPayload], [OUT_FILE, capacityPayload]]) {
+    const distCopy = resolve(ROOT, "dist", "data", basename(src));
+    if (existsSync(distCopy)) writeFileSync(distCopy, payload);
+  }
 
   const matched = stats.exact + stats.disambiguated + stats.fuzzy;
   console.log(`patched capacity onto ${matched} schools (exact ${stats.exact}, level-disambiguated ${stats.disambiguated}, fuzzy ${stats.fuzzy})`);

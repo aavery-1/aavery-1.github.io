@@ -42,6 +42,16 @@ SRC_DIR = ROOT / "scripts" / "sources" / "fldoe-membership"
 SCHOOLS_PATH = ROOT / "public" / "data" / "schools.sample.geojson"
 HISTORY_PATH = ROOT / "public" / "data" / "enrollment_history.json"
 
+
+def write_synced(path, payload):
+    """Write a public/data file and keep the built dist/data copy in sync, so
+    `vite preview` and the deploy (which serve dist/, not public/) show the
+    refreshed data without a full rebuild."""
+    path.write_text(payload)
+    dist_copy = ROOT / "dist" / "data" / path.name
+    if dist_copy.exists():
+        dist_copy.write_text(payload)
+
 # file tag -> (school-year label, is_final). Ordered oldest -> newest.
 # 2021-22 was published as a preliminary Survey 2 snapshot ("as of December 23,
 # 2021"); the rest are Final Survey 2. We include the preliminary year in the
@@ -124,7 +134,7 @@ def main():
                   "trend, which each campus resolves through report_msid."),
         "schools": {k: history[k] for k in sorted(history)},
     }
-    HISTORY_PATH.write_text(json.dumps(history_out, indent=2) + "\n")
+    write_synced(HISTORY_PATH, json.dumps(history_out, indent=2) + "\n")
     print(f"\nWrote {HISTORY_PATH.relative_to(ROOT)}: {len(history)} schools, "
           f"{len(all_years_oldest_first)} survey years.")
 
@@ -183,7 +193,7 @@ def main():
         "from FL DOE (grades.sample.json); Title I and flood carried by MSID; "
         "capacity/COFTE from FISH LOS (parse-fish-los.py)."
     )
-    SCHOOLS_PATH.write_text(json.dumps(geo, indent=2) + "\n")
+    write_synced(SCHOOLS_PATH, json.dumps(geo, indent=2) + "\n")
 
     print(f"\nWrote {SCHOOLS_PATH.relative_to(ROOT)}: {len(feats)} schools")
     print(f"  enrollment set: {n_set}  |  N/A: {n_na}  "
