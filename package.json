@@ -21,7 +21,8 @@
     "data:legislators": "node scripts/parse-legislators.mjs",
     "data:board": "node scripts/fetch-board-districts.mjs",
     "data:orangeboard": "node scripts/parse-orange-board.mjs",
-    "data:titlei": "node scripts/fetch-title-i.mjs",
+    "data:titlei": "python3 scripts/parse-title-i-tipa.py",
+    "data:titlei:ccd": "node scripts/fetch-title-i.mjs",
     "data:flood": "node scripts/fetch-flood.mjs",
     "data:income": "node --env-file=.env scripts/build-acs-income.mjs",
     "data:soh": "node scripts/build-schools-of-hope.mjs"

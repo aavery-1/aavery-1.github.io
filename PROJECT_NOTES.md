@@ -18,8 +18,12 @@ Data made real (each step is a re-runnable `npm run data:*` script):
 - Real school-board districts for Miami-Dade + Broward with current member names
   (`data:board`). Orange publishes board-member districts only as a PDF map, so its
   boundary is a documented gap.
-- Title I eligibility (`data:titlei`) from NCES CCD (tri-state yes/no/unknown),
-  wired into the filter, inspector, and School of Hope eligibility.
+- Title I eligibility (`data:titlei`) from the FL DOE Title I Part A eligible-school
+  list, 2025-26 (tri-state yes/no/unknown), wired into the filter, inspector, and
+  School of Hope eligibility. Traditional schools join on MSID; charters filed under
+  a charter-management LEA (KIPP 98Z, Mater 815, UCP 48K) are matched by school
+  number + name. Unconfirmed charters stay "unknown", never a silent "no". The prior
+  NCES CCD 2021-22 path is kept as `data:titlei:ccd`.
 - Per-school FEMA flood status (`data:flood`) from the FEMA National Flood Hazard
   Layer; the inspector's flood Yes/No is now authoritative. The map flood overlay
   is still a small sample and is labeled as such.

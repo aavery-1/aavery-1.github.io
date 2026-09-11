@@ -490,7 +490,7 @@ function SchoolFacets() {
       <FacetSection
         title="Title I"
         icon={<MoneyIcon size={15} />}
-        info="Federal Title I eligibility (NCES CCD)."
+        info="Title I eligibility (FL DOE Title I Part A list, 2025-26)."
         activeCount={titleISelection.size}
         onClear={titleISelection.size ? clearTitleI : undefined}
       >
