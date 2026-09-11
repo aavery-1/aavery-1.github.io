@@ -296,26 +296,58 @@ export function MapView() {
   }, [activeTool]);
 
   // First-load framing: fit the map to the real school bounds so pins are always
-  // in view, rather than trusting a hardcoded center. Skipped when the view came
-  // from a shared link (a center in the URL hash) so deep links are respected.
+  // in view, rather than trusting a hardcoded center.
   useEffect(() => {
     if (didInitialFit.current || status !== "ready" || !mapRef.current || !schools?.features.length) return;
+    const map = mapRef.current;
+
+    // Decide whether to honor the camera that hydrated from the URL hash. A center
+    // INSIDE the school bounds is a genuine deep link (a shared view or a selected
+    // school), so respect it. A center OUTSIDE the bounds is stale or garbage --
+    // most often a first-load fit that ran before the map container had laid out,
+    // whose nonsense camera then got written back to the hash by the idle
+    // listener -- so we ignore it and frame the schools. This lets the map always
+    // self-heal to where the pins actually are instead of stranding the user over
+    // empty ocean with zero markers in view.
+    const bounds = new google.maps.LatLngBounds();
+    for (const f of schools.features) {
+      const [lng, lat] = f.geometry.coordinates as [number, number];
+      bounds.extend({ lat, lng });
+    }
+    const center = map.getCenter();
+    if (window.location.hash.includes("c=") && center && bounds.contains(center)) {
+      didInitialFit.current = true;
+      return;
+    }
     didInitialFit.current = true;
-    if (window.location.hash.includes("c=")) return;
+
     // Cinematic first-load reveal: frame the tri-county area (Orange / Orlando,
     // Miami-Dade, Broward) from the school bounds, hold it one step WIDER behind
     // the load splash, then gently zoom in to the frame as the splash lifts. The
     // final camera is always the true fit, so the framing is correct regardless.
-    const map = mapRef.current;
-    fitToSchools();
-    google.maps.event.addListenerOnce(map, "idle", () => {
-      const zt = map.getZoom();
-      if (typeof zt !== "number") return;
-      map.setZoom(Math.max(PILOT_MIN_ZOOM, zt - 1)); // hold wide (behind the splash)
-      window.setTimeout(() => {
-        if (mapRef.current === map) map.setZoom(zt); // smooth zoom-in as the splash fades
-      }, 1200);
-    });
+    // Only frame once the container has real size, though: fitBounds against a
+    // container that has not laid out yet computes the garbage camera described
+    // above, so retry across a few frames until the layout settles, then fit once.
+    let tries = 0;
+    const frameWhenSized = () => {
+      if (mapRef.current !== map) return;
+      const el = mapEl.current;
+      if ((!el || el.clientWidth < 2 || el.clientHeight < 2) && tries < 60) {
+        tries++;
+        requestAnimationFrame(frameWhenSized);
+        return;
+      }
+      fitToSchools();
+      google.maps.event.addListenerOnce(map, "idle", () => {
+        const zt = map.getZoom();
+        if (typeof zt !== "number") return;
+        map.setZoom(Math.max(PILOT_MIN_ZOOM, zt - 1)); // hold wide (behind the splash)
+        window.setTimeout(() => {
+          if (mapRef.current === map) map.setZoom(zt); // smooth zoom-in as the splash fades
+        }, 1200);
+      });
+    };
+    frameWhenSized();
   }, [status, schools, fitToSchools]);
 
   // Google overlay layers, each toggled independently. Created lazily, attached
