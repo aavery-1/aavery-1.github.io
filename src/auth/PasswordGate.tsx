@@ -56,6 +56,7 @@ export function PasswordGate({ children }: { children: ReactNode }) {
           id="pwgate-password"
           className="pwgate__input"
           labelText="Password"
+          hideLabel
           placeholder="Enter password"
           value={pw}
           invalid={invalid}
