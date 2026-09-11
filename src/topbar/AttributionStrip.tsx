@@ -44,7 +44,7 @@ const GROUPS: Group[] = [
       { label: "Title I eligibility", tag: "Official",
         source: "NCES Common Core of Data (Title I eligibility flag)",
         vintage: "2023-2024 directory",
-        note: "879 eligible / 216 not, from the CCD directory. 41 recently added or reopened schools have no Title I flag yet and show 'unknown' (not treated as ineligible). A school's Title I status can change year to year." },
+        note: "879 eligible / 216 not, from the CCD directory. 41 recently added or reopened schools have no Title I flag yet and show 'unknown', which the tool counts as possibly eligible. A school's Title I status can change year to year." },
       { label: "Enrollment (current & history)", tag: "Official",
         source: "FL DOE Membership by School by Grade, Final Survey 2 (October count); Broward SY2026-27 from the Broward County Tenth Day Enrollment Count",
         vintage: "2020-2021 through 2024-2025 (Broward through 2026-2027)",
