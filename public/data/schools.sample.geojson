@@ -33049,10 +33049,10 @@
         "current_grade_year": "2023-2024",
         "enrollment": 47,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 359,
+        "cofte": 49.2,
+        "fish_surplus": 309.8,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -33062,7 +33062,8 @@
         "address": "2201 NW 207th ST, Miami Gardens, FL, 33056",
         "frl_rate": 1.0,
         "frl_denominator": 51,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 359
       }
     },
     {

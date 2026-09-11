@@ -42,6 +42,7 @@ COUNTIES = {
 # fuzzy matcher) when a district renames a campus without moving the building.
 ALIASES = {
     "13-5931": "PHILLIS WHEATLEY ELEMENTARY",                 # tool spells it "Phyllis"; FISH uses the historical "Phillis" -> token match fails
+    "13-8151": "ROBERT RENICK EDUCATION CENTER",              # tool says "Educational Center"; FISH says "Education Center" -> token match fails
     "06-0121": "HOLLYWOOD CENTRAL PREPARATORY K-8",           # was Hollywood Central Elementary
     "06-0501": "BROWARD ESTATES EARLY LEARNING AND RESOURCE CENTER",  # was Broward Estates Elementary
     "06-1421": "COCONUT CREEK K-8 ACADEMY OF EXCELLENCE",     # was Coconut Creek Elementary
