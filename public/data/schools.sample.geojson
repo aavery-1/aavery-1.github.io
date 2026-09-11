@@ -24735,10 +24735,10 @@
         "current_grade_year": "2025-2026",
         "enrollment": 145,
         "enrollment_year": "2024-2025",
-        "capacity": null,
-        "cofte": null,
-        "fish_surplus": null,
-        "fish_vintage": null,
+        "capacity": 620,
+        "cofte": 1.7,
+        "fish_surplus": 618.3,
+        "fish_vintage": "FISH Level of Service, Miami-Dade, 2025-26 (reported 2026-04-10)",
         "title_i": "yes",
         "title_i_eligible": true,
         "title_i_schoolwide": true,
@@ -24748,7 +24748,8 @@
         "address": "1801 NW 1st PL, Miami, FL, 33136",
         "frl_rate": 1.0,
         "frl_denominator": 146,
-        "frl_year": "2025-2026"
+        "frl_year": "2025-2026",
+        "permanent_capacity": 620
       }
     },
     {

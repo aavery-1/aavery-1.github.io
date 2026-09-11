@@ -388,9 +388,6 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
   return (
     <div className="insp-demo">
       <p className="insp-label" style={{ marginBottom: 4 }}>Neighborhood demographics</p>
-      <p className="insp-subhead" style={{ fontWeight: 400 }}>
-        Who lives around this school, by distance. Estimated from where residents actually live (2020 Census blocks) using {meta.vintage.split(";")[0]} data.
-      </p>
       <div className="insp-demo__scroll">
         <table className="insp-demo__table">
           <thead>
