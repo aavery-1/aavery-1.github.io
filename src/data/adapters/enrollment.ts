@@ -1,9 +1,9 @@
 // Enrollment history adapter (dataset). REAL DATA.
 //
-// Feeds the inspector's enrollment trend. Source: NCES Common Core of Data
-// (annual PK-12 membership, all grades) via the Urban Institute Education Data
-// Portal, keyed by MSID to match the school points. Fetched to
-// public/data/enrollment_history.json by scripts/fetch-real-layers.mjs.
+// Feeds the inspector's enrollment trend. Source: FL DOE "Membership by School
+// by Grade" (Final Survey 2, the October count used for FEFP funding), keyed by
+// MSID to match the school points. Built to public/data/enrollment_history.json
+// by scripts/parse-fldoe-membership.py.
 
 import { loadValidated } from "./base";
 import type { LoadResult, EnrollmentHistoryFile } from "../types";
@@ -19,7 +19,7 @@ function validateEnrollment(data: unknown, file = "enrollment_history.json"): En
 
 export function loadEnrollmentHistory(): Promise<LoadResult<EnrollmentHistoryFile>> {
   return loadValidated(SOURCE_URL, validateEnrollment, {
-    source: "NCES CCD via Urban Institute Education Data Portal",
-    vintage: "Annual PK-12 membership (October survey)",
+    source: "FL DOE Membership by School by Grade (Survey 2)",
+    vintage: "Final Survey 2 (October membership), 2020-21 through 2024-25",
   });
 }

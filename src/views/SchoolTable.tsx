@@ -720,7 +720,7 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "type", label: "Type", tier: "full", width: 92 },
   { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Federal Title I eligibility (NCES CCD)." },
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
-  { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "Membership enrollment (NCES CCD, 2023-24)." },
+  { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "Survey 2 membership enrollment (FL DOE), with its year." },
   { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Permanent FISH student stations (FL DOE)." },
   { key: "actions", label: "", numeric: true, width: 86 },
 ];

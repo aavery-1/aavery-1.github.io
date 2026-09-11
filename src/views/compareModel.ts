@@ -145,7 +145,7 @@ export function buildCompareSections(
     {
       title: "Enrollment and capacity",
       rows: [
-        build("enroll", "Enrollment", enrollValue, "Membership enrollment (NCES CCD), with its year."),
+        build("enroll", "Enrollment", enrollValue, "Survey 2 membership enrollment (FL DOE), with its year."),
         build("capacity", "FISH capacity", capacityValue, "Permanent FISH student stations (FL DOE)."),
         build("util", "Utilization (enrollment / capacity)", utilValue, "Enrollment divided by FISH student stations."),
         build("facility", "Facility use tier", facilityUseValue, "The statutory tier: underused (at or below 75%, or 400+ surplus stations), in use, or fully used (90% or above)."),
