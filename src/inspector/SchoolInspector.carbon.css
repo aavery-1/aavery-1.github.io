@@ -159,13 +159,13 @@
    utilization line. The tests above use total student stations; this shows how
    much of that capacity is in permanent buildings vs portables. */
 .insp-perm {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap;
   margin-top: 8px; padding: 6px 8px; border-radius: 4px;
   background: var(--cds-layer-accent-01, #e8e8e8);
   border-left: 3px solid var(--cds-border-strong-01, #8d8d8d);
 }
-.insp-perm__label { font-size: 11px; font-weight: 600; color: var(--cds-text-secondary, #525252); cursor: help; }
-.insp-perm__val { font-size: 13px; font-weight: 600; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; text-align: right; }
+.insp-perm__label { font-size: 11px; font-weight: 600; color: var(--cds-text-secondary, #525252); cursor: help; white-space: nowrap; }
+.insp-perm__val { flex: 1 1 auto; font-size: 13px; font-weight: 600; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; text-align: right; }
 .insp-perm__sub { font-size: 11px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
 
 /* Free/reduced-price lunch: one compact fact line under the enrollment trend. */
