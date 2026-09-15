@@ -2,17 +2,74 @@
 // a school's name and return them as JSON. This exists because the app is a
 // static site: browsers cannot fetch Google News RSS directly (no CORS headers),
 // so this server-side hop does the fetch and adds the CORS headers the browser
-// needs. It reuses the app's tested RSS parser (src/news/parseGoogleNews.ts) so
-// the shape the inspector renders is defined in exactly one place.
+// needs.
 //
-// Deploy (one time, from the project root, with the Supabase CLI logged in and
-// linked to your project):
-//   supabase functions deploy school-news
+// Deploy, either one:
+//   - Dashboard (simplest): Supabase project -> Edge Functions -> Deploy a new
+//     function named "school-news", paste this whole file, Deploy.
+//   - CLI: supabase functions deploy school-news
 // It is invoked from the client via supabase.functions.invoke("school-news",
 // { body: { name } }); the platform's JWT check accepts the app's anon key, so
 // this is not an open proxy. Free: Google News RSS needs no API key.
+//
+// NOTE: the RSS parser below is an in-sync COPY of src/news/parseGoogleNews.ts
+// (the app's vitest-tested source of truth). It is inlined here, rather than
+// imported, so this stays a single self-contained file that pastes/deploys
+// cleanly. If you change parsing logic, change both files (the __tests__ cover
+// the app copy). See src/news/__tests__ for the behavior these regexes must meet.
 
-import { parseGoogleNewsRss } from "../../../src/news/parseGoogleNews.ts";
+interface NewsItem {
+  title: string;
+  url: string;
+  source: string | null;
+  publishedAt: string | null; // the feed's RFC-822 date string, as provided
+}
+
+function decodeEntities(s: string): string {
+  return s
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&") // must run last so "&amp;#39;" style double-encoding resolves left-to-right
+    .trim();
+}
+
+function firstMatch(block: string, re: RegExp): string | null {
+  const m = re.exec(block);
+  return m ? m[1] : null;
+}
+
+function parseGoogleNewsRss(xml: string, limit = 6): NewsItem[] {
+  const items: NewsItem[] = [];
+  const seen = new Set<string>();
+  const itemRe = /<item\b[^>]*>([\s\S]*?)<\/item>/g;
+  let m: RegExpExecArray | null;
+  while ((m = itemRe.exec(xml)) !== null) {
+    const block = m[1];
+    const rawTitle = firstMatch(block, /<title\b[^>]*>([\s\S]*?)<\/title>/);
+    const rawLink = firstMatch(block, /<link\b[^>]*>([\s\S]*?)<\/link>/);
+    if (!rawTitle || !rawLink) continue;
+    const source = firstMatch(block, /<source\b[^>]*>([\s\S]*?)<\/source>/);
+    const publishedAt = firstMatch(block, /<pubDate\b[^>]*>([\s\S]*?)<\/pubDate>/);
+    const decodedSource = source ? decodeEntities(source) : null;
+    let title = decodeEntities(rawTitle);
+    if (decodedSource && title.endsWith(` - ${decodedSource}`)) {
+      title = title.slice(0, -(` - ${decodedSource}`.length)).trim();
+    }
+    const url = decodeEntities(rawLink);
+    if (!title || !url) continue;
+    const key = title.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push({ title, url, source: decodedSource, publishedAt: publishedAt ? decodeEntities(publishedAt) : null });
+    if (items.length >= limit) break;
+  }
+  return items;
+}
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
