@@ -18,7 +18,7 @@
 // No em dashes in this file.
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Button, IconButton, Tag } from "@carbon/react";
+import { Button, IconButton, Tag, SkeletonText } from "@carbon/react";
 import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, SOH_SURPLUS_STATIONS } from "../store";
@@ -898,7 +898,7 @@ function NewsCard({ news, name }: { news: SchoolNews; name: string }) {
       </div>
 
       {news.status === "loading" && (
-        <p className="insp-news__note">Loading headlines&hellip;</p>
+        <SkeletonText paragraph lineCount={3} aria-label="Loading headlines" />
       )}
       {news.status === "unavailable" && (
         <p className="insp-news__note insp-news__note--dim">Live headlines aren&rsquo;t set up for this deployment.</p>
@@ -922,7 +922,7 @@ function NewsCard({ news, name }: { news: SchoolNews; name: string }) {
                   title={it.title}
                 >
                   <span className="insp-news__title">{it.title}</span>
-                  <LaunchIcon size={12} className="insp-news__ext" aria-hidden />
+                  <LaunchIcon size={16} className="insp-news__ext" aria-hidden />
                 </a>
                 {(it.source || it.publishedAt) && (
                   <span className="insp-news__meta">

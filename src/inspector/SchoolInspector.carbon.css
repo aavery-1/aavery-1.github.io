@@ -215,29 +215,34 @@
 .insp-news {
   margin-top: 4px;
   padding: 12px;
-  border-radius: 6px;
+  border-radius: 4px;
   background: var(--cds-layer-accent-01, #e8e8e8);
   border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
 }
 .insp-news__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.insp-news__src { font-size: 11px; color: var(--cds-text-helper, #6f6f6f); white-space: nowrap; }
-.insp-news__note { font-size: 12px; color: var(--cds-text-secondary, #525252); margin: 0; }
+/* Carbon caption-01 for the muted source label and all soft-state / meta copy. */
+.insp-news__src { font-size: 12px; line-height: 16px; color: var(--cds-text-helper, #6f6f6f); white-space: nowrap; }
+.insp-news__note { font-size: 12px; line-height: 16px; color: var(--cds-text-secondary, #525252); margin: 0; }
 .insp-news__note--dim { color: var(--cds-text-helper, #6f6f6f); }
-.insp-news__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-.insp-news__item { display: grid; gap: 1px; }
+.insp-news__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.insp-news__item { display: grid; gap: 2px; }
+/* Carbon body-compact-01 headline; link + focus colors come from the (KIPP-navy)
+   Carbon link/focus tokens, never a hardcoded blue, so the card stays on brand. */
 .insp-news__link {
-  display: flex; align-items: baseline; gap: 5px;
-  color: #0043ce; text-decoration: none; font-size: 13px; line-height: 1.35;
+  display: flex; align-items: baseline; gap: 4px;
+  color: var(--cds-link-primary, #0f62fe); text-decoration: none;
+  font-size: 14px; line-height: 18px;
 }
-.insp-news__link:hover .insp-news__title { text-decoration: underline; }
-.insp-news__link:focus-visible { outline: 2px solid #0043ce; outline-offset: 2px; border-radius: 2px; }
+.insp-news__link:hover .insp-news__title { color: var(--cds-link-primary-hover, #0043ce); text-decoration: underline; }
+.insp-news__link:focus-visible { outline: 2px solid var(--cds-focus, #0f62fe); outline-offset: 2px; border-radius: 2px; }
 /* Two-line clamp so a long headline stays readable without stretching the card. */
 .insp-news__title {
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.insp-news__ext { flex: none; color: var(--cds-text-helper, #8d8d8d); transform: translateY(1px); }
-.insp-news__meta { font-size: 11px; color: var(--cds-text-helper, #6f6f6f); }
-.insp-news__disclaimer { margin: 10px 0 0; font-size: 11px; line-height: 1.4; color: var(--cds-text-helper, #6f6f6f); }
+/* Inline launch glyph follows the link color, per Carbon's inline-link-with-icon. */
+.insp-news__ext { flex: none; color: inherit; transform: translateY(2px); }
+.insp-news__meta { font-size: 12px; line-height: 16px; color: var(--cds-text-helper, #6f6f6f); }
+.insp-news__disclaimer { margin: 12px 0 0; font-size: 12px; line-height: 16px; color: var(--cds-text-helper, #6f6f6f); }
 
 /* Free/reduced-price lunch: one compact fact line under the enrollment trend. */
 .insp-frl {
