@@ -62,6 +62,30 @@ Plain-language steps. Two parts: **A) set up the password in Supabase**, then
 To change the password later: edit `supabase/setup.sql` (the text in step 3) and
 re-run it in the Supabase SQL Editor. No code change or redeploy needed.
 
+## Part C - Live news card (optional)
+
+The school inspector has an "In the news" card that lists recent headlines
+mentioning the school. The headlines come from a small Supabase Edge Function
+(`supabase/functions/school-news`) that fetches Google News on the server, so the
+browser is not blocked by cross-site rules. It is FREE (no news API key) and, if
+you skip this part, the card simply says "Live headlines aren't set up" and
+nothing else breaks.
+
+To turn it on, once, from the project folder:
+
+1. Install the Supabase CLI (one time): https://supabase.com/docs/guides/cli
+2. Log in and link to the same project as the password gate:
+   - `supabase login`
+   - `supabase link --project-ref YOUR_PROJECT_REF` (the `abcd1234` from your
+     Project URL)
+3. Deploy the function:
+   - `supabase functions deploy school-news`
+
+That's it. The site already knows how to call it (it reuses the same two Supabase
+secrets from Part A). Reload the site and open any school; headlines appear at the
+bottom of the inspector. The card is an external, unverified feed - it matches on
+the school name, so an occasional unrelated article can appear.
+
 ## If something goes wrong
 - Password box says "Could not check the password": the two Supabase secrets are
   missing or wrong. Re-copy them in step B4 and re-run the Action.

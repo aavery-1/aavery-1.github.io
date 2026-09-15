@@ -19,7 +19,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button, IconButton, Tag } from "@carbon/react";
-import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from "@carbon/icons-react";
+import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, SOH_SURPLUS_STATIONS } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
@@ -31,6 +31,7 @@ import {
 import { ExportButton } from "../tools/ExportButton";
 import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated } from "../data/derive/filters";
 import { isKippSchool } from "../data/derive/hopeOperators";
+import { useSchoolNews, type SchoolNews } from "../news/useSchoolNews";
 import { evaluatePlp, plpMsids } from "../data/derive/plp";
 import { distanceMiles, type LngLat } from "../geo/measure";
 import { titleILabel } from "../data/types";
@@ -453,8 +454,13 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   const setShortlistOpen = useStore((s) => s.setShortlistOpen);
   const setDistrictFilter = useStore((s) => s.setDistrictFilter);
 
-  if (!selectedSchoolMsid || !data.schools) return null;
-  const school = data.schools.features.find((f) => f.properties.msid === selectedSchoolMsid);
+  // Resolve the school BEFORE any early return so hooks below (the news feed) are
+  // called on every render, per the rules of hooks; a null school idles them.
+  const school = (selectedSchoolMsid && data.schools)
+    ? data.schools.features.find((f) => f.properties.msid === selectedSchoolMsid) ?? null
+    : null;
+  const news = useSchoolNews(school ? school.properties.name : null);
+
   if (!school) return null;
   const p = school.properties;
   const here: LngLat = school.geometry.coordinates as LngLat;
@@ -826,6 +832,12 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
         <DistrictKv label="Congressional district" text={cd ? `District ${cd.district_number}${cdRep ? `, ${repLabel(cdRep)}` : ""}` : "Not mapped for this location"} onFilter={districtTags?.CD ? () => setDistrictFilter({ kind: "CD", value: districtTags.CD! }) : undefined} />
         <DistrictKv label="State House district" text={sldl ? `District ${sldl.district_number}${sldlRep ? `, ${repLabel(sldlRep)}` : " (representative not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDL ? () => setDistrictFilter({ kind: "SLDL", value: districtTags.SLDL! }) : undefined} />
         <DistrictKv label="State Senate district" text={sldu ? `District ${sldu.district_number}${slduRep ? `, ${repLabel(slduRep)}` : " (senator not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDU ? () => setDistrictFilter({ kind: "SLDU", value: districtTags.SLDU! }) : undefined} />
+
+        {/* 6. IN THE NEWS: a live, external, UNVERIFIED headline feed matching the
+            school name. Applies to every school (KIPP included), so it sits outside
+            the facility blocks. Fails soft (see useSchoolNews). */}
+        <hr className="insp-divider" />
+        <NewsCard news={news} name={p.name} />
       </div>
 
       {/* Footer: stacked full-width Carbon actions. Primary (pin) on top; Export
@@ -857,5 +869,76 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
         )}
       </div>
     </aside>
+  );
+}
+
+// A short "N days ago" / "today" from an RFC-822 date string, or "" if unparseable.
+function relativeDate(rfc822: string | null): string {
+  if (!rfc822) return "";
+  const t = Date.parse(rfc822);
+  if (Number.isNaN(t)) return "";
+  const days = Math.floor((Date.now() - t) / 86_400_000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 30) return `${Math.floor(days / 7)} wk ago`;
+  return `${Math.floor(days / 30)} mo ago`;
+}
+
+// The inspector's "In the news" card: up to six recent headlines that mention the
+// school's name, each a link to the article. An EXTERNAL, UNVERIFIED feed (Google
+// News), stated plainly so it is never mistaken for the tool's sourced data. Fails
+// soft: quiet, non-alarming text for the unavailable / error / empty states.
+function NewsCard({ news, name }: { news: SchoolNews; name: string }) {
+  return (
+    <section className="insp-news" aria-label={`Recent news mentioning ${name}`}>
+      <div className="insp-news__head">
+        <p className="insp-label" style={{ margin: 0 }}>In the news</p>
+        <span className="insp-news__src">Google News</span>
+      </div>
+
+      {news.status === "loading" && (
+        <p className="insp-news__note">Loading headlines&hellip;</p>
+      )}
+      {news.status === "unavailable" && (
+        <p className="insp-news__note insp-news__note--dim">Live headlines aren&rsquo;t set up for this deployment.</p>
+      )}
+      {news.status === "error" && (
+        <p className="insp-news__note insp-news__note--dim">Couldn&rsquo;t load headlines right now.</p>
+      )}
+      {news.status === "ok" && news.items.length === 0 && (
+        <p className="insp-news__note insp-news__note--dim">No recent headlines mention this school.</p>
+      )}
+      {news.status === "ok" && news.items.length > 0 && (
+        <>
+          <ul className="insp-news__list">
+            {news.items.map((it, i) => (
+              <li key={`${it.url}-${i}`} className="insp-news__item">
+                <a
+                  className="insp-news__link"
+                  href={it.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={it.title}
+                >
+                  <span className="insp-news__title">{it.title}</span>
+                  <LaunchIcon size={12} className="insp-news__ext" aria-hidden />
+                </a>
+                {(it.source || it.publishedAt) && (
+                  <span className="insp-news__meta">
+                    {it.source}
+                    {it.source && relativeDate(it.publishedAt) ? " · " : ""}
+                    {relativeDate(it.publishedAt)}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="insp-news__disclaimer">
+            Headlines are matched to the school name and are not verified; some may be unrelated.
+          </p>
+        </>
+      )}
+    </section>
   );
 }
