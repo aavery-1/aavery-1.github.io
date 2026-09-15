@@ -4,7 +4,7 @@
 // coordinate readout. Handles the missing-key, auth-error, and network-error
 // states with specific messages instead of a blank page.
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { GoogleMapsOverlay } from "@deck.gl/google-maps";
 import { useGoogleMaps } from "./useGoogleMaps";
 import { useDeckLayers, type SchoolHoverInfo } from "./useDeckLayers";
@@ -57,6 +57,32 @@ export function MapView() {
     if (info) setHover(info);
     else hideTimer.current = window.setTimeout(() => setHover(null), 160);
   }, [cancelHide]);
+
+  // Keep the hover tooltip fully inside the map box. It opens below-right of the
+  // cursor by default, but flips left and/or above when that would overflow the
+  // right or bottom edge, then clamps to an 8px inset so it never bleeds off the
+  // map. Measured in a layout effect (before paint) so there is no visible jump.
+  const tipRef = useRef<HTMLDivElement | null>(null);
+  const [tipPos, setTipPos] = useState<{ left: number; top: number }>({ left: 0, top: 0 });
+  useLayoutEffect(() => {
+    if (!hover) return;
+    const root = rootRef.current;
+    const tip = tipRef.current;
+    if (!root || !tip) return;
+    const pad = 8;
+    const gap = 14;
+    const cw = root.clientWidth;
+    const ch = root.clientHeight;
+    const tw = tip.offsetWidth;
+    const th = tip.offsetHeight;
+    let left = hover.x + gap;
+    if (left + tw > cw - pad) left = hover.x - gap - tw; // flip to the left of the cursor
+    left = Math.min(Math.max(pad, left), Math.max(pad, cw - tw - pad));
+    let top = hover.y + gap;
+    if (top + th > ch - pad) top = hover.y - gap - th; // flip above the cursor
+    top = Math.min(Math.max(pad, top), Math.max(pad, ch - th - pad));
+    setTipPos({ left, top });
+  }, [hover]);
   const layers = useDeckLayers(onSchoolHover);
   const { schools } = useData();
 
@@ -395,8 +421,9 @@ export function MapView() {
       {status === "loading" && <div className="map-loading">Loading the base map...</div>}
       {hover && (
         <div
+          ref={tipRef}
           className="pin-tooltip pin-tooltip--preview"
-          style={{ left: hover.x + 14, top: hover.y + 14 }}
+          style={{ left: tipPos.left, top: tipPos.top }}
         >
           {/* Header: grade badge + school name, then a muted identity line. */}
           <div className="pin-tooltip-head">

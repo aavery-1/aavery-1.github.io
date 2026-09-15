@@ -1733,7 +1733,9 @@ code {
   position: absolute;
   z-index: 9;
   width: max-content;
-  max-width: 268px;
+  /* Never wider than the viewport (small screens / narrow map column); the
+     JS edge-flip keeps it inside the map container. */
+  max-width: min(268px, calc(100vw - 16px));
   background: var(--card);
   border: 1px solid var(--hairline);
   border-radius: 0;
@@ -1878,7 +1880,9 @@ code {
 }
 .pin-tooltip-plps__list li {
   display: flex;
-  align-items: baseline;
+  /* flex-start (not baseline) so the distance stays aligned to the name's FIRST
+     line when a long name wraps to two lines. */
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   font-size: 11.5px;
@@ -1886,13 +1890,12 @@ code {
   color: var(--text-primary);
 }
 .pin-tooltip-plps__name {
-  /* Grow to fill the row but be allowed to shrink (min-width:0) so the ellipsis
-     engages and the "X mi" stays on-card instead of being pushed off the edge. */
+  /* Grow to fill the row and be allowed to shrink (min-width:0) so a long name
+     WRAPS within the card and shows in full, rather than truncating; the "X mi"
+     stays on-card either way. overflow-wrap breaks the rare unspaced long token. */
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .pin-tooltip-plps__mi {
   flex: none;
