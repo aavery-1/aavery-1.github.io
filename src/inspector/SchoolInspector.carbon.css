@@ -121,6 +121,25 @@
 .insp-link:hover { color: #001541; }
 .insp-link:focus-visible { outline: 2px solid #001e62; outline-offset: 1px; }
 
+/* ---- Low-performing schools within 5 miles ---- */
+/* The full list of nearby PLP anchors, each a jump link, with its distance
+   right-aligned. Sits just under the verdict, before the first divider. */
+.insp-plps { margin-top: 14px; }
+.insp-plps__label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.insp-plps__count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 18px; padding: 0 6px;
+  font-size: 11px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums;
+  color: var(--cds-text-on-color, #fff); background: #a2191f; border-radius: 9px;
+}
+.insp-plps__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.insp-plps__row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  font-size: 13px; line-height: 1.35;
+}
+.insp-plps__name { text-align: left; font-weight: 400; }
+.insp-plps__mi { flex: none; color: var(--cds-text-helper, #6f6f6f); font-variant-numeric: tabular-nums; }
+
 /* ---- Key indicators: one compact row each, label left, verdict right ---- */
 .insp-indrow {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;

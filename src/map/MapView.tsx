@@ -485,23 +485,40 @@ export function MapView() {
             </div>
           </dl>
 
-          {/* Why it qualifies, only when eligible: the pathways broken out as
-              scannable rows. This is a hover PREVIEW (pointer-events: none), so the
-              nearby PLP school is named as plain text; click the pin to inspect and
-              jump to it from there. */}
-          {hover.coLocationEligible && (hover.coLocInOZ || hover.coLocNearestPlp || hover.coLocIsPlpAnchor) && (
+          {/* Co-location pathways OTHER than the nearby-PLP list (shown below for
+              every school): the Opportunity-Zone route, or a candidate that is
+              itself the anchor. The 5-mile PLP pathway is covered by the list. */}
+          {hover.coLocationEligible && (hover.coLocInOZ || (hover.coLocIsPlpAnchor && hover.nearbyPlps.length === 0)) && (
             <ul className="pin-tooltip-why">
               {hover.coLocInOZ && <li>In a Qualified Opportunity Zone</li>}
-              {hover.coLocNearestPlp && (
-                <li>
-                  {hover.coLocNearestPlp.miles.toFixed(1)} mi from {hover.coLocNearestPlp.name}{" "}
-                  <span className="pin-tooltip-why-note">(low-performing)</span>
-                </li>
-              )}
-              {!hover.coLocInOZ && !hover.coLocNearestPlp && hover.coLocIsPlpAnchor && (
+              {hover.coLocIsPlpAnchor && hover.nearbyPlps.length === 0 && (
                 <li>At a persistently low-performing school</li>
               )}
             </ul>
+          )}
+
+          {/* Every persistently low-performing school within 5 miles: the anchors a
+              School of Hope at this site could serve. Shown for ANY school with a
+              nearby PLP, nearest first. This is a hover PREVIEW (pointer-events:
+              none), so names are plain text and a long list is truncated with a
+              count; click the pin to inspect and see the full, clickable list. */}
+          {!hover.isKipp && hover.nearbyPlps.length > 0 && (
+            <div className="pin-tooltip-plps">
+              <div className="pin-tooltip-plps__head">
+                {hover.nearbyPlps.length} low-performing school{hover.nearbyPlps.length === 1 ? "" : "s"} within 5 mi
+              </div>
+              <ul className="pin-tooltip-plps__list">
+                {hover.nearbyPlps.slice(0, 4).map((a) => (
+                  <li key={a.msid}>
+                    <span className="pin-tooltip-plps__name">{a.name}</span>
+                    <span className="pin-tooltip-plps__mi">{a.miles.toFixed(1)} mi</span>
+                  </li>
+                ))}
+              </ul>
+              {hover.nearbyPlps.length > 4 && (
+                <div className="pin-tooltip-plps__more">+{hover.nearbyPlps.length - 4} more &middot; click to see all</div>
+              )}
+            </div>
           )}
           </>
           )}

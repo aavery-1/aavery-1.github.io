@@ -13,6 +13,7 @@ import { useStore, utilizationStyle, isUnderutilizedFacility, type UtilKey } fro
 import type { MapBounds } from "../store";
 import { useData } from "../data/DataContext";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
+import type { NearbyPlp } from "../data/derive/filters";
 import { resolveGradeStyle } from "./gradeEncoding";
 import { matchHopeOperator, isKippSchool } from "../data/derive/hopeOperators";
 import { iconForShape, shapeForType } from "./markerShapes";
@@ -77,6 +78,10 @@ export interface SchoolHoverInfo {
   coLocInOZ: boolean;
   coLocNearestPlp: { msid: string; name: string; miles: number } | null;
   coLocIsPlpAnchor: boolean;
+  // Every same-county PLP within 5 miles of this school, nearest first (all schools,
+  // not just co-location candidates), so the tooltip can list the anchors a School
+  // of Hope here could serve. Empty when none. From ctx.nearbyPlps in filters.ts.
+  nearbyPlps: NearbyPlp[];
   // The state-designated hope operator that runs this school (Mater, KIPP, ...),
   // or null. When set, the school is an existing School of Hope and its marker
   // carries a gold star. Surfaced on the tooltip so the star reads as meaning.
@@ -475,6 +480,7 @@ export function useDeckLayers(
             coLocInOZ: reason?.inOpportunityZone ?? false,
             coLocNearestPlp: reason?.nearestPlp ?? null,
             coLocIsPlpAnchor: reason?.isPlpAnchor ?? false,
+            nearbyPlps: ctx.nearbyPlps.get(p.msid) ?? [],
             hopeOperator: matchHopeOperator(p.name),
             isKipp: isKippSchool(p.name),
           });

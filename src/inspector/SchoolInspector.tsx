@@ -594,6 +594,8 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
     ["Free/reduced-price lunch rate", frlPct != null ? `${frlPct}%` : ""],
     ["Co-location candidate", coLocationEligible ? "yes" : "no"],
     ["PLP", plpEval.isPlp ? "yes" : "no"],
+    ["PLP schools within 5 miles", String(anchorsWithin.length)],
+    ["Nearby PLP schools", anchorsWithin.map((a) => `${a.name} (${a.miles.toFixed(1)} mi)`).join("; ")],
     ["In School of Hope siting area", sohEligible ? "yes" : "no"],
     ["Enrollment", p.enrollment != null ? String(p.enrollment) : "unknown"],
     ["Capacity", p.capacity != null ? String(p.capacity) : "unknown"],
@@ -662,8 +664,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
             {plpEval.isPlp
               ? "Persistently low-performing, so a School of Hope may open within 5 miles."
               : anchorsWithin.length > 0
-                ? <>Within 5 miles of {anchorsWithin.length} persistently low-performing school{anchorsWithin.length === 1 ? "" : "s"}, the nearest being{" "}
-                    <button type="button" className="insp-link" onClick={() => selectSchool(anchorsWithin[0].msid)}>{anchorsWithin[0].name}</button> ({anchorsWithin[0].miles.toFixed(1)} mi).</>
+                ? <>Within 5 miles of {anchorsWithin.length} persistently low-performing school{anchorsWithin.length === 1 ? "" : "s"} (listed below).</>
                 : inOZ
                   ? "Inside an Opportunity Zone, which counts as a siting area."
                   : "No persistently low-performing school within 5 miles, and not in an Opportunity Zone."}
@@ -678,6 +679,27 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
             <div className="insp-verdict__cite">F.S. 1002.333</div>
           )}
         </div>
+
+        {/* Every persistently low-performing school within 5 miles: the anchors a
+            School of Hope at this site could serve, nearest first. Each row jumps
+            the whole view to that school. Shown whenever there is at least one,
+            including for a PLP anchor with other low-performers nearby. */}
+        {anchorsWithin.length > 0 && (
+          <div className="insp-plps">
+            <p className="insp-label insp-plps__label">
+              Low-performing schools within 5 miles
+              <span className="insp-plps__count">{anchorsWithin.length}</span>
+            </p>
+            <ul className="insp-plps__list">
+              {anchorsWithin.map((a) => (
+                <li key={a.msid} className="insp-plps__row">
+                  <button type="button" className="insp-link insp-plps__name" onClick={() => selectSchool(a.msid)}>{a.name}</button>
+                  <span className="insp-plps__mi">{a.miles.toFixed(1)} mi</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <hr className="insp-divider" />
 

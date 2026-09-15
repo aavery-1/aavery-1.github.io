@@ -1856,6 +1856,50 @@ code {
 .pin-tooltip-why-note {
   color: var(--text-secondary);
 }
+/* The persistently low-performing schools within 5 miles: a compact named list
+   with the distance right-aligned, capped at a few rows with a "+N more" note. */
+.pin-tooltip-plps {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--hairline);
+}
+.pin-tooltip-plps__head {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.pin-tooltip-plps__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+.pin-tooltip-plps__list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.pin-tooltip-plps__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pin-tooltip-plps__mi {
+  flex: none;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.pin-tooltip-plps__more {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
 /* The hover tooltip is a non-interactive PREVIEW (base pointer-events: none): it
    never intercepts the cursor, so it cannot vanish as you reach for it, and it
    never blocks a click on the pin beneath. Inspecting is a single click on the

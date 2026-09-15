@@ -158,12 +158,22 @@ export function pointInPolygon(lng: number, lat: number, ring: LatLng[]): boolea
   return inside;
 }
 
+// One persistently low-performing anchor within 5 miles of a given school: its
+// MSID, name, and geodesic distance (miles). The same geodesic the eligibility
+// decision and the measure tool use, so the numbers reconcile everywhere.
+export interface NearbyPlp { msid: string; name: string; miles: number; }
+
 export interface SchoolFilterContext {
   plp: Set<string>;              // MSIDs of PLP anchor schools
   sohEligibleMsids: Set<string>; // MSIDs in a siting area (5-mi PLP or OZ) and Title I eligible
   sohReasons: Map<string, string>; // per eligible MSID, why it qualifies (tooltip text)
   coLocationMsids: Set<string>;  // underused district facilities that are ALSO in a siting area
   coLocationReasons: Map<string, CoLocationReason>; // per candidate, the utilization + pathway detail
+  // Every same-county PLP anchor within 5 miles of a school, sorted nearest first,
+  // keyed by the school's MSID. Present only for schools with >=1 nearby PLP. This
+  // is the shared source for the "PLP schools within 5 miles" list the map tooltip
+  // and inspector both show; nearestPlp above is simply this list's first entry.
+  nearbyPlps: Map<string, NearbyPlp[]>;
 }
 
 // Compute the derived context once per (schools, grades, plp) tuple. Callers
@@ -183,6 +193,7 @@ export function buildFilterContext(
   const sohReasons = new Map<string, string>();
   const coLocationMsids = new Set<string>();
   const coLocationReasons = new Map<string, CoLocationReason>();
+  const nearbyPlps = new Map<string, NearbyPlp[]>();
   if (schools) {
     // Coordinates of every PLP anchor (with its county), so each school can be
     // tested against them for the 5-mile radius pathway. The county is carried
@@ -205,14 +216,22 @@ export function buildFilterContext(
       // reason can name it and report the distance (same geodesic the eligibility
       // decision and the measure tool use).
       let nearestPlp: { msid: string; name: string; miles: number } | null = null;
+      // Every same-county PLP within 5 miles, so surfaces can list them all (not
+      // just the nearest). Sorted nearest-first below; nearestPlp is its head.
+      const nearList: NearbyPlp[] = [];
       for (const a of anchors) {
         if (a.coord === here) continue; // a PLP anchor is counted via isPlpAnchor, not as its own neighbor
         if (a.county !== p.county) continue; // same-district (county) requirement, Rule 6A-1.0998271(3)
         const d = distanceMiles(here, a.coord);
         if (d <= SOH_RADIUS_MILES) {
           nearbyPlpCount++;
+          nearList.push({ msid: a.msid, name: a.name, miles: d });
           if (!nearestPlp || d < nearestPlp.miles) nearestPlp = { msid: a.msid, name: a.name, miles: d };
         }
+      }
+      if (nearList.length) {
+        nearList.sort((x, y) => x.miles - y.miles);
+        nearbyPlps.set(p.msid, nearList);
       }
       const inOpportunityZone = Boolean(ozIndex && opportunityZoneAtPoint(ozIndex, here)?.designated);
       const evalResult = evaluateSitingArea({
@@ -238,7 +257,7 @@ export function buildFilterContext(
       }
     }
   }
-  return { plp, sohEligibleMsids, sohReasons, coLocationMsids, coLocationReasons };
+  return { plp, sohEligibleMsids, sohReasons, coLocationMsids, coLocationReasons, nearbyPlps };
 }
 
 export function passesFilters(

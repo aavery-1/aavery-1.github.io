@@ -40,8 +40,15 @@ const CompareView = lazy(() => import("../views/CompareView").then((m) => ({ def
 // no qualifying anchor.
 function anchorLine(msid: string, ctx: SchoolFilterContext): { text: string; muted?: boolean } {
   if (ctx.plp.has(msid)) return { text: "Is the PLP anchor" };
-  const near = ctx.coLocationReasons.get(msid)?.nearestPlp;
-  if (near) return { text: `Serves ${near.name} · ${near.miles.toFixed(1)} mi` };
+  const near = ctx.nearbyPlps.get(msid);
+  if (near && near.length) {
+    const head = near[0];
+    return {
+      text: near.length === 1
+        ? `Serves ${head.name} · ${head.miles.toFixed(1)} mi`
+        : `${near.length} low-performing within 5 mi · nearest ${head.miles.toFixed(1)} mi`,
+    };
+  }
   if (ctx.sohEligibleMsids.has(msid)) return { text: "In a siting area" };
   return { text: "No PLP anchor within 5 mi", muted: true };
 }

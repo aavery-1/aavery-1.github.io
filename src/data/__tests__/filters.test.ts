@@ -303,6 +303,32 @@ describe("filterSchools composition", () => {
     expect(text).toMatch(/\(\d\.\d mi\)/);
   });
 
+  it("lists every same-county PLP within 5 miles per school, sorted nearest first", () => {
+    // Two PLP anchors and one non-PLP school; the target sits within 5 miles of
+    // both anchors but the anchors are at different distances.
+    const near = school({ msid: "AP_NEAR", name: "Near PLP", type: "Traditional", grade: "D", lng: -80.26, lat: 25.855 }); // ~0.7 mi
+    const far = school({ msid: "AP_FAR", name: "Far PLP", type: "Traditional", grade: "D", lng: -80.29, lat: 25.86 }); // ~2.6 mi
+    const target = school({ msid: "T1", type: "Traditional", enrollment: 500, capacity: 1000, lng: -80.25, lat: 25.85 });
+    const g: GradesFile = { vintage: "test", formula_change_years: [], schools: { AP_NEAR: plpHistory, AP_FAR: plpHistory, T1: cleanHistory } };
+    const c = buildFilterContext(collection([near, far, target]), g);
+    const list = c.nearbyPlps.get("T1");
+    expect(list).toBeDefined();
+    expect(list!.map((a) => a.msid)).toEqual(["AP_NEAR", "AP_FAR"]); // nearest first
+    expect(list![0].miles).toBeLessThan(list![1].miles);
+    // The far anchor's list matches its nearestPlp head (single source of truth).
+    expect(c.coLocationReasons.get("T1")?.nearestPlp?.msid).toBe("AP_NEAR");
+  });
+
+  it("does not count a cross-county PLP in a school's nearby list", () => {
+    // A Broward PLP geographically within 5 miles of a Miami-Dade school is not
+    // counted: a School of Hope must be in the anchor's own district (county).
+    const bwAnchor = school({ msid: "BW_PLP", name: "Broward PLP", type: "Traditional", grade: "D", county: "Broward", lng: -80.25, lat: 25.86 });
+    const mdTarget = school({ msid: "MD1", type: "Traditional", county: "Miami-Dade", lng: -80.25, lat: 25.85 });
+    const g: GradesFile = { vintage: "test", formula_change_years: [], schools: { BW_PLP: plpHistory, MD1: cleanHistory } };
+    const c = buildFilterContext(collection([bwAnchor, mdTarget]), g);
+    expect(c.nearbyPlps.has("MD1")).toBe(false);
+  });
+
   it("formatCoLocationReason lists the Opportunity Zone first when both pathways apply", () => {
     const both = formatCoLocationReason({
       utilPct: 62, basis: "cofte", isPlpAnchor: false, inOpportunityZone: true,
