@@ -27,7 +27,8 @@ import { useStore, MAX_COMPARE } from "../store";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { ExportButton } from "../tools/ExportButton";
-import { buildCompareSections } from "./compareModel";
+import { buildCompareSections, PROXIMITY_SECTION_TITLE, type CompareRow } from "./compareModel";
+import { useCompareDriveTimes, type CompareDriveTimes } from "../map/useCompareDriveTimes";
 import type { SchoolFeature } from "../data/types";
 import "./CompareView.carbon.css";
 
@@ -55,6 +56,11 @@ export function CompareView() {
   );
 
   const sections = useMemo(() => buildCompareSections(schools, ctx, data), [schools, ctx, data]);
+  // Driving distance/time from the first pinned site to each other, via Google
+  // Distance Matrix. Async + metered + fails soft, so it lives here (not in the
+  // pure model) and is injected into the Proximity section below. Called before
+  // the early return so the hook order stays stable.
+  const drive = useCompareDriveTimes(schools);
 
   // Schools available to add (not already pinned), for every "Add a site" picker.
   const addable = useMemo<AddItem[]>(
@@ -72,15 +78,22 @@ export function CompareView() {
     return <CompareEmptyState pinned={schools} addable={addable} onAdd={toggleComparePin} onRemove={toggleComparePin} />;
   }
 
+  // Inject the async driving rows into the Proximity section, so render and export
+  // both draw from one augmented section set (the straight-line row stays first).
+  const driveRows = buildDriveRows(schools, drive);
+  const displaySections = sections.map((sec) =>
+    sec.title === PROXIMITY_SECTION_TITLE ? { ...sec, rows: [...sec.rows, ...driveRows] } : sec,
+  );
+
   // Export uses the flat row set (all rows, ignoring the differences filter).
-  const flatRows = sections.flatMap((sec) => sec.rows);
+  const flatRows = displaySections.flatMap((sec) => sec.rows);
   const headers = ["Field", ...schools.map((s) => s.properties.name)];
   const exportRows: Array<Array<unknown>> = [
     ["MSID", ...schools.map((s) => s.properties.msid)],
     ...flatRows.map((r) => [r.label, ...r.values]),
   ];
 
-  const visibleSections = sections
+  const visibleSections = displaySections
     .map((sec) => ({ ...sec, rows: differencesOnly ? sec.rows.filter((r) => r.diff) : sec.rows }))
     .filter((sec) => sec.rows.length > 0);
   const noDifferences = differencesOnly && visibleSections.length === 0;
@@ -178,6 +191,39 @@ export function CompareView() {
       </div>
     </div>
   );
+}
+
+// "47 min", "1 hr 5 min", "2 hr". Rounds to whole minutes; the drive estimate is
+// not precise enough for seconds.
+function formatDriveMinutes(min: number): string {
+  const m = Math.round(min);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  return r ? `${h} hr ${r} min` : `${h} hr`;
+}
+
+// The two driving rows injected into the Proximity section: distance and time
+// FROM the first pinned site (column 0, the reference) to each other. Mirrors the
+// ruler's fail-soft wording (useDriveTime / Toolbar): loading, unavailable (key
+// lacks the Distance Matrix API), and per-leg "No route" all read quietly.
+function buildDriveRows(schools: SchoolFeature[], drive: CompareDriveTimes): CompareRow[] {
+  const cell = (i: number, kind: "miles" | "time"): string => {
+    if (i === 0) return "Reference";
+    if (drive.status === "loading") return "…"; // ellipsis
+    if (drive.status !== "ok") return "Unavailable"; // idle / unavailable / error
+    const leg = drive.legs[i];
+    if (!leg) return "No route";
+    return kind === "miles" ? `${leg.miles.toFixed(1)} mi` : formatDriveMinutes(leg.minutes);
+  };
+  const mk = (key: string, label: string, kind: "miles" | "time", help: string): CompareRow => {
+    const values = schools.map((_, i) => cell(i, kind));
+    return { key, label, help, values, diff: new Set(values).size > 1 };
+  };
+  return [
+    mk("dist_drive", "Driving distance", "miles", "On-road driving distance from the first pinned site (Google). A convenience overlay; the statute's siting test uses the straight-line distance above."),
+    mk("drive_time", "Driving time", "time", "Estimated driving time by car from the first pinned site (Google Distance Matrix), without live traffic. A convenience overlay only."),
+  ];
 }
 
 // A filterable "Add a site" picker (Carbon ComboBox). It resets after each pick by

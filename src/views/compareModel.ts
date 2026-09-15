@@ -20,7 +20,7 @@ import { schoolTypeLabel, titleILabel } from "../data/types";
 import type { LegislativeProps, Representative, SchoolFeature } from "../data/types";
 import type { SchoolFilterContext } from "../data/derive/filters";
 import type { DataContextValue } from "../data/DataContext";
-import type { LngLat } from "../geo/measure";
+import { distanceMiles, type LngLat } from "../geo/measure";
 
 // A single comparison row: one label and one value per pinned site, in the same
 // order as the site columns. `help` is an optional tooltip that defines a term
@@ -38,6 +38,10 @@ export interface CompareSection {
   title: string;
   rows: CompareRow[];
 }
+
+// Title of the section that holds the site-to-site proximity rows. Exported so
+// the view can find it and inject the async driving distance/time rows in place.
+export const PROXIMITY_SECTION_TITLE = "Proximity";
 
 // District schools carry a lower-cased county as their "operator" in the data
 // ("Miami-dade"); show the properly-cased county instead. Charters keep their
@@ -137,6 +141,14 @@ export function buildCompareSections(
     const p = schools[i].properties;
     return p.frl_rate != null ? `${Math.round(p.frl_rate * 100)}%` : "Not reported";
   };
+  // Proximity is measured FROM the first pinned site (the leftmost column, the
+  // reference), so a per-column cell fits the matrix: for two sites it is simply
+  // the distance between them; for 3-4, each column's distance to the reference.
+  // Straight-line only here (geodesic, synchronous, the statute's measure); the
+  // driving distance/time rows are injected by the view from the async Distance
+  // Matrix API. The reference column shows "Reference".
+  const straightLineValue = (i: number) =>
+    i === 0 ? "Reference" : `${distanceMiles(points[0], points[i]).toFixed(1)} mi`;
 
   const build = (key: string, label: string, fn: (i: number) => string, help?: string): CompareRow => {
     const values = schools.map((_, i) => fn(i));
@@ -154,6 +166,13 @@ export function buildCompareSections(
         build("type", "Type", (i) => schoolTypeLabel(schools[i].properties.type)),
         build("operator", "Operator", (i) => operatorLabel(schools[i])),
         build("county", "County", (i) => schools[i].properties.county),
+      ],
+    },
+    {
+      title: PROXIMITY_SECTION_TITLE,
+      rows: [
+        build("dist_straight", `Straight-line distance from ${schools[0].properties.name}`, straightLineValue, "Geodesic (straight-line) distance from the first pinned site (the leftmost column). This is the statute's measure. Driving distance and time follow when the routing service is available."),
+        // The view injects "Driving distance" and "Driving time" rows here.
       ],
     },
     {

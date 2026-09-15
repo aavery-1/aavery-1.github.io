@@ -12,11 +12,11 @@ import type { Grade } from "../../map/gradeEncoding";
 function school(o: {
   msid: string; name?: string; county?: CountyName; grade?: Grade;
   enrollment?: number | null; capacity?: number | null; operator?: string | null;
-  permanent_capacity?: number | null;
+  permanent_capacity?: number | null; lng?: number; lat?: number;
 }): SchoolFeature {
   return {
     type: "Feature",
-    geometry: { type: "Point", coordinates: [-80.25, 25.85] },
+    geometry: { type: "Point", coordinates: [o.lng ?? -80.25, o.lat ?? 25.85] },
     properties: {
       msid: o.msid,
       name: o.name ?? `School ${o.msid}`,
@@ -69,15 +69,35 @@ describe("buildCompareSections", () => {
     expect(buildCompareSections([], ctx(), data)).toEqual([]);
   });
 
-  it("lays out the five decision sections in order", () => {
+  it("lays out the decision sections in order", () => {
     const secs = buildCompareSections([school({ msid: "A" }), school({ msid: "B" })], ctx(), data);
     expect(secs.map((s) => s.title)).toEqual([
       "Overview",
+      "Proximity",
       "School of Hope eligibility",
       "Enrollment and capacity",
       "Districts and representation",
       "Community context",
     ]);
+  });
+
+  it("measures straight-line distance from the first pinned site (the reference)", () => {
+    // Miami-ish reference and a point ~2 mi west; the third shares the reference's
+    // coords, so its distance is 0.0 mi. Column 0 is always the reference itself.
+    const secs = buildCompareSections(
+      [
+        school({ msid: "REF", lng: -80.25, lat: 25.85 }),
+        school({ msid: "WEST", lng: -80.28, lat: 25.86 }),
+        school({ msid: "SAME", lng: -80.25, lat: 25.85 }),
+      ],
+      ctx(),
+      data,
+    );
+    const row = rowByKey(secs, "dist_straight")!;
+    expect(row.values[0]).toBe("Reference");
+    expect(row.values[1]).toMatch(/^[12]\.\d mi$/); // ~1.9-2.0 mi
+    expect(row.values[2]).toBe("0.0 mi");
+    expect(row.diff).toBe(true);
   });
 
   it("marks a row as differing only when the values are not all identical", () => {
