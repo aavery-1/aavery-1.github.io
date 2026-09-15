@@ -935,7 +935,7 @@ function NewsCard({ news, name }: { news: SchoolNews; name: string }) {
             ))}
           </ul>
           <p className="insp-news__disclaimer">
-            Unverified name matches; some may be unrelated.
+            Auto-matched by name. Please verify before citing.
           </p>
         </>
       )}
