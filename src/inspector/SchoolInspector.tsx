@@ -21,7 +21,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button, IconButton, Tag } from "@carbon/react";
 import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
-import { useStore, MAX_COMPARE, utilizationStyle } from "../store";
+import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, SOH_SURPLUS_STATIONS } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { GradeTimeline } from "./GradeTimeline";
 import {
@@ -544,6 +544,9 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   const util = utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
   const utilPct = util.pct;
   const utilColor = util.color;
+  // Available capacity (surplus student stations), the co-location headline number.
+  // Same numerator basis as the tier above, so the two can never disagree.
+  const avail = availableCapacity(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
   // Free/reduced-price lunch: the real student-poverty rate. Null (suppressed or
   // not in the FL DOE report) reads as "Not reported", never a fake 0.
   const frlPct = p.frl_rate != null ? Math.round(p.frl_rate * 100) : null;
@@ -594,6 +597,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
     ["In School of Hope siting area", sohEligible ? "yes" : "no"],
     ["Enrollment", p.enrollment != null ? String(p.enrollment) : "unknown"],
     ["Capacity", p.capacity != null ? String(p.capacity) : "unknown"],
+    ["Available capacity (surplus)", avail.stations != null ? String(avail.stations) : "unknown"],
     ["Median household income", income?.median_household_income != null ? String(income.median_household_income) : ""],
     ["In opportunity zone", inOZ ? "yes" : "no"],
     ["Address", p.address],
@@ -719,6 +723,21 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
             <>Enrollment and capacity not reported</>
           )}
         </p>
+        {avail.stations != null && (
+          <div
+            className={`insp-avail${avail.stations >= SOH_SURPLUS_STATIONS ? " insp-avail--surplus" : ""}`}
+            title={`Available capacity (surplus) = student stations minus ${avail.basis === "cofte" ? "capital-outlay FTE (the FISH figure)" : "current enrollment (estimate; no FISH COFTE reported)"}. A surplus of ${SOH_SURPLUS_STATIONS}+ student stations is one of the two co-location thresholds under Rule 6A-1.0998271(5)(e).`}
+          >
+            <span className="insp-avail__label">Available capacity (surplus)</span>
+            <span className="insp-avail__val">
+              {avail.stations.toLocaleString("en-US")}
+              <span className="insp-avail__unit"> student stations</span>
+              {avail.stations >= SOH_SURPLUS_STATIONS && (
+                <span className="insp-avail__tag">meets {SOH_SURPLUS_STATIONS}+ threshold</span>
+              )}
+            </span>
+          </div>
+        )}
         {p.permanent_capacity != null && (
           <div
             className="insp-perm"

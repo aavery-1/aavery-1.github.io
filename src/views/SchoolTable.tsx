@@ -23,7 +23,7 @@ import {
 import { Search as SearchIcon, Location as MyLocationIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Close as CloseIcon, ArrowUp as ArrowUpIcon, ArrowDown as ArrowDownIcon, Filter as FilterIcon } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
-import { useStore, utilizationBucket, MAX_COMPARE } from "../store";
+import { useStore, utilizationBucket, availableCapacity, MAX_COMPARE } from "../store";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
@@ -37,7 +37,7 @@ const CO_LOC_BLUE = "#1D4ED8";  // co-location target
 const TITLE_I_PURPLE = "#7C3AED"; // economic-disadvantage proxy (Title I)
 
 type Order = "asc" | "desc";
-type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "enrollment" | "capacity" | "emptySeats" | "utilization";
+type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "enrollment" | "capacity" | "availCap" | "utilization";
 
 interface Row {
   feature: SchoolFeature;
@@ -51,7 +51,7 @@ interface Row {
   frl: number | null; // free/reduced-price lunch rate (0-1), null when not reported
   enrollment: number | null;
   capacity: number | null;
-  emptySeats: number | null; // permanent stations minus most recent enrollment; null when either is missing
+  availCap: number | null; // available capacity (surplus): student stations minus enrollment; null when either is missing
   utilization: number | null;
   bucket: "over" | "target" | "under" | "unknown";
   isPlp: boolean;
@@ -167,7 +167,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           frl: p.frl_rate ?? null,
           enrollment: p.enrollment,
           capacity: p.capacity,
-          emptySeats: p.permanent_capacity != null && p.enrollment != null ? p.permanent_capacity - p.enrollment : null,
+          availCap: availableCapacity(p.enrollment, p.capacity).stations,
           utilization: util,
           bucket: utilizationBucket(p.enrollment, p.capacity),
           isPlp: ctx.plp.has(p.msid),
@@ -342,7 +342,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
             <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
             <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
             <MenuItem value="capacity" sx={{ fontSize: 13 }}>Capacity</MenuItem>
-            <MenuItem value="emptySeats" sx={{ fontSize: 13 }}>Empty seats</MenuItem>
+            <MenuItem value="availCap" sx={{ fontSize: 13 }}>Available capacity</MenuItem>
             <MenuItem value="level" sx={{ fontSize: 13 }}>Level</MenuItem>
             <MenuItem value="type" sx={{ fontSize: 13 }}>Type</MenuItem>
           </Select>
@@ -497,8 +497,8 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             <span className="school-card__fact-value"><FrlCell rate={r.frl} /></span>
                           </div>
                           <div className="school-card__fact">
-                            <span className="school-card__fact-label">Empty seats</span>
-                            <span className="school-card__fact-value"><EmptySeatsCell value={r.emptySeats} /></span>
+                            <span className="school-card__fact-label">Available capacity</span>
+                            <span className="school-card__fact-value"><AvailCapCell value={r.availCap} /></span>
                           </div>
                         </div>
                       </div>
@@ -602,7 +602,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                     </TableCell>
                   )}
                   {!compact && (
-                    <TableCell align="right"><EmptySeatsCell value={r.emptySeats} /></TableCell>
+                    <TableCell align="right"><AvailCapCell value={r.availCap} /></TableCell>
                   )}
                   {/* On phone the actions stack and use a 44px touch target (Fluent
                       minimum); on desktop they stay compact inline icons. */}
@@ -710,15 +710,15 @@ function FrlCell({ rate }: { rate: number | null }) {
   );
 }
 
-// Empty seats: permanent student stations minus the most recent enrollment. A
+// Available capacity (surplus): total student stations minus the most recent
+// enrollment, floored at 0 (an over-capacity building carries no slack). A
 // right-aligned count; null (either figure missing) reads as a muted "-", and a
-// negative value (enrollment past the permanent building) is tinted so it reads as
-// a deficit, not slack.
-function EmptySeatsCell({ value }: { value: number | null }) {
+// surplus at or above the 400-station co-location threshold is tinted teal.
+function AvailCapCell({ value }: { value: number | null }) {
   if (value == null) return <Typography variant="body2" color="text.secondary">-</Typography>;
-  const negative = value < 0;
+  const surplus = value >= 400;
   return (
-    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums", color: negative ? "#B71C1C" : "text.primary" }}>
+    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums", fontWeight: surplus ? 600 : 400, color: surplus ? "#007d79" : "text.primary" }}>
       {value.toLocaleString("en-US")}
     </Typography>
   );
@@ -766,6 +766,6 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
   { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count." },
   { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Total FISH student stations (permanent plus portable), the statutory measure. The inspector also shows the permanent-only figure." },
-  { key: "emptySeats", label: "Empty seats", numeric: true, tier: "full", width: 98, help: "Permanent student stations minus the most recent enrollment. Negative means enrollment exceeds the permanent building (portables in use)." },
+  { key: "availCap", label: "Avail. cap.", numeric: true, tier: "full", width: 98, help: "Available capacity (surplus): total FISH student stations minus the most recent enrollment. 400+ is one of the two co-location thresholds (Rule 6A-1.0998271); the inspector shows the statutory COFTE-based figure." },
   { key: "actions", label: "", numeric: true, width: 86 },
 ];

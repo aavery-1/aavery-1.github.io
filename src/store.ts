@@ -113,6 +113,33 @@ export function isUnderutilizedFacility(
   return enrollment / capacity <= UTIL_UNDER || capacity - enrollment >= SOH_SURPLUS_STATIONS;
 }
 
+// Available capacity (surplus): the unused student stations a facility carries,
+// i.e. the FISH "available capacity (surplus)" figure = student stations - COFTE
+// when the statutory COFTE is present, else the NCES-membership proxy
+// (capacity - enrollment). This is the number that clears the >=400-station
+// co-location test, surfaced on its own for the inspector, list, and view totals.
+// It mirrors isUnderutilizedFacility's numerator choice so the surplus shown can
+// never disagree with the tier that flagged the school. `stations` is null when
+// there is no capacity to measure against, and never negative (an over-capacity
+// building has no available capacity). `basis` names the numerator, for labeling.
+export interface AvailableCapacity { stations: number | null; basis: "cofte" | "enrollment" | "none"; }
+export function availableCapacity(
+  enrollment: number | null,
+  capacity: number | null,
+  cofte: number | null = null,
+  surplus: number | null = null,
+): AvailableCapacity {
+  if (capacity == null || capacity <= 0) return { stations: null, basis: "none" };
+  // Same COFTE-credibility guard as isUnderutilizedFacility: a 0/negative COFTE is
+  // a missing FISH value, not a real one, so fall back to the enrollment proxy.
+  if (cofte != null && cofte > 0) {
+    const s = surplus != null ? surplus : capacity - cofte;
+    return { stations: Math.max(0, Math.round(s)), basis: "cofte" };
+  }
+  if (enrollment == null) return { stations: null, basis: "none" };
+  return { stations: Math.max(0, capacity - enrollment), basis: "enrollment" };
+}
+
 // "Fully used" per FL DOE Rule 6A-1.0998271(1)(i): a facility using >=90% of its
 // student stations. Between the 75% co-location line and here, a facility is in
 // active use but not full.

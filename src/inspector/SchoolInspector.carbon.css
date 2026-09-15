@@ -168,6 +168,28 @@
 .insp-perm__val { flex: 1 1 auto; font-size: 13px; font-weight: 600; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; text-align: right; }
 .insp-perm__sub { font-size: 11px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
 
+/* Available capacity (surplus): the co-location headline number, a highlighted
+   callout under the utilization line. Turns teal when it clears the 400-station
+   surplus threshold, matching the "Underused" tier color. */
+.insp-avail {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap;
+  margin-top: 8px; padding: 6px 8px; border-radius: 4px;
+  background: var(--cds-layer-accent-01, #e8e8e8);
+  border-left: 3px solid var(--cds-border-strong-01, #8d8d8d);
+}
+.insp-avail--surplus {
+  background: rgba(0, 125, 121, 0.10);
+  border-left-color: #007d79;
+}
+.insp-avail__label { font-size: 11px; font-weight: 600; color: var(--cds-text-secondary, #525252); cursor: help; white-space: nowrap; }
+.insp-avail__val { flex: 1 1 auto; font-size: 14px; font-weight: 600; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; text-align: right; }
+.insp-avail__unit { font-size: 11px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
+.insp-avail__tag {
+  display: inline-block; margin-left: 8px; padding: 0 6px;
+  font-size: 10px; font-weight: 600; line-height: 16px; letter-spacing: 0.02em;
+  color: #007d79; background: rgba(0, 125, 121, 0.14); border-radius: 3px; white-space: nowrap;
+}
+
 /* Free/reduced-price lunch: one compact fact line under the enrollment trend. */
 .insp-frl {
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
