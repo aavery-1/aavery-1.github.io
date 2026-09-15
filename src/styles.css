@@ -1886,6 +1886,10 @@ code {
   color: var(--text-primary);
 }
 .pin-tooltip-plps__name {
+  /* Grow to fill the row but be allowed to shrink (min-width:0) so the ellipsis
+     engages and the "X mi" stays on-card instead of being pushed off the edge. */
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

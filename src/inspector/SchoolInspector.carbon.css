@@ -137,7 +137,9 @@
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
   font-size: 13px; line-height: 1.35;
 }
-.insp-plps__name { text-align: left; font-weight: 400; }
+/* A clickable link, so let a long name wrap within the panel (min-width:0 lets it
+   shrink in the flex row) rather than truncate the jump target; distance stays right. */
+.insp-plps__name { text-align: left; font-weight: 400; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
 .insp-plps__mi { flex: none; color: var(--cds-text-helper, #6f6f6f); font-variant-numeric: tabular-nums; }
 
 /* ---- Key indicators: one compact row each, label left, verdict right ---- */
