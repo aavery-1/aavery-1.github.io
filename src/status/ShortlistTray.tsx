@@ -166,7 +166,6 @@ export function ShortlistTray() {
           <BookmarkIcon size={16} />
           <span className="shortlist-tray__title-text">Shortlist</span>
           <span className="shortlist-tray__count">{schools.length} of {MAX_COMPARE}</span>
-          <span className="shortlist-tray__note">No site is ranked. Read the facts and decide.</span>
         </div>
         <div className="shortlist-tray__actions">
           {phone ? (

@@ -70,14 +70,6 @@
   color: var(--cds-text-secondary, #525252);
   font-variant-numeric: tabular-nums;
 }
-.shortlist-tray__note {
-  font-size: 12px;
-  color: var(--cds-text-secondary, #525252);
-  white-space: nowrap;
-}
-@media (max-width: 900px) {
-  .shortlist-tray__note { display: none; }
-}
 .shortlist-tray__actions {
   display: flex;
   align-items: center;

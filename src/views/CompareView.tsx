@@ -109,7 +109,6 @@ export function CompareView() {
             <h2 className="compare-title">Comparing {schools.length} sites</h2>
             <span className="compare-title__count">of {MAX_COMPARE}</span>
           </div>
-          <p className="compare-note">No site is ranked. Read the facts and decide.</p>
         </div>
         <div className="compare-controls">
           {canAdd && <AddSite className="compare-add" size="md" placeholder="Add a site" addable={addable} onAdd={toggleComparePin} />}
@@ -330,7 +329,7 @@ function CompareEmptyState({ pinned, addable, onAdd, onRemove }: {
             <h2 className="compare-empty-title">Compare sites side by side</h2>
             <p className="compare-empty-desc">
               Pin 2 to {MAX_COMPARE} schools to line up their grades, eligibility, capacity,
-              districts, and community context. No site is ranked. Read the facts and decide.
+              districts, and community context.
             </p>
           </div>
 
