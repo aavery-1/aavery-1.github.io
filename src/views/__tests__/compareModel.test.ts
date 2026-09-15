@@ -127,6 +127,23 @@ describe("buildCompareSections", () => {
     expect(row.values[2]).toBe("Not reported");
   });
 
+  it("shows available capacity (surplus) as total stations minus enrollment, floored at zero", () => {
+    const secs = buildCompareSections(
+      [
+        school({ msid: "A", capacity: 1000, enrollment: 600 }), // 400 surplus
+        school({ msid: "B", capacity: 800, enrollment: 900 }),  // over capacity
+        school({ msid: "C", capacity: null, enrollment: 500 }), // no capacity
+      ],
+      ctx(),
+      data,
+    );
+    const row = rowByKey(secs, "availcap")!;
+    expect(row.values[0]).toBe("400 stations");
+    expect(row.values[1]).toBe("0 (at or over capacity)");
+    expect(row.values[2]).toBe("Not reported");
+    expect(row.diff).toBe(true);
+  });
+
   it("reads yes/no eligibility rows from the context sets, per site", () => {
     const secs = buildCompareSections(
       [school({ msid: "A" }), school({ msid: "B" })],
