@@ -19,7 +19,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button, IconButton, Tag, SkeletonText } from "@carbon/react";
-import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon } from "@carbon/icons-react";
+import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon, Link as LinkIcon, Checkmark as CheckmarkIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, SOH_SURPLUS_STATIONS } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
@@ -454,6 +454,20 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   const setShortlistOpen = useStore((s) => s.setShortlistOpen);
   const setDistrictFilter = useStore((s) => s.setDistrictFilter);
 
+  // "Copy link" shares the current view. The URL hash already carries the selected
+  // school, camera, and filters (see useMapPersistence), so the live location IS
+  // the shareable deep link; we just surface a one-click copy with brief feedback.
+  const [copiedLink, setCopiedLink] = useState(false);
+  const copyTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); }, []);
+  const copyShareLink = useCallback(() => {
+    navigator.clipboard?.writeText(window.location.href).then(() => {
+      setCopiedLink(true);
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopiedLink(false), 1800);
+    }).catch(() => {});
+  }, []);
+
   // Resolve the school BEFORE any early return so hooks below (the news feed) are
   // called on every render, per the rules of hooks; a null school idles them.
   const school = (selectedSchoolMsid && data.schools)
@@ -637,6 +651,15 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
             <div className="insp-title">{p.name}</div>
             <div className="insp-sub">{operatorLine}</div>
           </div>
+          <IconButton
+            label={copiedLink ? "Link copied" : "Copy link to this school"}
+            kind="ghost"
+            size="sm"
+            className="insp-share"
+            onClick={copyShareLink}
+          >
+            {copiedLink ? <CheckmarkIcon size={16} /> : <LinkIcon size={16} />}
+          </IconButton>
           <IconButton label="Close inspector" kind="ghost" size="sm" className="insp-close" onClick={() => selectSchool(null)}>
             <CloseIcon size={16} />
           </IconButton>

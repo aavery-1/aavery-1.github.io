@@ -73,6 +73,7 @@
 .insp-sub {
   font-size: 12px; line-height: 1.35; color: var(--cds-text-secondary, #525252); margin-top: 2px;
 }
+.insp-share { flex: none; margin: -6px 0 0 0; }
 .insp-close { flex: none; margin: -6px -6px 0 0; }
 .insp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .insp-tags .cds--tag { margin: 0; }
