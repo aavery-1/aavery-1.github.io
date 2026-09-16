@@ -14,7 +14,7 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button, IconButton, Tag } from "@carbon/react";
-import { ChevronDown, Close as CloseIcon, Bookmark as BookmarkIcon, Table as TableIcon, ZoomFit as FitIcon, TrashCan as TrashIcon } from "@carbon/icons-react";
+import { ChevronDown, Close as CloseIcon, Bookmark as BookmarkIcon, Table as TableIcon, ZoomFit as FitIcon, TrashCan as TrashIcon, Link as LinkIcon, Checkmark as CheckmarkIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useMediaQuery, usePhone } from "../ui/useMediaQuery";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
@@ -106,6 +106,23 @@ export function ShortlistTray() {
     const t = setTimeout(() => setMounted(false), 400);
     return () => clearTimeout(t);
   }, [shortlistOpen, reduceMotion]);
+
+  // "Share" copies a link to this exact shortlist. The URL hash already carries the
+  // pinned sites (the "cmp" key in useMapPersistence) plus the current filters and
+  // camera, so the live location IS the shareable comparison; opening that link
+  // reopens the tray on these same sites. Brief checkmark feedback on success.
+  const [copiedLink, setCopiedLink] = useState(false);
+  useEffect(() => {
+    if (!copiedLink) return;
+    const t = setTimeout(() => setCopiedLink(false), 1800);
+    return () => clearTimeout(t);
+  }, [copiedLink]);
+  const copyShareLink = () => {
+    navigator.clipboard?.writeText(window.location.href)
+      .then(() => setCopiedLink(true))
+      .catch(() => {});
+  };
+
   if (!mounted) return null;
   const closing = !shortlistOpen;
   const closingClass = closing ? " shortlist-tray--closing" : "";
@@ -178,6 +195,9 @@ export function ShortlistTray() {
                   <TableIcon size={16} />
                 </IconButton>
               )}
+              <IconButton kind="ghost" size="sm" label={copiedLink ? "Link copied" : "Copy link to this shortlist"} align="bottom-right" onClick={copyShareLink}>
+                {copiedLink ? <CheckmarkIcon size={16} /> : <LinkIcon size={16} />}
+              </IconButton>
               <ExportButton filenameBase="shortlist" headers={headers} rows={exportRows} label="Export shortlist CSV" iconOnly />
               <IconButton kind="ghost" size="sm" label="Clear shortlist" align="bottom-right" onClick={clearCompare}>
                 <TrashIcon size={16} />
@@ -189,6 +209,7 @@ export function ShortlistTray() {
               {schools.length >= 2 && (
                 <Button kind="ghost" size="sm" renderIcon={TableIcon} onClick={() => setFullTableOpen(true)}>Full table</Button>
               )}
+              <Button kind="ghost" size="sm" renderIcon={copiedLink ? CheckmarkIcon : LinkIcon} onClick={copyShareLink}>{copiedLink ? "Copied" : "Share"}</Button>
               <ExportButton filenameBase="shortlist" headers={headers} rows={exportRows} label="Export" />
               <Button kind="ghost" size="sm" onClick={clearCompare}>Clear</Button>
             </>

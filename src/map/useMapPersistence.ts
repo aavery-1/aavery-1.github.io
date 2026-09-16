@@ -84,6 +84,13 @@ export function useMapPersistence() {
     if (hydrated.current) return;
     hydrated.current = true;
     const fromHash = readHash();
+    // A shared link that carries a shortlist should land the recipient ON that
+    // comparison, so open the tray when pinned sites arrive in the hash (the tray's
+    // open state is not itself persisted). A selected school takes priority: its
+    // inspector floats over the map, so we leave the tray collapsed in that case.
+    if (fromHash.comparePinnedMsids?.length && !fromHash.selectedSchoolMsid) {
+      fromHash.shortlistOpen = true;
+    }
     if (Object.keys(fromHash).length) useStore.getState().hydrate(fromHash);
   }, []);
 
