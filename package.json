@@ -43,6 +43,7 @@
     "@supabase/supabase-js": "^2.116.0",
     "@tanstack/react-virtual": "^3.14.11",
     "@turf/turf": "^7.1.0",
+    "fflate": "^0.8.3",
     "lucide-react": "^0.462.0",
     "rbush": "^4.0.1",
     "react": "^18.3.1",

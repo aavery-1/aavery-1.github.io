@@ -11,6 +11,10 @@ export default defineConfig({
   // Tooltip, ComboBox) runs a hook. Dedupe pins a single copy; pre-bundling
   // @carbon/react with react/react-dom keeps them on that same instance.
   resolve: { dedupe: ["react", "react-dom"] },
+  // The building-notice templates are real .docx files imported with `?url` and
+  // fetched as ArrayBuffers at generate time. Vite does not know that extension,
+  // so declare it an asset (emitted + hashed) rather than trying to parse it.
+  assetsInclude: ["**/*.docx"],
   optimizeDeps: { include: ["react", "react-dom", "react-dom/client", "@carbon/react"] },
   // Pin the dev server to a fixed port and fail loudly if it is taken, rather than
   // silently wandering to a random port. A wandering port is unreachable from the
