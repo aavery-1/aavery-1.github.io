@@ -1,0 +1,51 @@
+/* Layout for the Prepare-building-notice dialog body. Values and structure come
+   from the TSX; this only spaces the sections. No em dashes. */
+
+.notice-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notice-dialog__lede {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--cds-text-secondary, #525252);
+}
+
+.notice-dialog__section {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--cds-border-subtle, #e0e0e0);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--cds-text-secondary, #525252);
+}
+
+.notice-dialog__reset {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--cds-link-primary, #0f62fe);
+}
+.notice-dialog__reset:hover {
+  text-decoration: underline;
+}
+
+.notice-dialog__footnote {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--cds-text-secondary, #525252);
+}

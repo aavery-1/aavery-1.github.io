@@ -17,9 +17,9 @@
 // capacity, academic performance, location & districts, community context.
 // No em dashes in this file.
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { Button, IconButton, Tag, SkeletonText } from "@carbon/react";
-import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon, Link as LinkIcon, Checkmark as CheckmarkIcon } from "@carbon/icons-react";
+import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon, Link as LinkIcon, Checkmark as CheckmarkIcon, Document as DocumentIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, SOH_SURPLUS_STATIONS } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
@@ -33,8 +33,12 @@ import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated } from "../d
 import { isKippSchool } from "../data/derive/hopeOperators";
 import { useSchoolNews, type SchoolNews } from "../news/useSchoolNews";
 import { evaluatePlp, plpMsids } from "../data/derive/plp";
+import { districtFromCounty } from "../notice/noticeData";
 import { distanceMiles, type LngLat } from "../geo/measure";
 import { titleILabel } from "../data/types";
+// Lazy so the notice generator (fflate + the two .docx templates) is its own
+// chunk, loaded only when an operator opens the dialog, never in the main bundle.
+const NoticeDialog = lazy(() => import("../notice/NoticeDialog").then((m) => ({ default: m.NoticeDialog })));
 import type { LegislativeProps, Representative, DemographicsRing, SchoolDemographicsEntry, SchoolDemographicsFile } from "../data/types";
 import "./SchoolInspector.carbon.css";
 
@@ -458,6 +462,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   // school, camera, and filters (see useMapPersistence), so the live location IS
   // the shareable deep link; we just surface a one-click copy with brief feedback.
   const [copiedLink, setCopiedLink] = useState(false);
+  const [noticeOpen, setNoticeOpen] = useState(false);
   const copyTimer = useRef<number | null>(null);
   useEffect(() => () => { if (copyTimer.current) window.clearTimeout(copyTimer.current); }, []);
   const copyShareLink = useCallback(() => {
@@ -880,6 +885,14 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
         <div>
           <ExportButton filenameBase={`school_${p.msid}`} headers={["Field", "Value"]} rows={exportRows} label="Export" />
         </div>
+        {/* A building notice is drafted for an underused district FACILITY in a
+            siting area, in a district with an approved template (MDCPS/Broward).
+            Shown only for those co-location candidates. */}
+        {coLocationEligible && districtFromCounty(p.county) && (
+          <Button kind="tertiary" size="md" renderIcon={DocumentIcon} onClick={() => setNoticeOpen(true)}>
+            Prepare building notice
+          </Button>
+        )}
         {comparePinnedMsids.length >= 1 && (
           <Button
             kind="ghost"
@@ -891,6 +904,24 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
           </Button>
         )}
       </div>
+
+      {noticeOpen && (
+        <Suspense fallback={null}>
+          <NoticeDialog
+            facility={{
+              name: p.name,
+              county: p.county,
+              address: p.address,
+              utilizationPct: utilPct,
+              availableStations: avail.stations,
+              fishVintage: p.fish_vintage ?? null,
+              anchors: anchorsWithin.map((a) => ({ name: a.name, miles: a.miles })),
+              inOZ,
+            }}
+            onClose={() => setNoticeOpen(false)}
+          />
+        </Suspense>
+      )}
     </aside>
   );
 }

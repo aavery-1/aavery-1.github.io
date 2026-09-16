@@ -33,7 +33,16 @@ export interface NoticeFields {
   projected_enrollment: string;
   plp_list_year: string;
   plp_list: string;
+  // The site's eligibility clause, injected before "within a five mile radius..."
+  // in the template. For an Opportunity-Zone site it reproduces the original OZ +
+  // attendance-zone wording; for a 5-mile-only site it is empty, so the sentence
+  // asserts only the (true) 5-mile basis instead of a false OZ claim. May be "".
+  siting_basis: string;
 }
+
+// Fields that are allowed to be empty (everything else must be filled). The
+// siting basis is legitimately empty for a 5-mile-only site.
+const ALLOW_EMPTY = new Set<keyof NoticeFields>(["siting_basis"]);
 
 const TOKENS: Record<keyof NoticeFields, string> = {
   date: "{{DATE}}",
@@ -47,6 +56,7 @@ const TOKENS: Record<keyof NoticeFields, string> = {
   projected_enrollment: "{{PROJECTED_ENROLLMENT}}",
   plp_list_year: "{{PLP_LIST_YEAR}}",
   plp_list: "{{PLP_LIST}}",
+  siting_basis: "{{SITING_BASIS}}",
 };
 
 const TEMPLATE_URL: Record<NoticeDistrict, string> = {
@@ -82,7 +92,7 @@ export interface FillResult {
 // the Python script's guardrails so a bad document can never silently ship.
 export async function fillNotice(district: NoticeDistrict, fields: NoticeFields): Promise<FillResult> {
   const missing = (Object.keys(TOKENS) as Array<keyof NoticeFields>).filter(
-    (k) => !String(fields[k] ?? "").trim(),
+    (k) => !ALLOW_EMPTY.has(k) && !String(fields[k] ?? "").trim(),
   );
   if (missing.length) {
     throw new Error("Missing required fields: " + missing.join(", "));

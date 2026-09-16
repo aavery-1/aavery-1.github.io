@@ -91,6 +91,12 @@ function joinAnd(names: string[]): string {
 
 const BLANK = "__________";
 
+// The original OZ + attendance-zone clause, reproduced verbatim for a site that
+// is genuinely in an Opportunity Zone so its notice reads exactly as before. A
+// 5-mile-only site gets "" so the sentence asserts only the true 5-mile basis.
+const OZ_CLAUSE =
+  "within a designated Opportunity Zone as well as the attendance zone of a Persistently Low-Performing School (PLP), and is ";
+
 export function buildNotice(input: NoticeSourceInput): NoticeBuild {
   const district = districtFromCounty(input.county);
   const basis: EligibilityBasis = input.inOZ
@@ -149,7 +155,7 @@ export function buildNotice(input: NoticeSourceInput): NoticeBuild {
   // only via the 5-mile pathway, that boilerplate asserts a false OZ fact in a
   // legal filing, so flag it (Phase 3 turns that sentence into a token).
   if (basis === "plp-only") {
-    warnings.push("Site is NOT in an Opportunity Zone; the template's OZ sentence over-claims and must be corrected before sending.");
+    warnings.push("Site is NOT in an Opportunity Zone; the notice asserts only the 5-mile PLP basis (the OZ sentence is omitted automatically).");
   }
 
   const fields: NoticeFields = {
@@ -164,6 +170,9 @@ export function buildNotice(input: NoticeSourceInput): NoticeBuild {
     projected_enrollment,
     plp_list_year: (input.plpListYear ?? PLP_LIST_YEAR).trim(),
     plp_list,
+    // OZ sites reproduce the original clause; 5-mile-only sites drop it so the
+    // letter never asserts a false Opportunity Zone / attendance-zone fact.
+    siting_basis: input.inOZ ? OZ_CLAUSE : "",
   };
 
   // A missing PLP list or no template is a hard block; a stale-vintage or
