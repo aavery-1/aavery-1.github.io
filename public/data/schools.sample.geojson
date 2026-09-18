@@ -16797,8 +16797,8 @@
         ]
       },
       "properties": {
-        "msid": "13-2008",
-        "report_msid": "13-2332",
+        "msid": "84-2008",
+        "report_msid": "84-2332",
         "name": "KIPP Legacy Elementary",
         "level": "Elementary",
         "type": "Charter",
@@ -17571,8 +17571,8 @@
         ]
       },
       "properties": {
-        "msid": "13-2332",
-        "report_msid": "13-2332",
+        "msid": "84-2332",
+        "report_msid": "84-2332",
         "name": "KIPP Courage Academy",
         "level": "Middle",
         "type": "Charter",
@@ -44441,7 +44441,7 @@
       },
       "properties": {
         "msid": "KIPP-LEGMID",
-        "report_msid": "13-2332",
+        "report_msid": "84-2332",
         "name": "KIPP Legacy Middle",
         "level": "Middle",
         "type": "Charter",
@@ -44480,7 +44480,7 @@
       },
       "properties": {
         "msid": "KIPP-ROYALTY",
-        "report_msid": "13-2332",
+        "report_msid": "84-2332",
         "name": "KIPP Royalty Academy",
         "level": "Elementary",
         "type": "Charter",
@@ -44519,7 +44519,7 @@
       },
       "properties": {
         "msid": "KIPP-TECHHS",
-        "report_msid": "13-2332",
+        "report_msid": "84-2332",
         "name": "KIPP Miami Technical High School",
         "level": "High",
         "type": "Charter",

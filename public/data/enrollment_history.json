@@ -3,7 +3,7 @@
   "source": "Florida Department of Education, Membership by School by Grade (Survey 2)",
   "source_url": "https://www.fldoe.org/accountability/data-sys/edu-info-accountability-services/pk-12-public-school-data-pubs-reports/students.stml",
   "unit": "students (PK-12 membership headcount, all grades)",
-  "notes": "Final Survey 2 for all years except 2021-22, which FL DOE published as a preliminary Survey 2 snapshot (as of Dec 23, 2021). Years with a privacy-suppressed total are omitted for that school. Keyed by MSID; multi-campus charters reported under one MSID (e.g. KIPP Miami, 13-2332) carry the network trend, which each campus resolves through report_msid. Broward County schools additionally carry a SY2026-2027 point from the district's Tenth Day Enrollment Count (a PK-12 headcount on the tenth day of school, not Survey 2); it is the newest point in those schools' trend.",
+  "notes": "Final Survey 2 for all years except 2021-22, which FL DOE published as a preliminary Survey 2 snapshot (as of Dec 23, 2021). Years with a privacy-suppressed total are omitted for that school. Keyed by MSID; multi-campus charters reported under one MSID (e.g. KIPP Miami, 84-2332) carry the network trend, which each campus resolves through report_msid. Broward County schools additionally carry a SY2026-2027 point from the district's Tenth Day Enrollment Count (a PK-12 headcount on the tenth day of school, not Survey 2); it is the newest point in those schools' trend.",
   "schools": {
     "01-0022": [
       {
@@ -20305,7 +20305,7 @@
         "enrollment": 595
       }
     ],
-    "13-2332": [
+    "84-2332": [
       {
         "year": "2020-2021",
         "enrollment": 676

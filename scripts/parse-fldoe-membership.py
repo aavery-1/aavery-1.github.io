@@ -20,7 +20,7 @@ Two outputs:
      inspector resolves through report_msid).
 
 Multi-campus charters that Florida reports under a SINGLE shared MSID (KIPP
-Miami, reported under 13-2332) are handled honestly: that MSID's total is the
+Miami, reported under 84-2332) are handled honestly: that MSID's total is the
 whole network, so it is NOT attributed to any one campus headline. It still
 populates the shared trend, which every campus reads via report_msid.
 
@@ -130,7 +130,7 @@ def main():
                   "published as a preliminary Survey 2 snapshot (as of Dec 23, "
                   "2021). Years with a privacy-suppressed total are omitted for "
                   "that school. Keyed by MSID; multi-campus charters reported "
-                  "under one MSID (e.g. KIPP Miami, 13-2332) carry the network "
+                  "under one MSID (e.g. KIPP Miami, 84-2332) carry the network "
                   "trend, which each campus resolves through report_msid."),
         "schools": {k: history[k] for k in sorted(history)},
     }

@@ -37,7 +37,7 @@ a school from School of Hope siting; "unknown" never wrongly disqualifies.
 
 RESCUE for cross-LEA charters: a county-coded charter is matched to a charter-LEA
 row when they share the same state school number AND a distinctive (rare) name
-token. This captures KIPP Miami (13-2332 -> 98Z-2332), the Mater network
+token. This captures KIPP Miami (84-2332 -> 98Z-2332), the Mater network
 (13-54xx -> 815-54xx), and UCP (48-00xx -> 48K-00xx) without accepting the many
 coincidental same-number collisions across unrelated districts.
 
