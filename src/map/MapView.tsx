@@ -443,10 +443,16 @@ export function MapView() {
           <div className="pin-tooltip-sub">
             {hover.level} school &middot; {schoolTypeLabel(hover.type)}
           </div>
-          {hover.hopeOperator && (
+          {hover.sohMarker && (
             <div className="pin-tooltip-sub" style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
-              <StarFilled size={13} style={{ color: "#B45309", flex: "none" }} aria-hidden={true} />
-              <span>School of Hope &middot; {hover.hopeOperator}</span>
+              {hover.sohMarker === "star" ? (
+                <StarFilled size={13} style={{ color: "#B45309", flex: "none" }} aria-hidden={true} />
+              ) : hover.sohMarker === "kipp-current" ? (
+                <span aria-hidden={true} style={{ flex: "none", width: 10, height: 10, borderRadius: "50%", background: "#CA8A04", boxShadow: "0 0 0 1.5px #fff" }} />
+              ) : (
+                <span aria-hidden={true} style={{ flex: "none", width: 10, height: 10, borderRadius: "50%", background: "#fff", border: "2px solid #CA8A04", boxSizing: "border-box" }} />
+              )}
+              <span>{hover.sohLabel}</span>
             </div>
           )}
 

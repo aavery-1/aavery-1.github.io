@@ -23,6 +23,7 @@ import "./MapLegend.carbon.css";
 const SLATE = "#334155";
 const CO_LOC_TEAL = "#0D9488"; // matches the teal co-location dot on the map
 const SOH_AMBER = "#B45309"; // matches the School of Hope star on the map
+const KIPP_YELLOW = "#CA8A04"; // matches the KIPP campus / requested-building dots
 
 // A to F read as one run; the ungraded set (I / NR / NG) sits after a small gap.
 const GRADES_AF = ["A", "B", "C", "D", "F"] as const;
@@ -147,11 +148,23 @@ export function MapLegend() {
                     </span>
                     <span>Co-location candidate</span>
                   </li>
-                  <li className="map-legend-row" title="A school run by a state-designated hope operator (Mater, KIPP, IDEA, RCMA, Success, Renaissance/Warrington). These are charter schools, flagged with a gold star.">
+                  <li className="map-legend-row" title="A School of Hope run by a state-designated hope operator (Mater and others), or a Success Academy approved co-location host (MDCPS Board, Apr 22, 2026). Flagged with a gold star.">
                     <span className="map-legend-swatch">
                       <StarFilled size={15} className="map-legend-star" style={{ color: SOH_AMBER }} />
                     </span>
                     <span>School of Hope</span>
+                  </li>
+                  <li className="map-legend-row" title="A current KIPP Miami campus, an existing School of Hope shown with reduced data.">
+                    <span className="map-legend-swatch">
+                      <span className="map-legend-dot" style={{ background: KIPP_YELLOW, boxShadow: "0 0 0 1.5px #fff" }} />
+                    </span>
+                    <span>KIPP campus</span>
+                  </li>
+                  <li className="map-legend-row" title="A vacant or underused MDCPS facility that KIPP Miami has requested for a School of Hope. The dot sits on the building's current host school.">
+                    <span className="map-legend-swatch">
+                      <span className="map-legend-dot" style={{ background: "#fff", border: `2px solid ${KIPP_YELLOW}`, boxSizing: "border-box", boxShadow: "none" }} />
+                    </span>
+                    <span>KIPP requested building</span>
                   </li>
                 </ul>
               </section>

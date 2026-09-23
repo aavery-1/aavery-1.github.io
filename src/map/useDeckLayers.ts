@@ -16,6 +16,7 @@ import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import type { NearbyPlp } from "../data/derive/filters";
 import { resolveGradeStyle } from "./gradeEncoding";
 import { matchHopeOperator, isKippSchool } from "../data/derive/hopeOperators";
+import { sohMarker, sohMarkerLabel, hasKippMarker, type SohMarker } from "../data/derive/sohSites";
 import { iconForShape, shapeForType } from "./markerShapes";
 import { geodesicBufferMiles } from "../geo/buffer";
 import type { SchoolFeature, LegislativeProps } from "../data/types";
@@ -90,6 +91,12 @@ export interface SchoolHoverInfo {
   // facility facts), matching the inspector's reduced view. Same predicate the
   // inspector uses, so the two never disagree. See data/derive/hopeOperators.ts.
   isKipp: boolean;
+  // The School of Hope marker this school carries on the map (gold star, a solid
+  // KIPP dot, an open KIPP requested-building dot), or null, with its hover-card
+  // label. From the shared classifier in data/derive/sohSites.ts, so the card and
+  // the map dot never disagree.
+  sohMarker: SohMarker;
+  sohLabel: string | null;
 }
 
 // One GeoJsonLayer for a single legislative chamber, filtered from the shared
@@ -483,6 +490,8 @@ export function useDeckLayers(
             nearbyPlps: ctx.nearbyPlps.get(p.msid) ?? [],
             hopeOperator: matchHopeOperator(p.name),
             isKipp: isKippSchool(p.name),
+            sohMarker: sohMarker(p.name, p.msid),
+            sohLabel: sohMarkerLabel(p.name, p.msid),
           });
         } else {
           onSchoolHover(null);
@@ -594,14 +603,15 @@ export function useDeckLayers(
         });
       }
 
-      // School of Hope flag: a gold star on every school run by a state-
-      // designated hope operator. A School of Hope IS a charter run by such an
-      // operator, so these markers already carry the Charter shape and flow
-      // through the type filter as charters; the star is only a visual flag, no
-      // longer a separate toggleable layer. Drawn from the filtered feats, so a
-      // star hides with its school when a filter excludes it. A white halo keeps
-      // it legible over imagery. See data/derive/hopeOperators.ts.
-      const hopeFeats = feats.filter((f) => matchHopeOperator(f.properties.name));
+      // School of Hope flags. Three marker styles share the upper-right corner,
+      // one per School of Hope designation (see data/derive/sohSites.ts):
+      //   gold star     Mater (and any non-KIPP operator) plus Success Academy
+      //                 approved co-location hosts.
+      //   solid dot     current KIPP Miami campuses.
+      //   open dot      KIPP Miami requested district buildings.
+      // Drawn from the filtered feats, so a flag hides with its school when a
+      // filter excludes it. A white halo keeps each legible over imagery.
+      const hopeFeats = feats.filter((f) => sohMarker(f.properties.name, f.properties.msid) === "star");
       if (hopeFeats.length) {
         const starOffset: [number, number] = [12, -12]; // upper-right of the pin
         const starPos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
@@ -643,6 +653,100 @@ export function useDeckLayers(
         });
       }
 
+      // KIPP Miami campuses: a SOLID yellow dot in the upper-right corner (the
+      // deck's "current campus" marker). KIPP schools are existing Schools of Hope
+      // with no facility data, so they carry a dot instead of the star. Drawn at
+      // every zoom, like the star, since it is their only School of Hope flag.
+      const kippDotOffset: [number, number] = [12, -12];
+      const kippDotPos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
+      const kippCurrentFeats = feats.filter(
+        (f) => sohMarker(f.properties.name, f.properties.msid) === "kipp-current",
+      );
+      if (kippCurrentFeats.length) {
+        built.push({
+          z: 105,
+          layer: new TextLayer<SchoolFeature>({
+            id: "school_kipp_current_halo",
+            data: kippCurrentFeats,
+            getPosition: kippDotPos,
+            getText: () => "●",
+            characterSet: ["●"],
+            getSize: 17,
+            getColor: [255, 255, 255, 255],
+            getPixelOffset: kippDotOffset,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 700,
+            getTextAnchor: "middle",
+            getAlignmentBaseline: "center",
+            pickable: false,
+          }),
+        });
+        built.push({
+          z: 105.1,
+          layer: new TextLayer<SchoolFeature>({
+            id: "school_kipp_current",
+            data: kippCurrentFeats,
+            getPosition: kippDotPos,
+            getText: () => "●",
+            characterSet: ["●"],
+            getSize: 12,
+            getColor: [202, 138, 4, 255], // Yellow 600: a current KIPP campus
+            getPixelOffset: kippDotOffset,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 700,
+            getTextAnchor: "middle",
+            getAlignmentBaseline: "center",
+            pickable: false,
+          }),
+        });
+      }
+
+      // KIPP Miami requested buildings: an OPEN yellow dot (the deck's "requested
+      // building" marker). Rendered as a yellow ring over a white disc so the
+      // hollow center reads over imagery, distinguishing a requested site from a
+      // current campus. These hosts are district schools, matched by MSID.
+      const kippRequestedFeats = feats.filter(
+        (f) => sohMarker(f.properties.name, f.properties.msid) === "kipp-requested",
+      );
+      if (kippRequestedFeats.length) {
+        built.push({
+          z: 105,
+          layer: new TextLayer<SchoolFeature>({
+            id: "school_kipp_requested_disc",
+            data: kippRequestedFeats,
+            getPosition: kippDotPos,
+            getText: () => "●",
+            characterSet: ["●"],
+            getSize: 15,
+            getColor: [255, 255, 255, 255],
+            getPixelOffset: kippDotOffset,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 700,
+            getTextAnchor: "middle",
+            getAlignmentBaseline: "center",
+            pickable: false,
+          }),
+        });
+        built.push({
+          z: 105.1,
+          layer: new TextLayer<SchoolFeature>({
+            id: "school_kipp_requested_ring",
+            data: kippRequestedFeats,
+            getPosition: kippDotPos,
+            getText: () => "○",
+            characterSet: ["○"],
+            getSize: 18,
+            getColor: [202, 138, 4, 255], // Yellow 600: a requested KIPP building
+            getPixelOffset: kippDotOffset,
+            fontFamily: "system-ui, sans-serif",
+            fontWeight: 700,
+            getTextAnchor: "middle",
+            getAlignmentBaseline: "center",
+            pickable: false,
+          }),
+        });
+      }
+
       // Co-location channel: flag the buildings where occupancy legally matters
       // (a DISTRICT facility that is underused per Rule 6A-1.0998271(5)(e) AND in
       // a School of Hope siting area) with a small teal corner DOT rather than a
@@ -651,9 +755,12 @@ export function useDeckLayers(
       // dot never disagrees with them. The exact rate lives in the hover card and
       // inspector. Shown once the view is legible (zoomed in or a small set).
       // Teal co-location dots ride the rich markers only; in the dot field every
-      // school is already a bare dot, so a second dot would just add noise.
+      // school is already a bare dot, so a second dot would just add noise. A KIPP
+      // dot owns the same corner, so it yields there to avoid a muddled overlap.
       if (rich) {
-        const coLocFeats = feats.filter((f) => ctx.coLocationMsids.has(f.properties.msid));
+        const coLocFeats = feats.filter(
+          (f) => ctx.coLocationMsids.has(f.properties.msid) && !hasKippMarker(f.properties.name, f.properties.msid),
+        );
         if (coLocFeats.length) {
           const dotOffset: [number, number] = [11, -11]; // upper-right of the pin
           const dotPos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
