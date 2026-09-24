@@ -38,6 +38,7 @@ import { mapLayersByGroup, type MapLayerDef, type MapLayerGroup } from "../confi
 import { TEAL, ACCENT, ACCENT_TEXT, SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, STATUS } from "../muiTheme";
 import { Icon } from "../ui/icons";
 import { useData } from "../data/DataContext";
+import { sohMarker, isSuccessColocation } from "../data/derive/sohSites";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { passesFilters, type SchoolFilterInput } from "../data/derive/filters";
 import { useActiveFilters } from "../status/useActiveFilters";
@@ -356,11 +357,37 @@ function matchPickOptions(all: SchoolFeature[], raw: string, picked: Set<string>
     .map((m) => m.f);
 }
 
+// The School of Hope cohorts a quick-add chip can drop into the pick set in one
+// click. Several (Success co-locations, KIPP requested buildings) are host
+// district schools whose NAMES give no hint, so they cannot be found by typing
+// "Success"/"KIPP" in the search; the chip is the only practical way to pick them
+// as a group. Classified by the same sohMarker() the map markers use.
+interface SohCohort { key: string; label: string; msids: string[]; }
+function sohCohorts(all: SchoolFeature[]): SohCohort[] {
+  const mater: string[] = [], kippCurrent: string[] = [], kippRequested: string[] = [], success: string[] = [];
+  for (const f of all) {
+    const { msid, name } = f.properties;
+    if (isSuccessColocation(msid)) { success.push(msid); continue; } // starred, but its own cohort
+    const m = sohMarker(name, msid);
+    if (m === "kipp-current") kippCurrent.push(msid);
+    else if (m === "kipp-requested") kippRequested.push(msid);
+    else if (m === "star") mater.push(msid); // Mater and any other non-KIPP operator
+  }
+  const out: SohCohort[] = [];
+  if (mater.length) out.push({ key: "mater", label: "Mater sites", msids: mater });
+  if (kippCurrent.length) out.push({ key: "kippCurrent", label: "KIPP campuses", msids: kippCurrent });
+  if (kippRequested.length) out.push({ key: "kippRequested", label: "KIPP requested", msids: kippRequested });
+  if (success.length) out.push({ key: "success", label: "Success sites", msids: success });
+  return out;
+}
+
 function PickSchoolsFacet() {
   const { schools } = useData();
   const pickedMsids = useStore((s) => s.pickedMsids);
   const addPicked = useStore((s) => s.addPicked);
   const removePicked = useStore((s) => s.removePicked);
+  const addPickedMany = useStore((s) => s.addPickedMany);
+  const removePickedMany = useStore((s) => s.removePickedMany);
   const clearPicked = useStore((s) => s.clearPicked);
   const isolatePicked = useStore((s) => s.isolatePicked);
   const setIsolatePicked = useStore((s) => s.setIsolatePicked);
@@ -371,6 +398,7 @@ function PickSchoolsFacet() {
   const [query, setQuery] = useState("");
   const options = useMemo(() => matchPickOptions(all, query, pickedMsids), [all, query, pickedMsids]);
   const pickedList = useMemo(() => all.filter((f) => pickedMsids.has(f.properties.msid)), [all, pickedMsids]);
+  const cohorts = useMemo(() => sohCohorts(all), [all]);
   const count = pickedMsids.size;
 
   const goTo = (f: SchoolFeature) => {
@@ -442,6 +470,36 @@ function PickSchoolsFacet() {
           />
         )}
       />
+
+      {cohorts.length > 0 && (
+        <Box sx={{ mt: 1.25 }}>
+          <Typography sx={{ fontSize: 12, color: SHELL_DIM, mb: 0.5 }}>Quick add a group</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {cohorts.map((c) => {
+              const allIn = c.msids.every((m) => pickedMsids.has(m));
+              return (
+                <Chip
+                  key={c.key}
+                  label={`${c.label} (${c.msids.length})`}
+                  size="small"
+                  icon={allIn ? undefined : <Box component="span" sx={{ display: "flex", ml: 0.5 }}><AddIcon size={12} /></Box>}
+                  onClick={() => (allIn ? removePickedMany(c.msids) : addPickedMany(c.msids))}
+                  title={allIn ? `Remove these ${c.msids.length} from your picks` : `Add these ${c.msids.length} to your picks`}
+                  sx={{
+                    height: 24, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    color: allIn ? "#fff" : ACCENT_TEXT,
+                    border: `1px solid ${allIn ? TEAL : alpha(TEAL, 0.3)}`,
+                    "& .MuiChip-label": { px: 0.75 },
+                    // Double-& to outrank MUI Chip's own compound-selector background.
+                    "&&": { backgroundColor: allIn ? TEAL : alpha(TEAL, 0.1) },
+                    "&&:hover": { backgroundColor: allIn ? TEAL : alpha(TEAL, 0.18) },
+                  }}
+                />
+              );
+            })}
+          </Box>
+        </Box>
+      )}
 
       {pickedList.length > 0 && (
         <Stack sx={{ mt: 1 }}>

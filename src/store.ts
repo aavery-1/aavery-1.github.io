@@ -318,6 +318,8 @@ export interface AppState {
   togglePicked: (msid: string) => void;
   addPicked: (msid: string) => void;
   removePicked: (msid: string) => void;
+  addPickedMany: (msids: string[]) => void;
+  removePickedMany: (msids: string[]) => void;
   clearPicked: () => void;
   setIsolatePicked: (v: boolean) => void;
 
@@ -567,6 +569,23 @@ export const useStore = create<AppState>((set) => ({
       const next = new Set(s.pickedMsids);
       next.delete(msid);
       return { pickedMsids: next };
+    }),
+  // Bulk add/remove, for the "quick add a whole cohort" chips (e.g. all Success
+  // co-location sites). Dedups on add; both no-op when nothing would change so a
+  // chip click on an already-satisfied group does not churn the store.
+  addPickedMany: (msids) =>
+    set((s) => {
+      const next = new Set(s.pickedMsids);
+      let changed = false;
+      for (const m of msids) if (!next.has(m)) { next.add(m); changed = true; }
+      return changed ? { pickedMsids: next } : s;
+    }),
+  removePickedMany: (msids) =>
+    set((s) => {
+      const next = new Set(s.pickedMsids);
+      let changed = false;
+      for (const m of msids) if (next.delete(m)) changed = true;
+      return changed ? { pickedMsids: next } : s;
     }),
   // Clearing the picks also drops isolate mode, so the map never ends up stuck
   // showing "only picks" with nothing picked (a blank map with no obvious way out).
