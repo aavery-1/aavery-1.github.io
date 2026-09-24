@@ -39,7 +39,7 @@ import { titleILabel } from "../data/types";
 // Lazy so the notice generator (fflate + the two .docx templates) is its own
 // chunk, loaded only when an operator opens the dialog, never in the main bundle.
 const NoticeDialog = lazy(() => import("../notice/NoticeDialog").then((m) => ({ default: m.NoticeDialog })));
-import type { LegislativeProps, Representative, DemographicsRing, SchoolDemographicsEntry, SchoolDemographicsFile } from "../data/types";
+import type { LegislativeProps, Representative, DemographicsRing, SchoolDemographicsEntry, SchoolDemographicsFile, SchoolProps } from "../data/types";
 import "./SchoolInspector.carbon.css";
 
 // Local color constants (Carbon roles / brand), so the inspector needs no MUI.
@@ -361,6 +361,46 @@ function IndRow({ label, yes, unknown }: { label: string; yes: boolean; unknown?
 function repLabel(r: Representative | undefined): string {
   if (!r) return "";
   return `${r.name}${r.party ? ` (${r.party[0]})` : ""}`;
+}
+
+// Student demographics: the race/ethnicity of the students actually ENROLLED
+// (distinct from neighborhood demographics, which is who lives nearby). From FL
+// DOE Membership by Race, Survey 2. For KIPP Miami, whose five campuses report to
+// FL DOE as one school (13-2332), this is the network figure, labeled as such
+// and never split into fabricated per-campus numbers. See parse-fldoe-race.py.
+function StudentDemographics({ p }: { p: SchoolProps }) {
+  if (p.pct_black == null && p.pct_hispanic == null && p.pct_white == null) return null;
+  const network = p.race_scope === "network";
+  const rows: Array<[string, number | null | undefined]> = [
+    ["Black", p.pct_black],
+    ["Hispanic", p.pct_hispanic],
+    ["White", p.pct_white],
+  ];
+  return (
+    <>
+      <hr className="insp-divider" />
+      <p className="insp-label">Student demographics</p>
+      <p className="insp-subhead">
+        {network ? "KIPP Miami network" : "Enrolled students"} &middot; FL DOE {p.race_year}
+      </p>
+      <div className="insp-race">
+        {rows.map(([label, v]) => (
+          <div key={label} className="insp-race__row">
+            <span className="insp-race__label">{label}</span>
+            <span className="insp-race__track"><span className="insp-race__fill" style={{ width: `${Math.max(0, Math.min(100, v ?? 0))}%` }} /></span>
+            <span className="insp-race__val">{Math.round(v ?? 0)}%</span>
+          </div>
+        ))}
+      </div>
+      {p.race_total != null && (
+        <p className="insp-race__note">
+          {network
+            ? `Network total ${p.race_total.toLocaleString("en-US")} students across KIPP Miami's campuses, which report to FL DOE as one school (13-2332). Shown for each campus.`
+            : `${p.race_total.toLocaleString("en-US")} students. Groups under 10 are suppressed at source, so small schools are approximate.`}
+        </p>
+      )}
+    </>
+  );
 }
 
 // Neighborhood demographics: the population living around this school within
@@ -833,6 +873,9 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
         <p className="insp-label">Academic performance</p>
         <p className="insp-subhead">Historic letter grades</p>
         <GradeTimeline history={history} formulaChangeYears={formulaChangeYears} />
+
+        {/* Student demographics: who ENROLLS (KIPP shows its network figure). */}
+        <StudentDemographics p={p} />
 
         {/* 4. NEIGHBORHOOD DEMOGRAPHICS: who lives around this site, by distance.
             Real Census data; every number labeled as an estimate with its error. */}

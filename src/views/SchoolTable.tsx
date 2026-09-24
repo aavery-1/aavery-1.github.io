@@ -37,7 +37,7 @@ const CO_LOC_BLUE = "#1D4ED8";  // co-location target
 const TITLE_I_PURPLE = "#7C3AED"; // economic-disadvantage proxy (Title I)
 
 type Order = "asc" | "desc";
-type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "enrollment" | "capacity" | "availCap" | "utilization";
+type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "black" | "enrollment" | "capacity" | "availCap" | "utilization";
 
 interface Row {
   feature: SchoolFeature;
@@ -49,6 +49,7 @@ interface Row {
   grade: string;
   titleI: string;
   frl: number | null; // free/reduced-price lunch rate (0-1), null when not reported
+  black: number | null; // % Black students (0-100), FL DOE membership by race; null when not reported
   enrollment: number | null;
   capacity: number | null;
   availCap: number | null; // available capacity (surplus): student stations minus enrollment; null when either is missing
@@ -165,6 +166,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           grade: p.current_grade,
           titleI: p.title_i_schoolwide ? "Schoolwide" : titleILabel(p.title_i),
           frl: p.frl_rate ?? null,
+          black: p.pct_black ?? null,
           enrollment: p.enrollment,
           capacity: p.capacity,
           availCap: availableCapacity(p.enrollment, p.capacity).stations,
@@ -340,6 +342,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
             <MenuItem value="county" sx={{ fontSize: 13 }}>County</MenuItem>
             <MenuItem value="titleI" sx={{ fontSize: 13 }}>Title I</MenuItem>
             <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
+            <MenuItem value="black" sx={{ fontSize: 13 }}>% Black</MenuItem>
             <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
             <MenuItem value="capacity" sx={{ fontSize: 13 }}>Capacity</MenuItem>
             <MenuItem value="availCap" sx={{ fontSize: 13 }}>Available capacity</MenuItem>
@@ -582,6 +585,9 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                   {!compact && (
                     <TableCell align="right"><FrlCell rate={r.frl} /></TableCell>
                   )}
+                  {!compact && (
+                    <TableCell align="right"><BlackCell pct={r.black} /></TableCell>
+                  )}
                   {!phone && (
                     <TableCell align="right">
                       <UtilizationCell util={r.utilization} bucket={r.bucket} dense={compact} />
@@ -710,6 +716,15 @@ function FrlCell({ rate }: { rate: number | null }) {
   );
 }
 
+// % Black enrolled students (0-100). A right-aligned percent; null (suppressed or
+// not in the FL DOE race report) reads as a muted "n/a", never a fake 0%.
+function BlackCell({ pct }: { pct: number | null }) {
+  if (pct == null) return <Typography variant="body2" color="text.secondary">n/a</Typography>;
+  return (
+    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>{Math.round(pct)}%</Typography>
+  );
+}
+
 // Available capacity (surplus): total student stations minus the most recent
 // enrollment, floored at 0 (an over-capacity building carries no slack). A
 // right-aligned count; null (either figure missing) reads as a muted "-", and a
@@ -763,6 +778,7 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "type", label: "Type", tier: "full", width: 92 },
   { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Title I eligibility (FL DOE Title I Part A list, 2025-26)." },
   { key: "frl", label: "F/R lunch", numeric: true, tier: "full", width: 92, help: "Share of students on free or reduced-price meals, the school-level poverty measure (FL DOE Fall Survey 2, 2025-26)." },
+  { key: "black", label: "% Black", numeric: true, tier: "full", width: 84, help: "Share of enrolled students who are Black (FL DOE Membership by Race, Survey 2 2024-25). For KIPP, the network figure across its campuses." },
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
   { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count." },
   { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Total FISH student stations (permanent plus portable), the statutory measure. The inspector also shows the permanent-only figure." },

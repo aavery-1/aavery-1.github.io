@@ -78,6 +78,19 @@ export interface SchoolProps {
   frl_rate?: number | null;
   frl_denominator?: number | null;
   frl_year?: string | null;
+  // Student race/ethnicity shares (percentages 0-100), from FL DOE Membership by
+  // School by Race/Ethnicity, Survey 2. race_total is the headcount the shares
+  // are over; cells under 10 students are suppressed at source, so a small
+  // school's shares are approximate. race_scope is "school" for a school's own
+  // reported figure, or "network" when the figure is a shared network total
+  // attributed to a campus that does not report separately (KIPP Miami's five
+  // campuses share FL DOE school 13-2332). See scripts/parse-fldoe-race.py.
+  pct_black?: number | null;
+  pct_hispanic?: number | null;
+  pct_white?: number | null;
+  race_total?: number | null;
+  race_year?: string | null;
+  race_scope?: "school" | "network" | null;
   address: string;
   geocode_source: string;
 }
