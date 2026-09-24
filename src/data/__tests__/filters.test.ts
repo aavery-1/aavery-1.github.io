@@ -126,6 +126,8 @@ describe("filterSchools composition", () => {
     boundary: null,
     circle: null,
     districtMsids: null,
+    isolatePicked: false,
+    pickedMsids: new Set<string>(),
   };
 
   it("with no filters, every school passes", () => {
@@ -397,5 +399,45 @@ describe("filterSchools composition", () => {
     const justOutside: SchoolFilterInput = { ...base, circle: { center: { lat: 25.85, lng: -80.25 }, radiusMiles: d - 0.001 } };
     expect(passesFilters(nearAnchor, justInside, ctx)).toBe(true);
     expect(passesFilters(nearAnchor, justOutside, ctx)).toBe(false);
+  });
+
+  it("isolate mode shows only the hand-picked schools", () => {
+    const input: SchoolFilterInput = {
+      ...base,
+      isolatePicked: true,
+      pickedMsids: new Set([anchor.properties.msid, brw.properties.msid]),
+    };
+    expect(passesFilters(anchor, input, ctx)).toBe(true);
+    expect(passesFilters(brw, input, ctx)).toBe(true);
+    expect(passesFilters(nearAnchor, input, ctx)).toBe(false);
+    expect(passesFilters(farFromAnchor, input, ctx)).toBe(false);
+  });
+
+  it("isolate mode overrides every other filter (a pick in another county still shows)", () => {
+    // County is Miami-Dade only and a grade filter is set, yet the picked Broward
+    // school passes: isolate is a hard override above all other facets.
+    const input: SchoolFilterInput = {
+      ...base,
+      counties: new Set<CountyName>(["Miami-Dade"]),
+      grades: new Set<Grade>(["A"]),
+      isolatePicked: true,
+      pickedMsids: new Set([brw.properties.msid]),
+    };
+    expect(passesFilters(brw, input, ctx)).toBe(true);
+    expect(passesFilters(anchor, input, ctx)).toBe(false); // not picked, so hidden
+  });
+
+  it("isolate mode with an empty pick set hides everything", () => {
+    const input: SchoolFilterInput = { ...base, isolatePicked: true, pickedMsids: new Set<string>() };
+    expect(passesFilters(anchor, input, ctx)).toBe(false);
+    expect(passesFilters(brw, input, ctx)).toBe(false);
+  });
+
+  it("picks have no effect while isolate is off", () => {
+    const input: SchoolFilterInput = { ...base, isolatePicked: false, pickedMsids: new Set([anchor.properties.msid]) };
+    // Everything still passes the otherwise-empty base filter set.
+    expect(passesFilters(anchor, input, ctx)).toBe(true);
+    expect(passesFilters(nearAnchor, input, ctx)).toBe(true);
+    expect(passesFilters(brw, input, ctx)).toBe(true);
   });
 });

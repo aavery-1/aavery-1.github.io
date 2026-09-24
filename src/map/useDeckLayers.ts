@@ -246,6 +246,8 @@ export function useDeckLayers(
   const activeLayerIds = useStore((s) => s.activeLayerIds);
   const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
   const comparePinnedMsids = useStore((s) => s.comparePinnedMsids);
+  const pickedMsids = useStore((s) => s.pickedMsids);
+  const isolatePicked = useStore((s) => s.isolatePicked);
   const selectSchool = useStore((s) => s.selectSchool);
   const radiusCenter = useStore((s) => s.radiusCenter);
   const radiusMiles = useStore((s) => s.radiusMiles);
@@ -267,7 +269,15 @@ export function useDeckLayers(
   // useFilteredSchools() feed (and every count/list derived from it) is
   // untouched, so a filtered-out searched school never inflates "N schools".
   const feats = useMemo(() => {
-    const focusMsids = [selectedSchoolMsid, ...comparePinnedMsids].filter((m): m is string => Boolean(m));
+    // Hand-picked schools are also kept always-visible (like the selection and the
+    // shortlist), so building a pick list never fights the other filters. But NOT
+    // while isolate is on: there the picks ARE the whole set, and re-adding them
+    // would defeat "show only these" (and re-show picks the filter already drops).
+    const focusMsids = [
+      selectedSchoolMsid,
+      ...comparePinnedMsids,
+      ...(isolatePicked ? [] : [...pickedMsids]),
+    ].filter((m): m is string => Boolean(m));
     if (focusMsids.length === 0) return filteredFeats;
     const inFeats = new Set(filteredFeats.map((f) => f.properties.msid));
     const missing = focusMsids
@@ -275,7 +285,7 @@ export function useDeckLayers(
       .map((msid) => all.find((f) => f.properties.msid === msid))
       .filter((f): f is SchoolFeature => Boolean(f));
     return missing.length ? [...filteredFeats, ...missing] : filteredFeats;
-  }, [filteredFeats, all, selectedSchoolMsid, comparePinnedMsids]);
+  }, [filteredFeats, all, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked]);
 
   return useMemo(() => {
     const built: Array<{ z: number; layer: Layer }> = [];
@@ -456,8 +466,13 @@ export function useDeckLayers(
 
       const SELECTED_BLUE: [number, number, number, number] = [37, 99, 235, 255];
       const PINNED_BLACK: [number, number, number, number] = [17, 17, 17, 255];
+      const PICKED_GREEN: [number, number, number, number] = [16, 185, 129, 255]; // Emerald 500: a hand-picked school
       const HALO_WHITE: [number, number, number, number] = [255, 255, 255, 255];
       const isFocused = (msid: string) => msid === selectedSchoolMsid || comparePinnedMsids.includes(msid);
+      // A picked school gets a distinct ring so the analyst can see what they have
+      // selected while everything is still on the map. Suppressed while isolate is
+      // on, where every marker is a pick and a ring on all of them is just noise.
+      const isPicked = (msid: string) => !isolatePicked && pickedMsids.has(msid);
 
       // Shared interaction handlers so dot mode and rich mode behave identically.
       const onMarkerClick = (info: { object?: SchoolFeature }) => {
@@ -510,15 +525,16 @@ export function useDeckLayers(
             getIcon: (f) => iconForShape(shapeForType(f.properties.type)),
             getPosition: (f) => f.geometry.coordinates as [number, number],
             sizeUnits: "pixels",
-            getSize: (f) => (isFocused(f.properties.msid) ? DOT_PX + 6 : DOT_PX + 3),
+            getSize: (f) => (isFocused(f.properties.msid) || isPicked(f.properties.msid) ? DOT_PX + 6 : DOT_PX + 3),
             getColor: (f) => {
               const msid = f.properties.msid;
               if (msid === selectedSchoolMsid) return SELECTED_BLUE;
               if (comparePinnedMsids.includes(msid)) return PINNED_BLACK;
+              if (isPicked(msid)) return PICKED_GREEN;
               return HALO_WHITE;
             },
             pickable: false,
-            updateTriggers: { getColor: [selectedSchoolMsid, comparePinnedMsids], getSize: [selectedSchoolMsid, comparePinnedMsids, DOT_PX] },
+            updateTriggers: { getColor: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked], getSize: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, DOT_PX] },
           }),
         });
         built.push({
@@ -552,17 +568,18 @@ export function useDeckLayers(
             getIcon: iconFor,
             getPosition: (f) => f.geometry.coordinates as [number, number],
             sizeUnits: "pixels",
-            getSize: (f) => (isFocused(f.properties.msid) ? STROKE_PX + 4 : STROKE_PX),
+            getSize: (f) => (isFocused(f.properties.msid) || isPicked(f.properties.msid) ? STROKE_PX + 4 : STROKE_PX),
             getColor: (f) => {
               const msid = f.properties.msid;
               if (msid === selectedSchoolMsid) return SELECTED_BLUE;
               if (comparePinnedMsids.includes(msid)) return PINNED_BLACK;
+              if (isPicked(msid)) return PICKED_GREEN;
               return resolveGradeStyle(f.properties.current_grade).stroke;
             },
             pickable: false,
             updateTriggers: {
-              getColor: [selectedSchoolMsid, comparePinnedMsids],
-              getSize: [selectedSchoolMsid, comparePinnedMsids, STROKE_PX],
+              getColor: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked],
+              getSize: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, STROKE_PX],
             },
           }),
         });
@@ -958,7 +975,7 @@ export function useDeckLayers(
     }
 
     return built.sort((a, b) => a.z - b.z).map((b) => b.layer);
-  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover]);
+  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover]);
 }
 
 // PLP anchor centers among all loaded schools, restricted to the selected

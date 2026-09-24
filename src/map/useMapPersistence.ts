@@ -18,6 +18,8 @@ function encode(s: AppState): string {
   if (s.plpOnly) params.set("plp", "1");
   if (s.coLocationOnly) params.set("coloc", "1");
   if (s.facilityUseSelection.size) params.set("fu", [...s.facilityUseSelection].join(","));
+  if (s.pickedMsids.size) params.set("pick", [...s.pickedMsids].join(","));
+  if (s.isolatePicked) params.set("iso", "1");
   if (s.selectedSchoolMsid) params.set("sel", s.selectedSchoolMsid);
   if (s.comparePinnedMsids.length) params.set("cmp", s.comparePinnedMsids.join(","));
   if (s.activeTool !== "none") params.set("tool", s.activeTool);
@@ -56,6 +58,9 @@ function readHash(): Partial<AppState> {
     const valid = new Set(["under", "inuse", "full"]);
     out.facilityUseSelection = new Set(fu.split(",").filter((k) => valid.has(k)) as FacilityUseKey[]);
   }
+  const pick = p.get("pick");
+  if (pick) out.pickedMsids = new Set(pick.split(",").filter(Boolean));
+  if (p.get("iso") === "1") out.isolatePicked = true;
   const sel = p.get("sel");
   if (sel) out.selectedSchoolMsid = sel;
   const cmp = p.get("cmp");

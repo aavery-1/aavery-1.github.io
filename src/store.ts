@@ -230,6 +230,16 @@ export interface AppState {
   frlMin: number | null;
   frlMax: number | null;
 
+  // ---- Manual pick / isolate ----
+  // A hand-picked set of schools the analyst wants to see on their own, built by
+  // clicking markers (via the inspector) or searching. When `isolatePicked` is on,
+  // the map, list, and counts show ONLY these schools and every other filter is
+  // paused (see passesFilters): this is the "clear the map and pick the ones I
+  // want" mode. Uncapped, and distinct from the 4-site compare shortlist. When the
+  // set is empty and isolate is on, the map is intentionally empty.
+  pickedMsids: Set<string>;
+  isolatePicked: boolean;
+
   // ---- Selection / tools / view ----
   selectedSchoolMsid: string | null;
   comparePinnedMsids: string[]; // the shortlist, up to 4
@@ -305,6 +315,12 @@ export interface AppState {
   setMobileRailOpen: (open: boolean) => void;
   setBaseMapType: (type: BaseMapType) => void;
   toggleOverlay: (key: keyof MapOverlays) => void;
+  togglePicked: (msid: string) => void;
+  addPicked: (msid: string) => void;
+  removePicked: (msid: string) => void;
+  clearPicked: () => void;
+  setIsolatePicked: (v: boolean) => void;
+
   selectSchool: (msid: string | null) => void;
   toggleComparePin: (msid: string) => void;
   clearCompare: () => void;
@@ -349,6 +365,9 @@ export const useStore = create<AppState>((set) => ({
   utilMax: null,
   frlMin: null,
   frlMax: null,
+
+  pickedMsids: new Set<string>(),
+  isolatePicked: false,
 
   selectedSchoolMsid: null,
   comparePinnedMsids: [],
@@ -487,6 +506,10 @@ export const useStore = create<AppState>((set) => ({
       activeTool: "none",
       radiusCenter: null,
       radiusMiles: 3,
+      // Turn OFF the isolate override so the map shows everything again, but keep
+      // the hand-picked set so a "Clear all" does not silently discard the list
+      // the analyst built up. resetAll (below) clears the picks too.
+      isolatePicked: false,
     }),
 
   resetAll: () =>
@@ -513,6 +536,8 @@ export const useStore = create<AppState>((set) => ({
       activeTool: "none",
       radiusCenter: null,
       radiusMiles: 3,
+      pickedMsids: new Set<string>(),
+      isolatePicked: false,
     }),
 
   setViewMode: (mode) => set({ viewMode: mode }),
@@ -521,6 +546,32 @@ export const useStore = create<AppState>((set) => ({
   setMobileRailOpen: (open) => set({ mobileRailOpen: open }),
   setBaseMapType: (type) => set({ baseMapType: type }),
   toggleOverlay: (key) => set((s) => ({ overlays: { ...s.overlays, [key]: !s.overlays[key] } })),
+
+  togglePicked: (msid) =>
+    set((s) => {
+      const next = new Set(s.pickedMsids);
+      if (next.has(msid)) next.delete(msid);
+      else next.add(msid);
+      return { pickedMsids: next };
+    }),
+  addPicked: (msid) =>
+    set((s) => {
+      if (s.pickedMsids.has(msid)) return s;
+      const next = new Set(s.pickedMsids);
+      next.add(msid);
+      return { pickedMsids: next };
+    }),
+  removePicked: (msid) =>
+    set((s) => {
+      if (!s.pickedMsids.has(msid)) return s;
+      const next = new Set(s.pickedMsids);
+      next.delete(msid);
+      return { pickedMsids: next };
+    }),
+  // Clearing the picks also drops isolate mode, so the map never ends up stuck
+  // showing "only picks" with nothing picked (a blank map with no obvious way out).
+  clearPicked: () => set({ pickedMsids: new Set<string>(), isolatePicked: false }),
+  setIsolatePicked: (v) => set({ isolatePicked: v }),
 
   selectSchool: (msid) => set({ selectedSchoolMsid: msid }),
 

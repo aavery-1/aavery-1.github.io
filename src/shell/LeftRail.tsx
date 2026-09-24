@@ -18,6 +18,7 @@
 import {
   Box, Typography, Divider, Button, Tooltip, Chip, Collapse, IconButton, Stack,
   Checkbox, Badge, Select, MenuItem, ToggleButton, ToggleButtonGroup, TextField, InputAdornment,
+  Autocomplete, Switch,
 } from "@mui/material";
 import { useMemo, useRef, useState, type RefObject } from "react";
 import {
@@ -25,7 +26,7 @@ import {
   Building as BuildingIcon, Money as MoneyIcon, Categories as CategoriesIcon,
   Education as EducationIcon, Report as ReportIcon, MapBoundary as MapBoundaryIcon,
   ZoomIn as ZoomToIcon, Filter as FilterFunnelIcon, Reset as ResetIcon,
-  Restaurant as MealIcon,
+  Restaurant as MealIcon, View as PickIcon, Add as AddIcon,
 } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useStore, ALL_COUNTIES, FACILITY_USE_TIERS, utilizationStyle, type FacilityUseKey, type LatLng } from "../store";
@@ -85,8 +86,11 @@ interface FacetCounts {
 function useFacetCounts(): FacetCounts {
   const { all, ctx, input } = useFilteredSchools();
   return useMemo(() => {
+    // Facet counts always reflect the underlying filter world, never the isolate
+    // override (which would collapse every count to the pick set), so the numbers
+    // beside each option stay meaningful even while "show only picks" is on.
     const baseExcept = (override: Partial<SchoolFilterInput>) =>
-      all.filter((f) => passesFilters(f, { ...input, ...override }, ctx));
+      all.filter((f) => passesFilters(f, { ...input, isolatePicked: false, ...override }, ctx));
     const tally = (list: SchoolFeature[], keyFn: (f: SchoolFeature) => string | null): Record<string, number> => {
       const r: Record<string, number> = {};
       for (const f of list) { const k = keyFn(f); if (k != null) r[k] = (r[k] ?? 0) + 1; }
@@ -135,6 +139,11 @@ export function LeftRail({ onNavigate, onOpenAttribution }: { onNavigate?: () =>
     <>
       <PanelHeader inDrawer={inDrawer} onClose={onNavigate} />
       <AppliedFilters />
+
+      {/* Manual pick / isolate: clear the map to only the schools the analyst
+          hand-picks. Sits first because it overrides every other filter. */}
+      <PickSchoolsFacet />
+      <FacetDivider />
 
       {/* Filters: geography first (where), then the school facets (which). */}
       <GeographyFacet onNavigate={onNavigate} />
@@ -315,6 +324,145 @@ function AppliedFilters() {
           }}
         />
       ))}
+    </Box>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Pick schools / isolate: hand-pick an arbitrary set of schools and (optionally)
+// clear the map down to just them. The picks are built here (search-to-add) or by
+// clicking a marker and using the inspector's "Add to my map". Isolate is a hard
+// override in passesFilters, so this facet sits first and reads as its own tool.
+// ---------------------------------------------------------------------------
+function matchPickOptions(all: SchoolFeature[], raw: string, picked: Set<string>): SchoolFeature[] {
+  const q = raw.trim().toLowerCase();
+  if (!q) return [];
+  const scored: Array<{ f: SchoolFeature; score: number }> = [];
+  for (const f of all) {
+    if (picked.has(f.properties.msid)) continue; // already picked, do not re-offer
+    const name = f.properties.name.toLowerCase();
+    const msid = f.properties.msid.toLowerCase();
+    let score = -1;
+    if (name.startsWith(q)) score = 80;
+    else if (new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(name)) score = 65;
+    else if (msid.startsWith(q)) score = 50;
+    else if (name.includes(q)) score = 30;
+    else if (msid.includes(q)) score = 20;
+    if (score >= 0) scored.push({ f, score });
+  }
+  return scored
+    .sort((a, b) => b.score - a.score || a.f.properties.name.length - b.f.properties.name.length || a.f.properties.name.localeCompare(b.f.properties.name))
+    .slice(0, 24)
+    .map((m) => m.f);
+}
+
+function PickSchoolsFacet() {
+  const { schools } = useData();
+  const pickedMsids = useStore((s) => s.pickedMsids);
+  const addPicked = useStore((s) => s.addPicked);
+  const removePicked = useStore((s) => s.removePicked);
+  const clearPicked = useStore((s) => s.clearPicked);
+  const isolatePicked = useStore((s) => s.isolatePicked);
+  const setIsolatePicked = useStore((s) => s.setIsolatePicked);
+  const selectSchool = useStore((s) => s.selectSchool);
+  const setMapView = useStore((s) => s.setMapView);
+
+  const all = useMemo(() => schools?.features ?? [], [schools]);
+  const [query, setQuery] = useState("");
+  const options = useMemo(() => matchPickOptions(all, query, pickedMsids), [all, query, pickedMsids]);
+  const pickedList = useMemo(() => all.filter((f) => pickedMsids.has(f.properties.msid)), [all, pickedMsids]);
+  const count = pickedMsids.size;
+
+  const goTo = (f: SchoolFeature) => {
+    const [lng, lat] = f.geometry.coordinates as [number, number];
+    selectSchool(f.properties.msid);
+    setMapView({ lat, lng }, 15);
+    panMapTo({ lat, lng }, 15);
+  };
+
+  return (
+    <Box sx={{ px: 2.5, py: 1.75, bgcolor: alpha(TEAL, 0.045) }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
+        <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+          <Box sx={{ color: SHELL_DIM, display: "flex" }}><PickIcon size={15} /></Box>
+          <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, letterSpacing: 0 }}>Pick schools</Typography>
+          {count ? <Chip label={count} size="small" sx={{ height: 16, fontSize: 11, fontWeight: 600, bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT, "& .MuiChip-label": { px: 0.75 } }} /> : null}
+        </Stack>
+        {count ? (
+          <Button size="small" onClick={clearPicked} sx={{ color: TEAL, minWidth: 0, p: 0, fontSize: 12, textTransform: "none", fontWeight: 600 }}>Clear</Button>
+        ) : null}
+      </Stack>
+
+      {/* The isolate toggle: on = map/list/counts show ONLY the picks. Allowed with
+          zero picks (that is the "clear the map" state), with a helper line below. */}
+      <Box component="label" sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", py: 0.25 }}>
+        <Typography sx={{ fontSize: 13, fontWeight: isolatePicked ? 600 : 500, color: SHELL_ON }}>
+          Show only picked schools
+        </Typography>
+        <Switch
+          size="small"
+          checked={isolatePicked}
+          onChange={(e) => setIsolatePicked(e.target.checked)}
+          sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: TEAL }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: TEAL } }}
+        />
+      </Box>
+      <Typography sx={{ fontSize: 12, color: isolatePicked && count === 0 ? STATUS.error : SHELL_DIM, lineHeight: 1.5, mb: 1 }}>
+        {isolatePicked
+          ? (count === 0
+              ? "The map is cleared. Add schools below, or click any marker and choose “Add to my map.”"
+              : "Showing only your picks. Other filters are paused while this is on.")
+          : "Add schools to build a list, then turn this on to show only them."}
+      </Typography>
+
+      <Autocomplete
+        size="small"
+        options={options}
+        value={null}
+        inputValue={query}
+        onInputChange={(_, v, reason) => { if (reason !== "reset") setQuery(v); }}
+        filterOptions={(x) => x}
+        getOptionLabel={(o) => o.properties.name}
+        isOptionEqualToValue={(a, b) => a.properties.msid === b.properties.msid}
+        noOptionsText={query.trim() ? "No matches" : "Type a school name or MSID"}
+        onChange={(_, v) => { if (v) { addPicked(v.properties.msid); setQuery(""); } }}
+        renderOption={(props, o) => (
+          <li {...props} key={o.properties.msid}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.properties.name}</Typography>
+              <Typography sx={{ fontSize: 11, color: SHELL_DIM }}>{o.properties.county}, {o.properties.level}, <Box component="span" className="mono">{o.properties.msid}</Box></Typography>
+            </Box>
+          </li>
+        )}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            placeholder="Add a school by name or MSID"
+            InputProps={{ ...params.InputProps, startAdornment: <InputAdornment position="start" sx={{ color: SHELL_DIM }}><AddIcon size={14} /></InputAdornment> }}
+            inputProps={{ ...params.inputProps, style: { fontSize: 13 } }}
+          />
+        )}
+      />
+
+      {pickedList.length > 0 && (
+        <Stack sx={{ mt: 1 }}>
+          {pickedList.map((f) => (
+            <Box key={f.properties.msid} sx={{ display: "flex", alignItems: "center", gap: 0.5, py: 0.15 }}>
+              <Box
+                component="button"
+                onClick={() => goTo(f)}
+                title={`Zoom to ${f.properties.name}`}
+                sx={{ flex: 1, minWidth: 0, textAlign: "left", appearance: "none", border: "none", bgcolor: "transparent", cursor: "pointer", p: 0.25, borderRadius: 1, color: SHELL_ON, "&:hover": { bgcolor: alpha(SHELL_ON, 0.04) } }}
+              >
+                <Typography sx={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.properties.name}</Typography>
+                <Typography sx={{ fontSize: 11, color: SHELL_DIM, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.properties.county}, {f.properties.level}</Typography>
+              </Box>
+              <IconButton size="small" aria-label={`Remove ${f.properties.name}`} onClick={() => removePicked(f.properties.msid)} sx={{ color: SHELL_DIM, flex: "none", "&:hover": { color: STATUS.error } }}>
+                <CloseIcon size={16} />
+              </IconButton>
+            </Box>
+          ))}
+        </Stack>
+      )}
     </Box>
   );
 }

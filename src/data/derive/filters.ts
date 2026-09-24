@@ -143,6 +143,12 @@ export interface SchoolFilterInput {
   // MSIDs inside the active board/legislative district, or null for no district
   // filter. Precomputed by the district-tagging spatial join (see districts.ts).
   districtMsids: Set<string> | null;
+  // Manual pick / isolate mode. When `isolatePicked` is true, ONLY schools in
+  // `pickedMsids` are shown and every other filter is ignored (a hard override):
+  // this is the "clear the map and hand-pick the ones I want" mode. When it is
+  // false, `pickedMsids` has no effect on the set (the picks are just a saved list).
+  isolatePicked: boolean;
+  pickedMsids: Set<string>;
 }
 
 // Ray-casting point-in-polygon on a ring of {lat,lng} vertices. Cheap enough to
@@ -266,6 +272,12 @@ export function passesFilters(
   ctx: SchoolFilterContext,
 ): boolean {
   const p = f.properties;
+
+  // Manual isolate mode is a hard override: when on, the analyst has hand-picked
+  // exactly the schools they want to see, so a school passes iff it is in that set
+  // and NONE of the other facets apply. This sits above every other test so a
+  // picked school in another county / grade / type still shows.
+  if (input.isolatePicked) return input.pickedMsids.has(p.msid);
 
   // Geography
   if (!input.counties.has(p.county)) return false;

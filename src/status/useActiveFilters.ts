@@ -32,6 +32,14 @@ export function useActiveFilters(): ActiveFilter[] {
   if (s.drawnBoundary && s.drawnBoundary.length >= 3) filters.push({ key: "boundary", section: "Geography", label: "Map area", onClear: () => s.clearDrawnBoundary() });
   if (s.drawnCircle) filters.push({ key: "circle", section: "Geography", label: `Within ${s.drawnCircle.radiusMiles} mi of a point`, onClear: () => s.clearDrawnCircle() });
 
+  // Isolate mode is a hard override, so it reads as the one active filter: a
+  // single chip that names the pick count and, when cleared, turns isolate off
+  // (the picks themselves are kept). Shown first because it supersedes the rest.
+  if (s.isolatePicked) {
+    const n = s.pickedMsids.size;
+    filters.push({ key: "isolate", section: "Schools", label: `Only picked schools (${n})`, onClear: () => s.setIsolatePicked(false) });
+  }
+
   if (s.plpOnly) filters.push({ key: "plp", section: "Schools", label: "Persistently low-performing", onClear: () => s.setPlpOnly(false) });
   if (s.coLocationOnly) filters.push({ key: "coloc", section: "Schools", label: "Co-location candidate", onClear: () => s.setCoLocationOnly(false) });
   if (s.gradeSelection.size > 0) filters.push({ key: "grade", section: "Schools", label: `Grade ${[...s.gradeSelection].join(", ")}`, onClear: s.clearGrades });

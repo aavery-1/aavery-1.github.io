@@ -19,7 +19,7 @@
 
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { Button, IconButton, Tag, SkeletonText } from "@carbon/react";
-import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon, Link as LinkIcon, Checkmark as CheckmarkIcon, Document as DocumentIcon } from "@carbon/icons-react";
+import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon, Link as LinkIcon, Checkmark as CheckmarkIcon, Document as DocumentIcon, View as ViewIcon, ViewOff as ViewOffIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, SOH_SURPLUS_STATIONS } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
@@ -494,6 +494,10 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   const selectSchool = useStore((s) => s.selectSchool);
   const comparePinnedMsids = useStore((s) => s.comparePinnedMsids);
   const toggleComparePin = useStore((s) => s.toggleComparePin);
+  const pickedMsids = useStore((s) => s.pickedMsids);
+  const togglePicked = useStore((s) => s.togglePicked);
+  const isolatePicked = useStore((s) => s.isolatePicked);
+  const setIsolatePicked = useStore((s) => s.setIsolatePicked);
   const setViewMode = useStore((s) => s.setViewMode);
   const setShortlistOpen = useStore((s) => s.setShortlistOpen);
   const setDistrictFilter = useStore((s) => s.setDistrictFilter);
@@ -535,6 +539,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   const enrollHistory = data.enrollment?.schools[reportMsid] ?? [];
   const pinned = comparePinnedMsids.includes(p.msid);
   const canPin = pinned || comparePinnedMsids.length < MAX_COMPARE;
+  const picked = pickedMsids.has(p.msid);
 
   // KIPP schools (KIPP Miami's campuses) show a reduced inspector: identity,
   // letter grade history, and location and districts only. They are existing
@@ -925,6 +930,33 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
         >
           {pinned ? "On your shortlist" : "Add to shortlist"}
         </Button>
+        {/* Manual pick: add this school to the hand-picked set that "Show only
+            picked schools" isolates. Distinct from the shortlist (which is a
+            capped, side-by-side compare set): this list is uncapped and controls
+            what the map draws. */}
+        <Button
+          kind={picked ? "primary" : "tertiary"}
+          size="md"
+          renderIcon={picked ? ViewOffIcon : ViewIcon}
+          onClick={() => togglePicked(p.msid)}
+        >
+          {picked ? "Remove from my map" : "Add to my map"}
+        </Button>
+        {/* A one-click isolate toggle, so the whole "clear the map, keep my picks"
+            flow works from the inspector without opening the filter panel. Shown
+            once at least one school is picked. */}
+        {pickedMsids.size >= 1 && (
+          <Button
+            kind="ghost"
+            size="sm"
+            renderIcon={isolatePicked ? ViewOffIcon : ViewIcon}
+            onClick={() => setIsolatePicked(!isolatePicked)}
+          >
+            {isolatePicked
+              ? "Show all schools again"
+              : `Show only my map (${pickedMsids.size})`}
+          </Button>
+        )}
         <div>
           <ExportButton filenameBase={`school_${p.msid}`} headers={["Field", "Value"]} rows={exportRows} label="Export" />
         </div>
