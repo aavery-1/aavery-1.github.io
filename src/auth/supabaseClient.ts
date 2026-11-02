@@ -8,7 +8,7 @@
 // designed to be shipped in the browser: row-level security, not secrecy of the
 // anon key, is what protects Supabase data. See SETUP in the chat / README.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { NewsItem } from "../news/parseGoogleNews";
+import { parseGoogleNewsRss, type NewsItem } from "../news/parseGoogleNews";
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
@@ -32,15 +32,24 @@ export async function checkAccess(password: string): Promise<boolean> {
   return data === true;
 }
 
-// The school-news feature needs Supabase, because the headlines come from the
-// `school-news` Edge Function (a server-side hop past the browser's CORS wall).
-// With no Supabase configured (local dev), the news card reports "unavailable".
-export const newsConfigured = gateConfigured;
+// The school-news feature needs a server-side hop past the browser's CORS wall:
+// in a deployed build that is the `school-news` Supabase Edge Function; in local
+// dev without Supabase keys it is the Vite dev-server proxy (vite.config.ts,
+// "/__dev-news"). A production build with no Supabase reports "unavailable".
+const devNewsProxy = import.meta.env.DEV && !gateConfigured;
+export const newsConfigured = gateConfigured || devNewsProxy;
 
-// Fetch recent Google News headlines mentioning a school, via the Edge Function.
-// Throws on a missing config or a transport/function error so the hook can show a
-// distinct state; never returns fabricated items.
+// Fetch recent Google News headlines mentioning a school, via the Edge Function
+// (or the dev proxy locally). Throws on a missing config or a transport/function
+// error so the hook can show a distinct state; never returns fabricated items.
 export async function fetchSchoolNews(name: string, limit = 6): Promise<NewsItem[]> {
+  if (devNewsProxy) {
+    // Same quoted phrase query the Edge Function sends, parsed by the same parser.
+    const q = encodeURIComponent(`"${name}"`);
+    const res = await fetch(`/__dev-news?q=${q}&hl=en-US&gl=US&ceid=US:en`);
+    if (!res.ok) throw new Error(`news-proxy-${res.status}`);
+    return parseGoogleNewsRss(await res.text(), limit);
+  }
   if (!client) throw new Error("news-unconfigured");
   const { data, error } = await client.functions.invoke("school-news", { body: { name, limit } });
   if (error) throw error;

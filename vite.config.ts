@@ -20,7 +20,22 @@ export default defineConfig({
   // silently wandering to a random port. A wandering port is unreachable from the
   // in-app browser preview; a hard failure ("Port 5173 is in use") instead points
   // straight at a leftover dev server from an earlier session that needs stopping.
-  server: { port: 5173, strictPort: true },
+  server: {
+    port: 5173,
+    strictPort: true,
+    // Dev-only stand-in for the `school-news` Edge Function, so the inspector's
+    // "In the news" card works locally without Supabase keys. The dev server
+    // fetches Google News RSS server-side (no browser CORS wall) and the client
+    // parses it with the same parseGoogleNewsRss the function uses. Never part of
+    // a production build: the deployed site always goes through the function.
+    proxy: {
+      "/__dev-news": {
+        target: "https://news.google.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/__dev-news/, "/rss/search"),
+      },
+    },
+  },
   build: {
     // Split the heavy vendor libraries into their own long-lived chunks so a code
     // change only busts the small app chunk, not the whole 1.6MB payload, and the

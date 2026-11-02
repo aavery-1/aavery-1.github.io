@@ -81,6 +81,9 @@ To turn it on, once, from the project folder:
 3. Deploy the function:
    - `supabase functions deploy school-news`
 
+Local development needs none of this: `npm run dev` fetches headlines through a
+dev-only proxy in `vite.config.ts`, so the card works without Supabase keys.
+
 That's it. The site already knows how to call it (it reuses the same two Supabase
 secrets from Part A). Reload the site and open any school; headlines appear at the
 bottom of the inspector. The card is an external, unverified feed - it matches on
