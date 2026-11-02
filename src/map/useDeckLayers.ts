@@ -17,7 +17,9 @@ import type { NearbyPlp } from "../data/derive/filters";
 import { resolveGradeStyle } from "./gradeEncoding";
 import { matchHopeOperator, isKippSchool } from "../data/derive/hopeOperators";
 import { sohMarker, sohMarkerLabel, hasKippMarker, type SohMarker } from "../data/derive/sohSites";
-import { iconForShape, shapeForType } from "./markerShapes";
+import { iconForShape, shapeForType, shadowIconForShape, iconForBadge, SHADOW_SCALE, type MarkerBadge } from "./markerShapes";
+import { placeLabels, measureLabel, LABEL_PAD_X, LABEL_PAD_Y, type PlacedLabel } from "./labelPlacement";
+import { useMapFont } from "./mapFonts";
 import { geodesicBufferMiles } from "../geo/buffer";
 import type { SchoolFeature, LegislativeProps } from "../data/types";
 
@@ -175,6 +177,7 @@ function boundaryLabels(
   color: Rgb,
   z: number,
   bounds: MapBounds | null,
+  font: string,
   offsetY = 0,
 ): { z: number; layer: Layer } {
   const data = features
@@ -193,15 +196,16 @@ function boundaryLabels(
       getSize: 12,
       getColor: [color[0], color[1], color[2], 255],
       getPixelOffset: [0, offsetY],
-      fontFamily: "system-ui, sans-serif",
-      fontWeight: 700,
+      fontFamily: font,
+      fontWeight: 600,
       getTextAnchor: "middle",
       getAlignmentBaseline: "center",
       background: true,
-      getBackgroundColor: [255, 255, 255, 235],
+      getBackgroundColor: [255, 255, 255, 242],
       getBorderColor: [color[0], color[1], color[2], 235],
       getBorderWidth: 1,
-      backgroundPadding: [5, 3],
+      backgroundBorderRadius: 2,
+      backgroundPadding: [6, 3],
     }),
   };
 }
@@ -221,6 +225,7 @@ function chamberLayer(
   showLabels: boolean,
   bounds: MapBounds | null,
   offsetY: number,
+  font: string,
 ): Array<{ z: number; layer: Layer }> {
   const subset = features.filter((f) => (f.properties as LegislativeProps).chamber === chamber);
   const layers = casedBoundary(id, { type: "FeatureCollection", features: subset } as GeoJSON.FeatureCollection, color, width, z);
@@ -233,6 +238,7 @@ function chamberLayer(
         color,
         z + 0.5,
         bounds,
+        font,
         offsetY,
       ),
     );
@@ -258,7 +264,8 @@ export function useDeckLayers(
   const mapBounds = useStore((s) => s.mapBounds);
   const activeTool = useStore((s) => s.activeTool);
   const { income, boardDistricts, isochrones, populationGrowth, opportunityZones, legislative } = useData();
-  const { features: filteredFeats, all, ctx } = useFilteredSchools();
+  const { features: filteredFeats, inViewFeatures, all, ctx } = useFilteredSchools();
+  const font = useMapFont();
 
   // The selected school (from search, the list, or the dock) and any
   // compare-pinned schools must always be visible on the map, even when the
@@ -286,6 +293,32 @@ export function useDeckLayers(
       .filter((f): f is SchoolFeature => Boolean(f));
     return missing.length ? [...filteredFeats, ...missing] : filteredFeats;
   }, [filteredFeats, all, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked]);
+
+  // 5-mile SoH radius around each PLP anchor in the selected counties. This is
+  // a visual overlay: it reflects ALL PLP anchors in-geography, independent of
+  // the school-level filters (grade, type, utilization), per the brief.
+  const plpOn = activeLayerIds.has("plp_radius");
+  const plpArea = useMemo((): GeoJSON.FeatureCollection | null => {
+    if (!plpOn) return null;
+    const centers = plpAnchorCenters(all, ctx.plp, countySelection);
+    if (!centers.length) return null;
+    const circles = centers.map((c) => geodesicBufferMiles([c.lng, c.lat], SOH_RADIUS_MILES));
+    // Dissolve the overlapping 5-mile circles into ONE eligibility area, so
+    // the fill reads as a single calm region with a clean outer boundary
+    // instead of dozens of stacked circles compounding into a red blob. This
+    // is also the honest shape: the union of the radii IS the eligible area.
+    let merged: GeoJSON.Feature;
+    try {
+      merged = union({ type: "FeatureCollection", features: circles } as GeoJSON.FeatureCollection<GeoJSON.Polygon>) as GeoJSON.Feature;
+    } catch {
+      merged = {
+        type: "Feature",
+        properties: {},
+        geometry: { type: "MultiPolygon", coordinates: circles.map((c) => (c.geometry as GeoJSON.Polygon).coordinates) },
+      };
+    }
+    return { type: "FeatureCollection", features: [merged] } as GeoJSON.FeatureCollection;
+  }, [plpOn, all, ctx.plp, countySelection]);
 
   return useMemo(() => {
     const built: Array<{ z: number; layer: Layer }> = [];
@@ -388,9 +421,9 @@ export function useDeckLayers(
       const legLabelsLegible = mapZoom >= 8.5;
       // When several chambers are on at once, stack their labels into a ladder so
       // the pills sit apart instead of colliding at a shared district center.
-      if (has("congressional_districts")) built.push(...chamberLayer("congressional_districts", "CD", legFeatures, hexToRgb("#512DA8"), 2.5, 34, legLabelsLegible, mapBounds, -14));
-      if (has("state_senate_districts")) built.push(...chamberLayer("state_senate_districts", "SLDU", legFeatures, hexToRgb("#7E57C2"), 1.75, 35, legLabelsLegible, mapBounds, 0));
-      if (has("state_house_districts")) built.push(...chamberLayer("state_house_districts", "SLDL", legFeatures, hexToRgb("#B39DDB"), 1.25, 33, legLabelsLegible, mapBounds, 14));
+      if (has("congressional_districts")) built.push(...chamberLayer("congressional_districts", "CD", legFeatures, hexToRgb("#512DA8"), 2.5, 34, legLabelsLegible, mapBounds, -14, font));
+      if (has("state_senate_districts")) built.push(...chamberLayer("state_senate_districts", "SLDU", legFeatures, hexToRgb("#7E57C2"), 1.75, 35, legLabelsLegible, mapBounds, 0, font));
+      if (has("state_house_districts")) built.push(...chamberLayer("state_house_districts", "SLDL", legFeatures, hexToRgb("#B39DDB"), 1.25, 33, legLabelsLegible, mapBounds, 14, font));
     }
 
     // Board districts (outline) plus district-number labels. Few districts per
@@ -406,73 +439,70 @@ export function useDeckLayers(
           color,
           31,
           mapBounds,
+          font,
           28,
         ),
       );
     }
 
-    // 5-mile SoH radius around each PLP anchor in the selected counties. This is
-    // a visual overlay: it reflects ALL PLP anchors in-geography, independent of
-    // the school-level filters (grade, type, utilization), per the brief.
-    if (has("plp_radius")) {
-      const centers = plpAnchorCenters(all, ctx.plp, countySelection);
-      if (centers.length) {
-        const circles = centers.map((c) => geodesicBufferMiles([c.lng, c.lat], SOH_RADIUS_MILES));
-        // Dissolve the overlapping 5-mile circles into ONE eligibility area, so
-        // the fill reads as a single calm region with a clean outer boundary
-        // instead of dozens of stacked circles compounding into a red blob. This
-        // is also the honest shape: the union of the radii IS the eligible area.
-        let merged: GeoJSON.Feature;
-        try {
-          merged = union({ type: "FeatureCollection", features: circles } as GeoJSON.FeatureCollection<GeoJSON.Polygon>) as GeoJSON.Feature;
-        } catch {
-          merged = {
-            type: "Feature",
-            properties: {},
-            geometry: { type: "MultiPolygon", coordinates: circles.map((c) => (c.geometry as GeoJSON.Polygon).coordinates) },
-          };
-        }
-        built.push({
-          z: 5,
-          layer: new GeoJsonLayer({
-            id: "plp_radius",
-            data: { type: "FeatureCollection", features: [merged] } as GeoJSON.FeatureCollection,
-            stroked: true,
-            filled: true,
-            getFillColor: [211, 47, 47, 16],
-            getLineColor: [211, 47, 47, 120],
-            getLineWidth: 1.25,
-            lineWidthUnits: "pixels",
-          }),
-        });
-      }
+    // 5-mile SoH radius around each PLP anchor in the selected counties (the
+    // dissolved area is computed once in plpArea, outside this memo, so panning
+    // and label placement never redo the polygon union).
+    if (has("plp_radius") && plpArea) {
+      built.push({
+        z: 5,
+        layer: new GeoJsonLayer({
+          id: "plp_radius",
+          data: plpArea,
+          stroked: true,
+          filled: true,
+          // Carbon Red 60, kept faint: the area is context, the pins are the data.
+          getFillColor: [218, 30, 40, 12],
+          getLineColor: [218, 30, 40, 150],
+          getLineWidth: 1.5,
+          lineWidthUnits: "pixels",
+        }),
+      });
     }
 
     // School markers: SHAPE encodes operator type, COLOR encodes grade, and the
-    // grade letter sits inside. Two icon copies (a larger outline behind a
-    // smaller fill) give the pin a grade-stroke edge; the shared white shape mask
-    // is tinted per grade so shape and color read independently.
+    // grade letter sits inside. Each rich marker is a small stack: a soft drop
+    // shadow, a white keyline ring, the grade-tinted shape, and the letter, so it
+    // reads as one raised object over the basemap. The shared white shape mask is
+    // tinted per grade so shape and color read independently.
     if (has("school_locations")) {
-      // Marker treatment is tiered by on-screen DENSITY, not just zoom (Mapbox's
-      // "density" + "legibility" principles). Every marker carries the type SHAPE
-      // (circle=District, square=Charter, diamond=Magnet, triangle=Virtual,
-      // hexagon=Alternative) colored by grade, with a white halo, so school type
-      // is readable at any density. A dense view stops there: a calm field of
-      // haloed shapes, no letters competing. A sparse view (a filtered set or a
-      // zoomed-in neighborhood) adds the grade LETTER, a focus ring, and the
-      // co-location dot. Detail appears exactly where it is legible.
-      const RICH_MAX = 140; // above this many on-screen markers, labels turn to clutter
-      const rich = feats.length <= RICH_MAX;
+      // Marker treatment is tiered by ON-SCREEN density (Mapbox's "density" +
+      // "legibility" principles), counted from the schools actually in view, not
+      // the whole filtered set: a street-level view of 120 schools is sparse
+      // enough for letters even when 1,100 match the filters statewide. Every
+      // marker carries the type SHAPE (circle=District, square=Charter,
+      // diamond=Magnet, triangle=Virtual, hexagon=Alternative) colored by grade.
+      // A dense view stops there: a calm field of keylined shapes. A sparse view
+      // (a filtered set or a zoomed-in neighborhood) adds the grade LETTER, the
+      // shadow, and the co-location badge. Detail appears exactly where it is legible.
+      const RICH_MAX = 180; // above this many on-screen markers, letters turn to clutter
+      const rich = inViewFeatures.length <= RICH_MAX || mapZoom >= 14;
 
-      const SELECTED_BLUE: [number, number, number, number] = [37, 99, 235, 255];
-      const PINNED_BLACK: [number, number, number, number] = [17, 17, 17, 255];
-      const PICKED_GREEN: [number, number, number, number] = [16, 185, 129, 255]; // Emerald 500: a hand-picked school
-      const HALO_WHITE: [number, number, number, number] = [255, 255, 255, 255];
+      // State colors, from the Carbon palette and the KIPP brand interactive.
+      const SELECTED: [number, number, number, number] = [0, 30, 98, 255];      // KIPP navy, the --focus / interactive token
+      const SELECTED_HALO: [number, number, number, number] = [82, 195, 237, 72]; // KIPP light blue, translucent
+      const PINNED: [number, number, number, number] = [22, 22, 22, 255];       // Carbon Gray 100
+      const PICKED: [number, number, number, number] = [36, 161, 72, 255];      // Carbon Green 50: a hand-picked school
+      const WHITE: [number, number, number, number] = [255, 255, 255, 255];
+      const HOVER_SHADE: [number, number, number, number] = [0, 0, 0, 52];     // Carbon hover: one step darker
       const isFocused = (msid: string) => msid === selectedSchoolMsid || comparePinnedMsids.includes(msid);
       // A picked school gets a distinct ring so the analyst can see what they have
       // selected while everything is still on the map. Suppressed while isolate is
       // on, where every marker is a pick and a ring on all of them is just noise.
       const isPicked = (msid: string) => !isolatePicked && pickedMsids.has(msid);
+      const ringColor = (msid: string): [number, number, number, number] => {
+        if (msid === selectedSchoolMsid) return SELECTED;
+        if (comparePinnedMsids.includes(msid)) return PINNED;
+        if (isPicked(msid)) return PICKED;
+        return WHITE;
+      };
+      const pos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
+      const iconFor = (f: SchoolFeature) => iconForShape(shapeForType(f.properties.type));
 
       // Shared interaction handlers so dot mode and rich mode behave identically.
       const onMarkerClick = (info: { object?: SchoolFeature }) => {
@@ -513,105 +543,131 @@ export function useDeckLayers(
         }
       };
 
-      if (!rich) {
-        // DOT FIELD: a white halo ring behind a grade-colored fill dot, so dots
-        // separate cleanly from neighbors and from the light base. Small and calm.
-        const DOT_PX = Math.round(Math.max(7, Math.min(13, mapZoom)));
+      // Marker geometry for this zoom. FILL is the grade shape; RING adds the white
+      // keyline (or the state color for a focused school) around it.
+      const FILL_PX = rich
+        ? Math.max(16, Math.min(28, 16 + (mapZoom - 10) * 2.4))
+        : Math.round(Math.max(7, Math.min(13, mapZoom)));
+      const RING_PX = FILL_PX + (rich ? 5 : 3);
+      const FOCUS_PX = RING_PX + (rich ? 5 : 4);
+      const markerRadius = RING_PX / 2;
+      const focusFeats = feats.filter((f) => isFocused(f.properties.msid) || isPicked(f.properties.msid));
+
+      // Selection halo: a translucent KIPP-blue disc under the selected school, so
+      // the one you are inspecting is findable at a glance on a busy map.
+      const selectedFeat = selectedSchoolMsid ? feats.find((f) => f.properties.msid === selectedSchoolMsid) : undefined;
+      if (selectedFeat) {
         built.push({
-          z: 99,
-          layer: new IconLayer<SchoolFeature>({
-            id: "school_dot_halo",
-            data: feats,
-            getIcon: (f) => iconForShape(shapeForType(f.properties.type)),
-            getPosition: (f) => f.geometry.coordinates as [number, number],
-            sizeUnits: "pixels",
-            getSize: (f) => (isFocused(f.properties.msid) || isPicked(f.properties.msid) ? DOT_PX + 6 : DOT_PX + 3),
-            getColor: (f) => {
-              const msid = f.properties.msid;
-              if (msid === selectedSchoolMsid) return SELECTED_BLUE;
-              if (comparePinnedMsids.includes(msid)) return PINNED_BLACK;
-              if (isPicked(msid)) return PICKED_GREEN;
-              return HALO_WHITE;
-            },
+          z: 97,
+          layer: new ScatterplotLayer<SchoolFeature>({
+            id: "school_selected_halo",
+            data: [selectedFeat],
+            getPosition: pos,
+            radiusUnits: "pixels",
+            getRadius: FOCUS_PX / 2 + (rich ? 8 : 7),
+            getFillColor: SELECTED_HALO,
+            stroked: true,
+            getLineColor: [SELECTED[0], SELECTED[1], SELECTED[2], 140],
+            getLineWidth: 1,
+            lineWidthUnits: "pixels",
             pickable: false,
-            updateTriggers: { getColor: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked], getSize: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, DOT_PX] },
           }),
         });
-        built.push({
-          z: 100,
-          layer: new IconLayer<SchoolFeature>({
-            id: "school_locations",
-            data: feats,
-            pickable: activeTool === "none",
-            getIcon: (f) => iconForShape(shapeForType(f.properties.type)),
-            getPosition: (f) => f.geometry.coordinates as [number, number],
-            sizeUnits: "pixels",
-            getSize: DOT_PX,
-            getColor: (f) => resolveGradeStyle(f.properties.current_grade).fill,
-            onClick: onMarkerClick,
-            onHover: onMarkerHover,
-          }),
-        });
-      } else {
-        // RICH MARKERS: type shape + grade letter + focus ring, sized generously
-        // because the view is sparse enough to carry them.
-        const FILL_PX = Math.max(13, Math.min(26, 13 + (mapZoom - 9) * ((26 - 13) / (14 - 9))));
-        const STROKE_PX = FILL_PX + 4;
-        const iconFor = (f: SchoolFeature) => iconForShape(shapeForType(f.properties.type));
+      }
 
-        // Outline copy (drawn first, slightly larger) = grade-stroke edge / focus ring.
+      // Soft drop shadow (sparse views only; in a dense field the shadows would
+      // merge into a gray smudge).
+      if (rich) {
         built.push({
-          z: 99,
+          z: 98,
           layer: new IconLayer<SchoolFeature>({
-            id: "school_outline",
+            id: "school_shadow",
             data: feats,
-            getIcon: iconFor,
-            getPosition: (f) => f.geometry.coordinates as [number, number],
+            getIcon: (f) => shadowIconForShape(shapeForType(f.properties.type)),
+            getPosition: pos,
             sizeUnits: "pixels",
-            getSize: (f) => (isFocused(f.properties.msid) || isPicked(f.properties.msid) ? STROKE_PX + 4 : STROKE_PX),
-            getColor: (f) => {
-              const msid = f.properties.msid;
-              if (msid === selectedSchoolMsid) return SELECTED_BLUE;
-              if (comparePinnedMsids.includes(msid)) return PINNED_BLACK;
-              if (isPicked(msid)) return PICKED_GREEN;
-              return resolveGradeStyle(f.properties.current_grade).stroke;
-            },
+            getSize: (f) => (isFocused(f.properties.msid) || isPicked(f.properties.msid) ? FOCUS_PX : RING_PX) * SHADOW_SCALE,
             pickable: false,
-            updateTriggers: {
-              getColor: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked],
-              getSize: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, STROKE_PX],
-            },
+            updateTriggers: { getSize: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, RING_PX] },
           }),
         });
+      }
 
-        // Fill copy (on top of the outline). This layer owns click + hover.
+      // Keyline ring: white for every school, the state color (selected navy,
+      // shortlisted gray, picked green) for a focused one.
+      built.push({
+        z: 99,
+        layer: new IconLayer<SchoolFeature>({
+          id: "school_outline",
+          data: feats,
+          getIcon: iconFor,
+          getPosition: pos,
+          sizeUnits: "pixels",
+          getSize: (f) => (isFocused(f.properties.msid) || isPicked(f.properties.msid) ? FOCUS_PX : RING_PX),
+          getColor: (f) => ringColor(f.properties.msid),
+          pickable: false,
+          updateTriggers: {
+            getColor: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked],
+            getSize: [selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, RING_PX, FOCUS_PX],
+          },
+        }),
+      });
+
+      // A focused school's state ring is set off from its fill by a thin white
+      // inset (Carbon's focus treatment: a color ring over a 1px white gap), so a
+      // navy ring never fuses with a dark grade fill.
+      if (focusFeats.length) {
         built.push({
-          z: 100,
+          z: 99.5,
           layer: new IconLayer<SchoolFeature>({
-            id: "school_locations",
-            data: feats,
-            pickable: activeTool === "none",
+            id: "school_focus_inset",
+            data: focusFeats,
             getIcon: iconFor,
-            getPosition: (f) => f.geometry.coordinates as [number, number],
+            getPosition: pos,
             sizeUnits: "pixels",
-            getSize: FILL_PX,
-            getColor: (f) => resolveGradeStyle(f.properties.current_grade).fill,
-            onClick: onMarkerClick,
-            onHover: onMarkerHover,
+            getSize: FILL_PX + 3,
+            getColor: WHITE,
+            pickable: false,
           }),
         });
+      }
 
-        // Grade letter inside every marker (the encoding of record).
+      // The grade fill. This layer owns click + hover, and darkens a step under
+      // the cursor (Carbon's hover state) so the pin you are on is unambiguous.
+      built.push({
+        z: 100,
+        layer: new IconLayer<SchoolFeature>({
+          id: "school_locations",
+          data: feats,
+          pickable: activeTool === "none",
+          autoHighlight: true,
+          highlightColor: HOVER_SHADE,
+          getIcon: iconFor,
+          getPosition: pos,
+          sizeUnits: "pixels",
+          getSize: FILL_PX,
+          getColor: (f) => resolveGradeStyle(f.properties.current_grade).fill,
+          onClick: onMarkerClick,
+          onHover: onMarkerHover,
+        }),
+      });
+
+      // Grade letter inside every rich marker (the encoding of record), set in
+      // IBM Plex Sans like the rest of the Carbon UI. Two-letter grades (NR / NG)
+      // step down so they fit the same shape.
+      if (rich) {
+        const letterPx = Math.max(9, Math.round(FILL_PX * 0.54));
         built.push({
           z: 101,
-          layer: new TextLayer({
+          layer: new TextLayer<SchoolFeature>({
             id: "school_letters",
             data: feats,
-            getPosition: (f: SchoolFeature) => f.geometry.coordinates as [number, number],
-            getText: (f: SchoolFeature) => resolveGradeStyle(f.properties.current_grade).letter,
-            getSize: Math.max(9, Math.round(FILL_PX * 0.5)),
-            getColor: (f: SchoolFeature) => resolveGradeStyle(f.properties.current_grade).letterColor,
-            fontFamily: "system-ui, sans-serif",
+            getPosition: pos,
+            getText: (f) => resolveGradeStyle(f.properties.current_grade).letter,
+            getSize: (f) => (resolveGradeStyle(f.properties.current_grade).letter.length > 1 ? Math.round(letterPx * 0.74) : letterPx),
+            getColor: (f) => resolveGradeStyle(f.properties.current_grade).letterColor,
+            getPixelOffset: [0, 0.5],
+            fontFamily: font,
             fontWeight: 700,
             getTextAnchor: "middle",
             getAlignmentBaseline: "center",
@@ -620,239 +676,115 @@ export function useDeckLayers(
         });
       }
 
-      // School of Hope flags. Three marker styles share the upper-right corner,
-      // one per School of Hope designation (see data/derive/sohSites.ts):
-      //   gold star     Mater (and any non-KIPP operator) plus Success Academy
-      //                 approved co-location hosts.
-      //   solid dot     current KIPP Miami campuses.
-      //   open dot      KIPP Miami requested district buildings.
-      // Drawn from the filtered feats, so a flag hides with its school when a
-      // filter excludes it. A white halo keeps each legible over imagery.
-      const hopeFeats = feats.filter((f) => sohMarker(f.properties.name, f.properties.msid) === "star");
-      if (hopeFeats.length) {
-        const starOffset: [number, number] = [12, -12]; // upper-right of the pin
-        const starPos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
+      // Corner badges, one per school, upper-right of the pin. Precedence: a
+      // School of Hope designation (see data/derive/sohSites.ts) over the
+      // co-location flag, since a KIPP or Hope marker already owns that corner.
+      //   star            Mater (and any non-KIPP operator) plus Success Academy
+      //                   approved co-location hosts.
+      //   kipp-current    a solid gold disc: a current KIPP Miami campus.
+      //   kipp-requested  an open gold ring: a KIPP requested district building.
+      //   coloc           a teal disc: a co-location candidate (the same set the
+      //                   filter, dock, list, and inspector use). Sparse views
+      //                   only; in the dense field it would just add noise.
+      // Drawn from the rendered feats, so a badge hides with its school.
+      const badgeFeats: Array<{ f: SchoolFeature; badge: MarkerBadge }> = [];
+      for (const f of feats) {
+        const m = sohMarker(f.properties.name, f.properties.msid);
+        if (m) badgeFeats.push({ f, badge: m });
+        else if (rich && ctx.coLocationMsids.has(f.properties.msid) && !hasKippMarker(f.properties.name, f.properties.msid)) {
+          badgeFeats.push({ f, badge: "coloc" });
+        }
+      }
+      if (badgeFeats.length) {
+        // Tucked onto the shoulder of the pin (about 45 degrees), not floating off
+        // its bounding-box corner.
+        const corner = Math.round((RING_PX / 2) * 0.82);
+        const badgePx = rich ? 17 : 12;
         built.push({
           z: 105,
-          layer: new TextLayer<SchoolFeature>({
-            id: "school_soh_star_halo",
-            data: hopeFeats,
-            getPosition: starPos,
-            getText: () => "★",
-            characterSet: ["★"],
-            getSize: 17,
-            getColor: [255, 255, 255, 255],
-            getPixelOffset: starOffset,
-            fontFamily: "system-ui, sans-serif",
-            fontWeight: 700,
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "center",
+          layer: new IconLayer<{ f: SchoolFeature; badge: MarkerBadge }>({
+            id: "school_badges",
+            data: badgeFeats,
+            getIcon: (d) => iconForBadge(d.badge),
+            getPosition: (d) => pos(d.f),
+            sizeUnits: "pixels",
+            getSize: (d) => (d.badge === "star" ? badgePx + 3 : badgePx),
+            getPixelOffset: (d) => {
+              const lift = isFocused(d.f.properties.msid) ? 2 : 0;
+              return [corner + lift, -(corner + lift)];
+            },
             pickable: false,
-          }),
-        });
-        built.push({
-          z: 105.1,
-          layer: new TextLayer<SchoolFeature>({
-            id: "school_soh_star",
-            data: hopeFeats,
-            getPosition: starPos,
-            getText: () => "★",
-            characterSet: ["★"],
-            getSize: 13,
-            getColor: [180, 83, 9, 255], // Amber 700, matches the legend star
-            getPixelOffset: starOffset,
-            fontFamily: "system-ui, sans-serif",
-            fontWeight: 700,
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "center",
-            pickable: false,
+            updateTriggers: { getPixelOffset: [selectedSchoolMsid, comparePinnedMsids, corner] },
           }),
         });
       }
 
-      // KIPP Miami campuses: a SOLID yellow dot in the upper-right corner (the
-      // deck's "current campus" marker). KIPP schools are existing Schools of Hope
-      // with no facility data, so they carry a dot instead of the star. Drawn at
-      // every zoom, like the star, since it is their only School of Hope flag.
-      const kippDotOffset: [number, number] = [12, -12];
-      const kippDotPos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
-      const kippCurrentFeats = feats.filter(
-        (f) => sohMarker(f.properties.name, f.properties.msid) === "kipp-current",
-      );
-      if (kippCurrentFeats.length) {
-        built.push({
-          z: 105,
-          layer: new TextLayer<SchoolFeature>({
-            id: "school_kipp_current_halo",
-            data: kippCurrentFeats,
-            getPosition: kippDotPos,
-            getText: () => "●",
-            characterSet: ["●"],
-            getSize: 17,
-            getColor: [255, 255, 255, 255],
-            getPixelOffset: kippDotOffset,
-            fontFamily: "system-ui, sans-serif",
-            fontWeight: 700,
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "center",
-            pickable: false,
+      // Name labels, placed by priority with collision avoidance (labelPlacement.ts):
+      // never two labels on top of each other, never a label over another
+      // school's marker. Two sources: the "school_labels" layer (every school in
+      // view once the view is legible), plus always the focused schools.
+      const labelsOn = has("school_labels");
+      const labelsLegible = labelsOn && (mapZoom >= 12 || inViewFeatures.length <= 80);
+      const inBox = (f: SchoolFeature) => {
+        if (!mapBounds) return true;
+        const [lng, lat] = f.geometry.coordinates as [number, number];
+        return lng >= mapBounds.west && lng <= mapBounds.east && lat >= mapBounds.south && lat <= mapBounds.north;
+      };
+      const onScreen = feats.filter(inBox);
+      const labelSource = labelsLegible ? onScreen : focusFeats.filter((f) => isFocused(f.properties.msid));
+      if (labelSource.length) {
+        const priorityOf = (msid: string) => {
+          if (msid === selectedSchoolMsid) return 1000;
+          if (comparePinnedMsids.includes(msid)) return 900;
+          if (isPicked(msid)) return 800;
+          if (ctx.plp.has(msid)) return 50;
+          if (ctx.coLocationMsids.has(msid)) return 40;
+          return 0;
+        };
+        const placed = placeLabels(
+          labelSource.map((f) => {
+            const [lng, lat] = f.geometry.coordinates as [number, number];
+            const focused = isFocused(f.properties.msid) || isPicked(f.properties.msid);
+            return { id: f.properties.msid, lng, lat, text: f.properties.name, priority: priorityOf(f.properties.msid), markerRadius: (focused ? FOCUS_PX : RING_PX) / 2 };
           }),
-        });
-        built.push({
-          z: 105.1,
-          layer: new TextLayer<SchoolFeature>({
-            id: "school_kipp_current",
-            data: kippCurrentFeats,
-            getPosition: kippDotPos,
-            getText: () => "●",
-            characterSet: ["●"],
-            getSize: 12,
-            getColor: [202, 138, 4, 255], // Yellow 600: a current KIPP campus
-            getPixelOffset: kippDotOffset,
-            fontFamily: "system-ui, sans-serif",
-            fontWeight: 700,
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "center",
-            pickable: false,
+          onScreen.map((f) => {
+            const [lng, lat] = f.geometry.coordinates as [number, number];
+            return { id: f.properties.msid, lng, lat, radius: markerRadius };
           }),
-        });
-      }
-
-      // KIPP Miami requested buildings: an OPEN yellow dot (the deck's "requested
-      // building" marker). Rendered as a yellow ring over a white disc so the
-      // hollow center reads over imagery, distinguishing a requested site from a
-      // current campus. These hosts are district schools, matched by MSID.
-      const kippRequestedFeats = feats.filter(
-        (f) => sohMarker(f.properties.name, f.properties.msid) === "kipp-requested",
-      );
-      if (kippRequestedFeats.length) {
-        built.push({
-          z: 105,
-          layer: new TextLayer<SchoolFeature>({
-            id: "school_kipp_requested_disc",
-            data: kippRequestedFeats,
-            getPosition: kippDotPos,
-            getText: () => "●",
-            characterSet: ["●"],
-            getSize: 15,
-            getColor: [255, 255, 255, 255],
-            getPixelOffset: kippDotOffset,
-            fontFamily: "system-ui, sans-serif",
-            fontWeight: 700,
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "center",
-            pickable: false,
-          }),
-        });
-        built.push({
-          z: 105.1,
-          layer: new TextLayer<SchoolFeature>({
-            id: "school_kipp_requested_ring",
-            data: kippRequestedFeats,
-            getPosition: kippDotPos,
-            getText: () => "○",
-            characterSet: ["○"],
-            getSize: 18,
-            getColor: [202, 138, 4, 255], // Yellow 600: a requested KIPP building
-            getPixelOffset: kippDotOffset,
-            fontFamily: "system-ui, sans-serif",
-            fontWeight: 700,
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "center",
-            pickable: false,
-          }),
-        });
-      }
-
-      // Co-location channel: flag the buildings where occupancy legally matters
-      // (a DISTRICT facility that is underused per Rule 6A-1.0998271(5)(e) AND in
-      // a School of Hope siting area) with a small teal corner DOT rather than a
-      // text badge, so the county view stays a clean grade read. Same set the
-      // filter, dock count, list, and inspector use (ctx.coLocationMsids), so the
-      // dot never disagrees with them. The exact rate lives in the hover card and
-      // inspector. Shown once the view is legible (zoomed in or a small set).
-      // Teal co-location dots ride the rich markers only; in the dot field every
-      // school is already a bare dot, so a second dot would just add noise. A KIPP
-      // dot owns the same corner, so it yields there to avoid a muddled overlap.
-      if (rich) {
-        const coLocFeats = feats.filter(
-          (f) => ctx.coLocationMsids.has(f.properties.msid) && !hasKippMarker(f.properties.name, f.properties.msid),
+          mapZoom,
+          (t) => measureLabel(t, font),
         );
-        if (coLocFeats.length) {
-          const dotOffset: [number, number] = [11, -11]; // upper-right of the pin
-          const dotPos = (f: SchoolFeature) => f.geometry.coordinates as [number, number];
-          // White halo behind the teal dot so it stays legible over imagery.
+        if (placed.length) {
+          const isSel = (d: PlacedLabel) => d.id === selectedSchoolMsid;
           built.push({
-            z: 103,
-            layer: new TextLayer({
-              id: "school_colocation_dot_halo",
-              data: coLocFeats,
-              getPosition: dotPos,
-              getText: () => "●",
-              // The dot glyph is outside deck's default ASCII atlas, so it must
-              // be declared or nothing renders.
-              characterSet: ["●"],
-              getSize: 15,
-              getColor: [255, 255, 255, 255],
-              getPixelOffset: dotOffset,
-              fontFamily: "system-ui, sans-serif",
-              fontWeight: 700,
-              getTextAnchor: "middle",
-              getAlignmentBaseline: "center",
+            z: 102,
+            layer: new TextLayer<PlacedLabel>({
+              id: "school_name_labels",
+              data: placed,
+              getPosition: (d) => d.position,
+              getText: (d) => d.text,
+              getTextAnchor: (d) => d.textAnchor,
+              getAlignmentBaseline: (d) => d.baseline,
+              getPixelOffset: (d) => d.pixelOffset,
+              characterSet: "auto",
+              getSize: 12,
+              fontFamily: font,
+              fontWeight: 500,
+              // Carbon tooltip anatomy: Gray 100 text on a white layer with a
+              // Gray 30 hairline and a 2px radius. The selected school inverts to
+              // the brand interactive color so it reads as the active one.
+              getColor: (d) => (isSel(d) ? [255, 255, 255, 255] : [22, 22, 22, 255]),
+              background: true,
+              getBackgroundColor: (d) => (isSel(d) ? SELECTED : [255, 255, 255, 242]),
+              getBorderColor: (d) => (isSel(d) ? SELECTED : [198, 198, 198, 255]),
+              getBorderWidth: 1,
+              backgroundBorderRadius: 2,
+              backgroundPadding: [LABEL_PAD_X, LABEL_PAD_Y],
               pickable: false,
-            }),
-          });
-          built.push({
-            z: 104,
-            layer: new TextLayer({
-              id: "school_colocation_dot",
-              data: coLocFeats,
-              getPosition: dotPos,
-              getText: () => "●",
-              characterSet: ["●"],
-              getSize: 11,
-              getColor: [13, 148, 136, 255], // Teal 600: a co-location candidate
-              getPixelOffset: dotOffset,
-              fontFamily: "system-ui, sans-serif",
-              fontWeight: 700,
-              getTextAnchor: "middle",
-              getAlignmentBaseline: "center",
-              pickable: false,
+              updateTriggers: { getColor: [selectedSchoolMsid], getBackgroundColor: [selectedSchoolMsid], getBorderColor: [selectedSchoolMsid] },
             }),
           });
         }
-      }
-
-      // Name labels. Two sources: the dedicated "school_labels" layer (all
-      // visible schools, but only when the view is legible, i.e. zoomed in or a
-      // small filtered set), plus always the focused schools (selected/pinned).
-      const focusMsids = new Set([selectedSchoolMsid, ...comparePinnedMsids].filter(Boolean) as string[]);
-      const labelsOn = has("school_labels");
-      const labelsLegible = labelsOn && (mapZoom >= 13 || feats.length <= 60);
-      const labelFeats = labelsLegible
-        ? feats
-        : feats.filter((f) => focusMsids.has(f.properties.msid));
-      if (labelFeats.length) {
-        built.push({
-          z: 102,
-          layer: new TextLayer({
-            id: "school_name_labels",
-            data: labelFeats,
-            getPosition: (f: SchoolFeature) => f.geometry.coordinates as [number, number],
-            getText: (f: SchoolFeature) => f.properties.name,
-            getSize: 11,
-            getColor: [17, 17, 17, 255],
-            fontFamily: "system-ui, sans-serif",
-            fontWeight: 600,
-            getTextAnchor: "middle",
-            getAlignmentBaseline: "bottom",
-            getPixelOffset: [0, -18],
-            background: true,
-            getBackgroundColor: [255, 255, 255, 235],
-            backgroundPadding: [5, 3],
-            pickable: false,
-          }),
-        });
       }
 
       // Shortlist badges: a small numbered chip on each pinned site, in the same
@@ -860,26 +792,30 @@ export function useDeckLayers(
       // legible IN PLACE on the map, not only in the tray. Drawn above everything.
       if (comparePinnedMsids.length) {
         const order = new Map(comparePinnedMsids.map((m, i) => [m, i + 1]));
-        const badgeFeats = feats.filter((f) => order.has(f.properties.msid));
-        if (badgeFeats.length) {
+        const numberFeats = feats.filter((f) => order.has(f.properties.msid));
+        if (numberFeats.length) {
+          const corner = FOCUS_PX / 2 - 1;
           built.push({
             z: 106,
             layer: new TextLayer<SchoolFeature>({
               id: "school_shortlist_badge",
-              data: badgeFeats,
-              getPosition: (f) => f.geometry.coordinates as [number, number],
+              data: numberFeats,
+              getPosition: pos,
               getText: (f) => String(order.get(f.properties.msid)),
               characterSet: ["1", "2", "3", "4"],
-              getSize: 12,
+              getSize: 11,
               getColor: [255, 255, 255, 255],
-              getPixelOffset: [-13, -13], // upper-left corner of the pin
-              fontFamily: "system-ui, sans-serif",
+              getPixelOffset: [-corner, -corner], // upper-left corner of the pin
+              fontFamily: font,
               fontWeight: 700,
               getTextAnchor: "middle",
               getAlignmentBaseline: "center",
               background: true,
-              getBackgroundColor: [17, 17, 17, 255], // matches PINNED_BLACK
-              backgroundPadding: [5, 4],
+              getBackgroundColor: PINNED,
+              getBorderColor: [255, 255, 255, 255],
+              getBorderWidth: 1.5,
+              backgroundBorderRadius: 8,
+              backgroundPadding: [5, 3],
               updateTriggers: { getText: [comparePinnedMsids], getPosition: [comparePinnedMsids] },
               pickable: false,
             }),
@@ -975,7 +911,7 @@ export function useDeckLayers(
     }
 
     return built.sort((a, b) => a.z - b.z).map((b) => b.layer);
-  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover]);
+  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover, inViewFeatures, font, plpArea]);
 }
 
 // PLP anchor centers among all loaded schools, restricted to the selected

@@ -28,6 +28,7 @@ import { useMapPersistence } from "./map/useMapPersistence";
 import { OverflowDebug } from "./debug/OverflowDebug";
 import { useStore } from "./store";
 import { Bookmark as BookmarkIcon } from "@carbon/icons-react";
+import { Tooltip } from "@carbon/react";
 
 // The shortlist ("compare") opener lives ON THE MAP, in the top-right control
 // cluster, so the app bar stays to the essentials (brand, search, view switch).
@@ -50,17 +51,18 @@ function ShortlistMapButton() {
     prev.current = count;
   }, [count]);
   return (
+    <Tooltip label={count > 0 ? "Review your shortlist" : "Pin sites to build a shortlist"} align="left">
     <button
       type="button"
       className={`map-ctrl-btn map-shortlist-btn${open ? " map-ctrl-btn--active" : ""}${pop ? " map-shortlist-btn--pop" : ""}`}
       onClick={() => setOpen(!open)}
       aria-pressed={open}
       aria-label={count > 0 ? `Shortlist, ${count} site${count === 1 ? "" : "s"}` : "Shortlist, empty"}
-      title={count > 0 ? "Review your shortlist" : "Pin sites to build a shortlist"}
     >
       <BookmarkIcon size={18} />
       {count > 0 && <span className="map-shortlist-badge">{count}</span>}
     </button>
+    </Tooltip>
   );
 }
 

@@ -8,10 +8,12 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react
 import { GoogleMapsOverlay } from "@deck.gl/google-maps";
 import { useGoogleMaps } from "./useGoogleMaps";
 import { useDeckLayers, type SchoolHoverInfo } from "./useDeckLayers";
-import { resolveGradeStyle, rgbaToCss } from "./gradeEncoding";
+import { resolveGradeStyle, isGrade } from "./gradeEncoding";
+import { GradePin } from "./GradePin";
+import { shapeForType, iconForBadge } from "./markerShapes";
 import { useData } from "../data/DataContext";
-import { schoolTypeLabel } from "../data/types";
-import { StarFilled } from "@carbon/icons-react";
+import { schoolTypeLabel, type SchoolType } from "../data/types";
+import { InlineLoading } from "@carbon/react";
 import { useStore, type LatLng, type BaseMapType } from "../store";
 import { PILOT_MIN_ZOOM } from "../geo/countyBounds";
 import { basemapStyleFor } from "./mapStyles";
@@ -321,13 +323,18 @@ export function MapView() {
   // same. Skipped while a map tool is active so a measure/radius click that also
   // selects does not yank the view.
   useEffect(() => {
+    // The map is about to move under a still cursor, so deck never fires a
+    // hover-out; drop the preview card now rather than leave it describing a pin
+    // that has flown away.
+    cancelHide();
+    setHover(null);
     if (!selectedSchoolMsid || !mapRef.current || !schools) return;
     if (useStore.getState().activeTool !== "none") return;
     const f = schools.features.find((x) => x.properties.msid === selectedSchoolMsid);
     if (!f) return;
     const [lng, lat] = f.geometry.coordinates as [number, number];
     flyToSchool({ lat, lng }, 15);
-  }, [selectedSchoolMsid, schools]);
+  }, [selectedSchoolMsid, schools, cancelHide]);
 
   // A crosshair cursor makes measurement/radius mode unmistakable.
   useEffect(() => {
@@ -418,40 +425,34 @@ export function MapView() {
         onReset={fitToSchools}
         isFullscreen={isFullscreen}
       />
-      {status === "loading" && <div className="map-loading">Loading the base map...</div>}
+      {status === "loading" && (
+        <div className="map-loading">
+          <InlineLoading description="Loading the base map..." />
+        </div>
+      )}
       {hover && (
         <div
           ref={tipRef}
           className="pin-tooltip pin-tooltip--preview"
           style={{ left: tipPos.left, top: tipPos.top }}
         >
-          {/* Header: grade badge + school name, then a muted identity line. */}
+          {/* Header: the pin itself (same shape, grade color, and letter the map
+              draws) beside the school name, then a muted identity line. */}
           <div className="pin-tooltip-head">
-            <span
-              className="pin-tooltip-grade"
-              style={{
-                background: rgbaToCss(resolveGradeStyle(hover.grade).fill),
-                color: rgbaToCss(resolveGradeStyle(hover.grade).letterColor),
-                borderColor: rgbaToCss(resolveGradeStyle(hover.grade).stroke),
-                borderStyle: resolveGradeStyle(hover.grade).dashed ? "dashed" : "solid",
-              }}
-            >
-              {resolveGradeStyle(hover.grade).letter}
-            </span>
-            <span className="pin-tooltip-name">{hover.name}</span>
-          </div>
-          <div className="pin-tooltip-sub">
-            {hover.level} school &middot; {schoolTypeLabel(hover.type)}
+            {isGrade(hover.grade) && (
+              <GradePin grade={hover.grade} shape={shapeForType(hover.type as SchoolType)} size={26} />
+            )}
+            <div className="pin-tooltip-title">
+              <span className="pin-tooltip-name">{hover.name}</span>
+              <span className="pin-tooltip-sub">
+                {hover.level} school &middot; {schoolTypeLabel(hover.type)}
+              </span>
+            </div>
           </div>
           {hover.sohMarker && (
-            <div className="pin-tooltip-sub" style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 3 }}>
-              {hover.sohMarker === "star" ? (
-                <StarFilled size={13} style={{ color: "#B45309", flex: "none" }} aria-hidden={true} />
-              ) : hover.sohMarker === "kipp-current" ? (
-                <span aria-hidden={true} style={{ flex: "none", width: 10, height: 10, borderRadius: "50%", background: "#CA8A04", boxShadow: "0 0 0 1.5px #fff" }} />
-              ) : (
-                <span aria-hidden={true} style={{ flex: "none", width: 10, height: 10, borderRadius: "50%", background: "#fff", border: "2px solid #CA8A04", boxSizing: "border-box" }} />
-              )}
+            <div className="pin-tooltip-soh">
+              {/* The exact badge the map draws in the pin's corner. */}
+              <img src={iconForBadge(hover.sohMarker).url} width={14} height={14} alt="" aria-hidden={true} />
               <span>{hover.sohLabel}</span>
             </div>
           )}

@@ -1,11 +1,11 @@
-// Basemap styling: a clean, light cartographic "analyst" base.
+// Basemap styling: a clean, light cartographic "analyst" base in Carbon grays.
 //
 // The single biggest lever for a professional data map is CONTRAST and
 // HIERARCHY: the data must lead and the basemap must recede to a quiet,
 // legible substrate (Mapbox's four principles: contrast, hierarchy, density,
 // legibility). Google's default roadmap ships at full saturation with business
 // POIs and transit that fight the data. Simply desaturating it reads drab, so
-// this is an explicit light palette instead: paper-toned land, soft off-white
+// this is an explicit light palette instead: neutral gray land, white
 // roads, a muted blue-gray water, and a whisper of green for parks. POIs and
 // transit are removed as noise; place labels keep a white halo for legibility.
 //
@@ -14,17 +14,21 @@
 
 import type { BaseMapType } from "../store";
 
-// Palette (kept in step with the app shell's neutrals).
-const LAND = "#f4f3ee";        // warm paper
-const LAND_STROKE = "#e7e5dd";
+// Palette: Carbon's neutral Gray family (the app's g10 canvas), so the basemap
+// reads as part of the same UI rather than a warm, off-brand paper. The cool,
+// low-chroma water and park tints stay quiet so every hue on the map belongs to
+// the data (grade, PLP, co-location), not the substrate.
+const LAND = "#f2f2f2";        // between Carbon Gray 10 and White
+const LAND_STROKE = "#e0e0e0"; // Gray 20
 const ROAD = "#ffffff";
-const ROAD_STROKE = "#e9e6df";
-const ROAD_HWY = "#efece4";
-const ROAD_HWY_STROKE = "#e2ded3";
-const WATER = "#c7d8de";       // muted blue-gray
-const PARK = "#e7ece0";        // faint green
-const ADMIN = "#d8d5cc";
-const LABEL = "#5c5b52";
+const ROAD_STROKE = "#e0e0e0"; // Gray 20
+const ROAD_HWY = "#e8e8e8";
+const ROAD_HWY_STROKE = "#d1d1d1";
+const ROAD_ART = "#fbfbfb";
+const WATER = "#cbd9e4";       // a desaturated Carbon Blue 20
+const PARK = "#e2ebde";        // a whisper of Carbon Green
+const ADMIN = "#c6c6c6";       // Gray 30
+const LABEL = "#6f6f6f";       // Gray 60, helper text
 const LABEL_HALO = "#ffffff";
 
 const ANALYST_BASEMAP_STYLE: google.maps.MapTypeStyle[] = [
@@ -53,7 +57,9 @@ const ANALYST_BASEMAP_STYLE: google.maps.MapTypeStyle[] = [
   { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: ROAD_STROKE }] },
   { featureType: "road.highway", elementType: "geometry", stylers: [{ color: ROAD_HWY }] },
   { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: ROAD_HWY_STROKE }] },
-  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: LAND_STROKE }] },
+  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: ROAD_ART }] },
+  { featureType: "road.arterial", elementType: "geometry.stroke", stylers: [{ color: LAND_STROKE }] },
+  { featureType: "road.arterial", elementType: "labels.text.fill", stylers: [{ color: "#8d8d8d" }] }, // Gray 50
   { featureType: "road.local", elementType: "labels", stylers: [{ visibility: "off" }] },
 
   // A calm, low-saturation water so the coastline reads without shouting.

@@ -13,17 +13,15 @@
 
 import { useState } from "react";
 import { IconButton, Popover, PopoverContent } from "@carbon/react";
-import { Legend as LegendIcon, StarFilled } from "@carbon/icons-react";
+import { Legend as LegendIcon } from "@carbon/icons-react";
 import { useStore } from "../store";
 import { layerById } from "../config/layers";
-import { GRADE_STYLES, rgbaToCss } from "./gradeEncoding";
-import { SHAPE_LEGEND, shapeSvgElement, type MarkerShape } from "./markerShapes";
+import { SHAPE_LEGEND, shapeSvgElement, iconForBadge, type MarkerShape, type MarkerBadge } from "./markerShapes";
+import { GradePin } from "./GradePin";
 import "./MapLegend.carbon.css";
 
-const SLATE = "#334155";
-const CO_LOC_TEAL = "#0D9488"; // matches the teal co-location dot on the map
-const SOH_AMBER = "#B45309"; // matches the School of Hope star on the map
-const KIPP_YELLOW = "#CA8A04"; // matches the KIPP campus / requested-building dots
+const SHAPE_STROKE = "#525252"; // Carbon Gray 70
+const SHAPE_FILL = "#e0e0e0";   // Carbon Gray 20
 
 // A to F read as one run; the ungraded set (I / NR / NG) sits after a small gap.
 const GRADES_AF = ["A", "B", "C", "D", "F"] as const;
@@ -37,31 +35,22 @@ function fmtPct(n: number): string {
   return `${n > 0 ? "+" : ""}${Math.round(n * 100)}%`;
 }
 
-// One grade swatch: a CIRCLE with the letter inside, matching how the map draws
-// school markers (color + letter). Colors come from the shared encoding.
-function GradeDot({ grade }: { grade: keyof typeof GRADE_STYLES }) {
-  const s = GRADE_STYLES[grade];
-  return (
-    <span
-      className={`map-legend-grade${s.letter.length > 1 ? " map-legend-grade--multi" : ""}`}
-      style={{
-        background: rgbaToCss(s.fill),
-        color: rgbaToCss(s.letterColor),
-        border: `1.5px ${s.dashed ? "dashed" : "solid"} ${rgbaToCss(s.stroke)}`,
-      }}
-      title={s.description}
-      aria-label={s.description}
-    >
-      {s.letter}
-    </span>
-  );
+// One grade swatch: the map's own marker (circle, grade color, white keyline,
+// letter), drawn by the shared GradePin so the legend is the pin.
+function GradeDot({ grade }: { grade: (typeof GRADES_AF)[number] | (typeof GRADES_UNGRADED)[number] }) {
+  return <GradePin grade={grade} size={22} />;
+}
+
+// A corner badge exactly as the map draws it (the same rasterized icon).
+function Badge({ badge }: { badge: MarkerBadge }) {
+  return <img className="map-legend-badge" src={iconForBadge(badge).url} width={16} height={16} alt="" aria-hidden />;
 }
 
 // A neutral shape swatch matching the map's school-type markers.
 function ShapeSwatch({ shape }: { shape: MarkerShape }) {
   return (
     <svg viewBox="0 0 100 100" width="15" height="15" aria-hidden>
-      <g fill="#E2E8F0" stroke={SLATE} strokeWidth={9} strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: shapeSvgElement(shape) }} />
+      <g fill={SHAPE_FILL} stroke={SHAPE_STROKE} strokeWidth={9} strokeLinejoin="round" dangerouslySetInnerHTML={{ __html: shapeSvgElement(shape) }} />
     </svg>
   );
 }
@@ -143,27 +132,19 @@ export function MapLegend() {
                 <span className="map-legend-label">Markers</span>
                 <ul className="map-legend-rows">
                   <li className="map-legend-row" title="Co-location candidate: an underused district school (utilization at or below 75%, or 400+ surplus stations) inside a School of Hope siting area. The building-age rule is checked in a school's details.">
-                    <span className="map-legend-swatch">
-                      <span className="map-legend-dot" style={{ background: CO_LOC_TEAL }} />
-                    </span>
+                    <span className="map-legend-swatch"><Badge badge="coloc" /></span>
                     <span>Co-location candidate</span>
                   </li>
                   <li className="map-legend-row" title="A School of Hope run by a state-designated hope operator (Mater and others), or a Success Academy approved co-location host (MDCPS Board, Apr 22, 2026). Flagged with a gold star.">
-                    <span className="map-legend-swatch">
-                      <StarFilled size={15} className="map-legend-star" style={{ color: SOH_AMBER }} />
-                    </span>
+                    <span className="map-legend-swatch"><Badge badge="star" /></span>
                     <span>School of Hope</span>
                   </li>
                   <li className="map-legend-row" title="A current KIPP Miami campus, an existing School of Hope shown with reduced data.">
-                    <span className="map-legend-swatch">
-                      <span className="map-legend-dot" style={{ background: KIPP_YELLOW, boxShadow: "0 0 0 1.5px #fff" }} />
-                    </span>
+                    <span className="map-legend-swatch"><Badge badge="kipp-current" /></span>
                     <span>KIPP campus</span>
                   </li>
                   <li className="map-legend-row" title="A vacant or underused MDCPS facility that KIPP Miami has requested for a School of Hope. The dot sits on the building's current host school.">
-                    <span className="map-legend-swatch">
-                      <span className="map-legend-dot" style={{ background: "#fff", border: `2px solid ${KIPP_YELLOW}`, boxSizing: "border-box", boxShadow: "none" }} />
-                    </span>
+                    <span className="map-legend-swatch"><Badge badge="kipp-requested" /></span>
                     <span>KIPP requested building</span>
                   </li>
                 </ul>
@@ -177,7 +158,7 @@ export function MapLegend() {
               <ul className="map-legend-rows">
                 <li className="map-legend-row" title="The merged 5-mile radii around persistently low-performing schools.">
                   <span className="map-legend-swatch">
-                    <span className="map-legend-dot map-legend-area" style={{ borderRadius: "50%", border: "1.5px solid #D32F2F", background: "rgba(211,47,47,0.14)", boxShadow: "none", width: 14, height: 14 }} />
+                    <span className="map-legend-dot map-legend-area" style={{ borderRadius: "50%", border: "1.5px solid #DA1E28", background: "rgba(218,30,40,0.1)", boxShadow: "none", width: 14, height: 14 }} />
                   </span>
                   <span>Within 5 mi of a PLP school</span>
                 </li>

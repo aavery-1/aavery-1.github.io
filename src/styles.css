@@ -831,11 +831,9 @@ code {
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--card);
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 12px;
+  z-index: 6;
+  background: var(--cds-layer-01, #fff);
+  padding: 0 16px;
   box-shadow: var(--shadow-card);
 }
 .map-furniture {
@@ -847,9 +845,14 @@ code {
   bottom: 44px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   z-index: 5;
   pointer-events: none;
+  /* One quiet Carbon surface for the scale and the coordinates (they used to be
+     two separately boxed and shadowed cards stacked on each other). */
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  padding: 6px 10px;
 }
 .map-setup,
 .map-error {
@@ -879,25 +882,23 @@ code {
 
 /* Scale bar + coord readout */
 .scale-bar {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--hairline);
-  border-radius: 0;
-  padding: 5px 8px;
   pointer-events: auto;
-  box-shadow: var(--shadow-card);
 }
 .scale-bar-track {
   position: relative;
-  height: 8px;
-  border-bottom: 2px solid var(--text-primary);
-  border-left: 2px solid var(--text-primary);
-  border-right: 2px solid var(--text-primary);
+  height: 6px;
+  border-bottom: 1.5px solid var(--cds-icon-primary, #161616);
+  border-left: 1.5px solid var(--cds-icon-primary, #161616);
+  border-right: 1.5px solid var(--cds-icon-primary, #161616);
 }
+/* Carbon label-01: 12px / 16px, 0.32px tracking. */
 .scale-bar-labels {
   display: flex;
-  gap: 5px;
-  font-size: 11px;
-  margin-top: 3px;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.32px;
+  margin-top: 2px;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
@@ -905,11 +906,11 @@ code {
   color: var(--text-tertiary);
 }
 .coord-readout {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--hairline);
-  border-radius: 0;
-  padding: 4px 8px;
-  font-size: 11px;
+  padding-top: 4px;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-primary);
   display: flex;
   gap: 4px;
   align-items: center;
@@ -919,10 +920,13 @@ code {
   width: max-content;
   max-width: 100%;
   pointer-events: auto;
-  box-shadow: var(--shadow-card);
 }
 .coord-readout .mono {
   white-space: nowrap;
+  font-size: 11.5px;
+}
+.coord-sep {
+  color: var(--text-tertiary);
 }
 .coord-tag {
   color: var(--text-tertiary);
@@ -1514,8 +1518,9 @@ code {
 .map-controls-group {
   display: flex;
   flex-direction: column;
-  background: var(--card);
-  border: 1px solid var(--hairline);
+  background: var(--cds-layer-01, #fff);
+  /* Carbon floating surface: elevation from the shadow alone, no outline. */
+  border: 0;
   border-radius: 0;
   box-shadow: var(--shadow-card);
   /* Not `hidden`: the buttons' Carbon tooltips and the base-map flyout render
@@ -1540,12 +1545,13 @@ code {
   color: var(--kipp-navy, #20275d);
   transition: background 120ms ease, color 120ms ease;
 }
+/* Carbon layer states: hover and active are the layer-01 hover/active tokens. */
 .map-ctrl-btn:hover {
-  background: #f4f5f7;
+  background: var(--cds-layer-hover-01, #e8e8e8);
   color: var(--kipp-navy, #20275d);
 }
 .map-ctrl-btn:active {
-  background: #eceef1;
+  background: var(--cds-layer-active-01, #c6c6c6);
 }
 .map-ctrl-btn:focus-visible {
   outline: 2px solid var(--focus, #001e62);
@@ -1603,10 +1609,16 @@ code {
 }
 /* Solo buttons carry their own card surface (group buttons share one). */
 .map-ctrl-solo {
-  background: var(--card);
-  border: 1px solid var(--hairline);
+  background: var(--cds-layer-01, #fff);
+  border: 0;
   border-radius: 0;
   box-shadow: var(--shadow-card);
+}
+/* Carbon Tooltip wraps each control in an inline popover container; make it a
+   block so the 40px buttons stack flush in the column. */
+.map-controls .cds--popover-container,
+.map-controls-group .cds--popover-container {
+  display: flex;
 }
 
 /* Map base-layer control, top-right of the map */
@@ -1728,55 +1740,108 @@ code {
   font-variant-numeric: tabular-nums;
 }
 
-/* School pin hover tooltip */
+/* School pin hover tooltip: a Carbon "definition" card. White layer-01, no
+   outline, the floating shadow, a 2px radius like Carbon's tooltip, and a
+   productive entrance (fade + 4px rise, 110ms) so it settles rather than pops. */
 .pin-tooltip {
   position: absolute;
   z-index: 9;
   width: max-content;
   /* Never wider than the viewport (small screens / narrow map column); the
      JS edge-flip keeps it inside the map container. */
-  max-width: min(268px, calc(100vw - 16px));
-  background: var(--card);
-  border: 1px solid var(--hairline);
-  border-radius: 0;
-  box-shadow: var(--shadow-card);
-  padding: 10px 12px;
+  max-width: min(288px, calc(100vw - 16px));
+  background: var(--cds-layer-01, #fff);
+  border: 0;
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  padding: 12px 16px;
   pointer-events: none;
+  animation: pinTooltipIn 110ms cubic-bezier(0, 0, 0.38, 0.9);
+}
+@keyframes pinTooltipIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pin-tooltip { animation: none; }
 }
 .pin-tooltip-head {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 10px;
 }
-.pin-tooltip-grade {
-  width: 20px;
-  height: 20px;
-  border-radius: 0;
-  border: 1.5px solid;
+.pin-tooltip-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-top: 1px;
+}
+/* Carbon heading-compact-01: 14px / 18px SemiBold. */
+.pin-tooltip-name {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: 0.16px;
+  color: var(--text-primary);
+}
+/* Carbon label-01 helper line. */
+.pin-tooltip-sub {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.32px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+/* School of Hope designation, led by the same badge the map draws on the pin. */
+.pin-tooltip-soh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.32px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.pin-tooltip-soh img {
+  flex: none;
+}
+
+/* A DOM twin of the map marker (GradePin.tsx): the type shape in the grade
+   color with a white keyline and the marker's soft shadow, letter centered. */
+.grade-pin {
+  position: relative;
+  flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-sans);
   font-weight: 700;
-  font-size: 11px;
-  flex: none;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
-.pin-tooltip-name {
-  font-weight: 600;
-  font-size: 13px;
+.grade-pin svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.3));
 }
-.pin-tooltip-sub {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 3px;
+.grade-pin__letter {
+  position: relative;
+}
+/* A triangle's visual center sits low; nudge its letter down to match. */
+.grade-pin[data-shape="triangle"] .grade-pin__letter {
+  transform: translateY(12%);
 }
 /* A labeled fact list: one row per question a scout asks (rate, underutilized,
    PLP, co-location eligible). A hairline sets it apart from the identity header. */
 .pin-tooltip-facts {
-  margin: 8px 0 0;
-  padding-top: 8px;
-  border-top: 1px solid var(--hairline);
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 .pin-tooltip-fact {
   display: flex;
@@ -1785,9 +1850,10 @@ code {
   gap: 12px;
 }
 .pin-tooltip-fact dt {
-  font-size: 11.5px;
+  font-size: 12px;
+  letter-spacing: 0.32px;
   color: var(--text-secondary);
-  line-height: 1.3;
+  line-height: 16px;
 }
 .pin-tooltip-fact dd {
   margin: 0;
@@ -1798,8 +1864,8 @@ code {
    the whole tool, colored by its tier (shared vocabulary with the dock and
    inspector: under = teal, inuse = amber, full = red, unknown = slate). */
 .tt-rate {
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .tt-rate.util-under { color: #0f766e; }
@@ -1817,18 +1883,23 @@ code {
 /* Yes/No pills: a plain, legible verdict per row. "Yes" carries the meaning
    color of its category (opportunity = teal, low-performing flag = red); "No"
    and "Unknown" stay quiet so the Yeses draw the eye. */
+/* Carbon Tag (size sm: 18px tall, pill) in the Carbon tag palette: teal for an
+   opportunity, red for the low-performing flag, gray for No / Unknown. */
 .tt-yn {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.32px;
+  padding: 0 8px;
   border-radius: 999px;
-  line-height: 1.5;
+  line-height: 16px;
 }
-.tt-yn--yes-opp { background: rgba(15, 118, 110, 0.12); color: #0f766e; }
-.tt-yn--yes-plp { background: rgba(183, 28, 28, 0.12); color: #b71c1c; }
-.tt-yn--no { background: var(--surface-sunken, rgba(15, 23, 42, 0.06)); color: var(--text-secondary); }
-.tt-yn--na { background: rgba(148, 163, 184, 0.16); color: var(--text-secondary); }
+.tt-yn--yes-opp { background: var(--cds-tag-background-teal, #9ef0f0); color: var(--cds-tag-color-teal, #004144); }
+.tt-yn--yes-plp { background: var(--cds-tag-background-red, #ffd7d9); color: var(--cds-tag-color-red, #750e13); }
+.tt-yn--no { background: var(--cds-tag-background-gray, #e0e0e0); color: var(--cds-tag-color-gray, #161616); }
+.tt-yn--na { background: var(--cds-tag-background-cool-gray, #dde1e6); color: var(--cds-tag-color-cool-gray, #121619); }
 /* Why it qualifies for co-location: the pathways one per row instead of a
    run-on sentence. */
 .pin-tooltip-why {
@@ -1861,12 +1932,14 @@ code {
 /* The persistently low-performing schools within 5 miles: a compact named list
    with the distance right-aligned, capped at a few rows with a "+N more" note. */
 .pin-tooltip-plps {
-  margin-top: 8px;
-  padding-top: 7px;
-  border-top: 1px solid var(--hairline);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
 }
 .pin-tooltip-plps__head {
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.32px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 4px;
@@ -1912,12 +1985,13 @@ code {
    never blocks a click on the pin beneath. Inspecting is a single click on the
    pin (which opens the full inspector); the tooltip only previews. */
 .pin-tooltip-cta {
-  margin-top: 9px;
+  margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid var(--hairline);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.32px;
+  color: var(--cds-link-primary, #001e62);
 }
 
 /* Slim decision-oriented status strip along the bottom of the map. Replaces

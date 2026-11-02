@@ -81,7 +81,11 @@
 }
 .map-legend-grade-run {
   display: flex;
-  gap: 5px;
+  gap: 6px;
+}
+.map-legend-badge {
+  display: block;
+  flex: none;
 }
 .map-legend-grade {
   width: 20px;
