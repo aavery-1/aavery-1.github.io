@@ -36,7 +36,7 @@ import "./SchoolTable.carbon.css";
 
 
 type Order = "asc" | "desc";
-type SortKey = "name" | "siting" | "plpNear" | "titleI" | "frl" | "incomeDelta" | "enrollment" | "emptySeats" | "utilization";
+type SortKey = "name" | "siting" | "plpNear" | "titleI" | "frl" | "incomeDelta" | "enrollment" | "capacity" | "emptySeats" | "utilization";
 
 interface Row {
   feature: SchoolFeature;
@@ -51,7 +51,8 @@ interface Row {
   incomeDelta: number | null;  // 5-mile median household income vs county median, as a fraction (-0.18)
   incomeNearby: number | null; // the 5-mile median itself, for the second line
   enrollment: number | null;
-  capacity: number | null;
+  capacity: number | null;   // total student stations (FISH, portables included), the statute's count
+  permanentCapacity: number | null; // permanent stations only, shown beneath the total
   emptySeats: number | null; // empty permanent seats: permanent stations minus headcount enrollment; null when either is missing
   utilization: number | null;
   utilLabel: string | null;   // statutory tier word ("Meets facility test" ...)
@@ -123,10 +124,10 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   // Width tiers so the table fits its container without horizontal scroll: full
   // columns on a wide list, drop the low-priority ones as space tightens, and
   // fall back to the five essentials when an inspector squeezes it.
-  // Fixed columns total 888px at full width; School needs ~260px of its own, so
+  // Fixed columns total 1008px at full width; School needs ~260px of its own, so
   // columns drop right-to-left in priority order as the table narrows.
-  const compact = availWidth < 1150;     // drop F/R lunch / Income vs county / Title I (-364)
-  const ultraCompact = availWidth < 1000; // also drop Enrollment (-112)
+  const compact = availWidth < 1270;     // drop F/R lunch / Income vs county / Title I (-364)
+  const ultraCompact = availWidth < 1120; // also drop Stations + Enrollment (-232)
   const tiny = availWidth < 860;          // also drop Nearby PLP (-112)
   // Phone tier: the 280px name column plus utilization + actions overflows a
   // ~375px screen, cutting off the utilization bar and hiding the row actions.
@@ -185,6 +186,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           })(),
           enrollment: p.enrollment,
           capacity: p.capacity,
+          permanentCapacity: p.permanent_capacity != null && p.permanent_capacity > 0 ? p.permanent_capacity : null,
           emptySeats: emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity).seats,
           utilization: util,
           utilLabel: us.key === "unknown" ? null : us.label,
@@ -362,6 +364,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
             <MenuItem value="emptySeats" sx={{ fontSize: 13 }}>Empty seats</MenuItem>
             <MenuItem value="utilization" sx={{ fontSize: 13 }}>Utilization</MenuItem>
             <MenuItem value="plpNear" sx={{ fontSize: 13 }}>PLP within 5 mi</MenuItem>
+            <MenuItem value="capacity" sx={{ fontSize: 13 }}>Student stations</MenuItem>
             <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
             <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
             <MenuItem value="incomeDelta" sx={{ fontSize: 13 }}>Income vs county</MenuItem>
@@ -508,6 +511,10 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             <span className="school-card__fact-value"><EmptySeatsCell value={r.emptySeats} /></span>
                           </div>
                           <div className="school-card__fact">
+                            <span className="school-card__fact-label">Student stations</span>
+                            <span className="school-card__fact-value"><StationsCell total={r.capacity} permanent={r.permanentCapacity} /></span>
+                          </div>
+                          <div className="school-card__fact">
                             <span className="school-card__fact-label">Nearby PLP</span>
                             <span className="school-card__fact-value"><PlpNearCell n={r.plpNear} /></span>
                           </div>
@@ -553,6 +560,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                   {!tiny && <TableCell align="right"><PlpNearCell n={r.plpNear} /></TableCell>}
                   <TableCell align="right"><UtilCell r={r} /></TableCell>
                   <TableCell align="right"><EmptySeatsCell value={r.emptySeats} /></TableCell>
+                  {!ultraCompact && <TableCell align="right"><StationsCell total={r.capacity} permanent={r.permanentCapacity} /></TableCell>}
                   {!ultraCompact && (
                     <TableCell align="right">
                       <span className="tbl-num">{r.enrollment != null ? r.enrollment.toLocaleString("en-US") : <span className="tbl-na">n/a</span>}</span>
@@ -676,6 +684,19 @@ function EmptySeatsCell({ value }: { value: number | null }) {
   return value == null ? <span className="tbl-na">n/a</span> : <span className="tbl-num">{value.toLocaleString("en-US")}</span>;
 }
 
+// Total student stations (the statute's count, portables included) as the
+// headline, with the permanent-only count beneath when the building has
+// portables, so Stations, Enrollment, and Empty seats reconcile on the row.
+function StationsCell({ total, permanent }: { total: number | null; permanent: number | null }) {
+  if (total == null) return <span className="tbl-na">n/a</span>;
+  return (
+    <span className="tbl-util">
+      <span className="tbl-num">{total.toLocaleString("en-US")}</span>
+      {permanent != null && permanent !== total && <span className="tbl-util__tier">{permanent.toLocaleString("en-US")} permanent</span>}
+    </span>
+  );
+}
+
 // Statutory utilization: the rate, with its tier word beneath (both right-
 // aligned to the column edge, so the number column reads as one clean edge).
 function UtilCell({ r }: { r: Row }) {
@@ -690,7 +711,7 @@ function UtilCell({ r }: { r: Row }) {
 
 // Column set, in the order a siting decision is made: who (School), can a
 // School of Hope go here (Siting, PLP nearby), is there room (Utilization,
-// Empty seats, Enrollment), who it serves (F/R lunch, % Black, Title I).
+// Empty seats, Stations, Enrollment), who it serves (F/R lunch, % Black, Title I).
 // Tiers drop the right-hand columns first as the table narrows. Every column
 // except School has a fixed width; School absorbs the rest.
 const COLUMNS: { key: SortKey | "actions"; label: string; numeric?: boolean; tier?: "full" | "mid" | "low"; width?: number; help?: string }[] = [
@@ -699,6 +720,7 @@ const COLUMNS: { key: SortKey | "actions"; label: string; numeric?: boolean; tie
   { key: "plpNear", label: "Nearby PLP", numeric: true, tier: "low", width: 112, help: "Persistently low-performing schools within 5 miles, same county (FL DOE 2025-26 list)." },
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Facility Utilization Rate, the statute's measure (funded FTE / all student stations), with its tier: Meets facility test (75% or less, or 400+ surplus), Not fully used, Fully used (90%+)." },
   { key: "emptySeats", label: "Empty seats", numeric: true, width: 112, help: "Empty permanent seats: permanent student stations minus current enrollment. Portables are not counted." },
+  { key: "capacity", label: "Stations", numeric: true, tier: "mid", width: 120, help: "Total student stations from the district's FISH report, portables included (the statute's count). The permanent-only figure shows beneath when the building has portables; Empty seats uses that one." },
   { key: "enrollment", label: "Enrollment", numeric: true, tier: "mid", width: 112, help: "FL DOE membership enrollment (Broward SY2026-27 is the Tenth Day count)." },
   { key: "frl", label: "F/R lunch", numeric: true, tier: "full", width: 104, help: "Share of students on free or reduced-price meals (FL DOE Fall Survey 2, 2025-26)." },
   { key: "incomeDelta", label: "Income vs county", numeric: true, tier: "full", width: 148, help: "Median household income within 5 miles of the school, compared with its county's median (Census ACS 2019-2023; county medians: Miami-Dade $68,694, Broward $74,534, Orange $77,011). Negative means a lower-income area." },
