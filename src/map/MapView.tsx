@@ -14,6 +14,7 @@ import { shapeForType, iconForBadge } from "./markerShapes";
 import { useData } from "../data/DataContext";
 import { schoolTypeLabel, type SchoolType } from "../data/types";
 import { InlineLoading } from "@carbon/react";
+import { CheckmarkFilled, Misuse } from "@carbon/icons-react";
 import { useStore, type LatLng, type BaseMapType } from "../store";
 import { PILOT_MIN_ZOOM } from "../geo/countyBounds";
 import { basemapStyleFor } from "./mapStyles";
@@ -445,7 +446,7 @@ export function MapView() {
             <div className="pin-tooltip-title">
               <span className="pin-tooltip-name">{hover.name}</span>
               <span className="pin-tooltip-sub">
-                {hover.level} school &middot; {schoolTypeLabel(hover.type)}
+                {hover.level} &middot; {schoolTypeLabel(hover.type)}
               </span>
             </div>
           </div>
@@ -472,92 +473,51 @@ export function MapView() {
             </dl>
           ) : (
           <>
-          {/* A labeled fact list: one row per question a scout asks, each with a
-              plainly-labeled value. The facility rate is the statutory COFTE-based
-              FUR (utilizationStyle), the single figure used across the tool, so
-              nothing here contradicts the inspector or the co-location test. */}
-          <dl className="pin-tooltip-facts">
-            <div className="pin-tooltip-fact">
-              <dt>Facility use rate</dt>
-              <dd className={"tt-rate util-" + hover.utilKey}>
-                {hover.utilPct != null
-                  ? `${hover.utilPct}%${hover.utilBasis === "enrollment" ? " (est.)" : ""}`
-                  : "Not reported"}
+          {/* The school card in miniature, same order and words: the answer, its
+              tags, the two room figures, and the nearby low-performing schools. */}
+          <p className={`tt-answer${hover.sohEligible ? " tt-answer--yes" : ""}`}>
+            {hover.sohEligible ? <CheckmarkFilled size={16} aria-hidden="true" /> : <Misuse size={16} aria-hidden="true" />}
+            {hover.sohEligible ? "May open here" : "Not a siting location"}
+          </p>
+          {(hover.isPlp || hover.coLocationEligible) && (
+            <div className="tt-tags">
+              {hover.isPlp && <span className="tt-tag tt-tag--red">Low-performing (PLP)</span>}
+              {hover.coLocationEligible && <span className="tt-tag tt-tag--teal">Co-location candidate</span>}
+            </div>
+          )}
+          <dl className="tt-figures">
+            <div>
+              <dt>Utilization</dt>
+              <dd>
+                {hover.utilPct != null ? `${hover.utilPct}%` : "n/a"}
+                {hover.underutilized && <span className="tt-figures__aside">Meets facility test</span>}
               </dd>
             </div>
-            <div className="pin-tooltip-fact">
-              <dt>Underused</dt>
-              <dd>
-                {hover.underutilized == null ? (
-                  <span className="tt-yn tt-yn--na">Unknown</span>
-                ) : hover.underutilized ? (
-                  <span className="tt-yn tt-yn--yes-opp">Yes</span>
-                ) : (
-                  <span className="tt-yn tt-yn--no">No</span>
-                )}
-              </dd>
-            </div>
-            <div className="pin-tooltip-fact">
-              <dt>Persistently low-performing</dt>
-              <dd>
-                {hover.isPlp ? (
-                  <span className="tt-yn tt-yn--yes-plp">Yes</span>
-                ) : (
-                  <span className="tt-yn tt-yn--no">No</span>
-                )}
-              </dd>
-            </div>
-            <div className="pin-tooltip-fact">
-              <dt>Co-location eligible</dt>
-              <dd>
-                {hover.coLocationEligible ? (
-                  <span className="tt-yn tt-yn--yes-opp">Yes</span>
-                ) : (
-                  <span className="tt-yn tt-yn--no">No</span>
-                )}
-              </dd>
+            <div>
+              <dt>Empty seats</dt>
+              <dd>{hover.emptySeats != null ? hover.emptySeats.toLocaleString("en-US") : "n/a"}</dd>
             </div>
           </dl>
-
-          {/* Co-location pathways OTHER than the nearby-PLP list (shown below for
-              every school): the Opportunity-Zone route, or a candidate that is
-              itself the anchor. The 5-mile PLP pathway is covered by the list. */}
-          {hover.coLocationEligible && (hover.coLocInOZ || (hover.coLocIsPlpAnchor && hover.nearbyPlps.length === 0)) && (
-            <ul className="pin-tooltip-why">
-              {hover.coLocInOZ && <li>In a Qualified Opportunity Zone</li>}
-              {hover.coLocIsPlpAnchor && hover.nearbyPlps.length === 0 && (
-                <li>At a persistently low-performing school</li>
-              )}
-            </ul>
-          )}
-
-          {/* Every persistently low-performing school within 5 miles: the anchors a
-              School of Hope at this site could serve. Shown for ANY school with a
-              nearby PLP, nearest first. This is a hover PREVIEW (pointer-events:
-              none), so names are plain text and a long list is truncated with a
-              count; click the pin to inspect and see the full, clickable list. */}
-          {!hover.isKipp && hover.nearbyPlps.length > 0 && (
+          {hover.nearbyPlps.length > 0 && (
             <div className="pin-tooltip-plps">
-              <div className="pin-tooltip-plps__head">
-                {hover.nearbyPlps.length} low-performing school{hover.nearbyPlps.length === 1 ? "" : "s"} within 5 mi
-              </div>
+              <div className="pin-tooltip-plps__head">Low-performing schools within 5 miles</div>
               <ul className="pin-tooltip-plps__list">
-                {hover.nearbyPlps.slice(0, 4).map((a) => (
+                {hover.nearbyPlps.slice(0, 3).map((a) => (
                   <li key={a.msid}>
                     <span className="pin-tooltip-plps__name">{a.name}</span>
                     <span className="pin-tooltip-plps__mi">{a.miles.toFixed(1)} mi</span>
                   </li>
                 ))}
               </ul>
-              {hover.nearbyPlps.length > 4 && (
-                <div className="pin-tooltip-plps__more">+{hover.nearbyPlps.length - 4} more &middot; click to see all</div>
+              {hover.nearbyPlps.length > 3 && (
+                <div className="pin-tooltip-plps__more">+{hover.nearbyPlps.length - 3} more</div>
               )}
             </div>
           )}
           </>
           )}
 
-          <div className="pin-tooltip-cta">Click the pin to inspect &rarr;</div>
+          <div className="pin-tooltip-cta">Click to open the school card</div>
         </div>
       )}
       <div className="map-furniture">

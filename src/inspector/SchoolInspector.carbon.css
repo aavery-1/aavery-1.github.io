@@ -77,13 +77,8 @@
 .insp-close { flex: none; margin: -6px -6px 0 0; }
 .insp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .insp-tags .cds--tag { margin: 0; }
-/* Muted vintage qualifier beside the PLP tag (official DOE list is 2024-25). */
-.insp-tag-asof { align-self: center; font-size: 12px; color: var(--cds-text-helper, #6f6f6f); }
+/* Muted vintage qualifier beside the PLP tag (year read from the loaded DOE list). */
 /* Co-location tag tinted to the KIPP navy (Carbon Tag has no navy preset). */
-.insp-tag-coloc.cds--tag {
-  background: rgba(0, 30, 98, 0.1);
-  color: #001541;
-}
 
 /* ---- Body + sections ---- */
 .insp-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
@@ -106,21 +101,6 @@
 .insp-race__note { font-size: 11px; line-height: 1.4; color: var(--cds-text-secondary, #6f6f6f); margin: 7px 0 0; }
 
 /* ---- Verdict callout ---- */
-.insp-verdict {
-  padding: 16px;
-  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
-  background: rgba(22, 22, 22, 0.02);
-}
-.insp-verdict--eligible {
-  border-color: rgba(36, 161, 72, 0.35);
-  background: rgba(36, 161, 72, 0.06);
-}
-.insp-verdict__head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-.insp-verdict__title { font-size: 14px; font-weight: 600; line-height: 1.3; }
-.insp-verdict__text { font-size: 12px; color: var(--cds-text-primary, #161616); line-height: 1.5; }
-.insp-verdict__note { font-size: 12px; color: var(--cds-text-primary, #161616); line-height: 1.5; margin-top: 6px; }
-.insp-verdict__caveat { font-size: 12px; color: var(--cds-text-helper, #6f6f6f); line-height: 1.5; margin-top: 6px; }
-.insp-verdict__cite { font-size: 12px; color: var(--cds-text-helper, #6f6f6f); line-height: 1.4; margin-top: 6px; font-variant-numeric: tabular-nums; }
 
 /* Inline "jump to nearest PLP school" link inside the verdict sentence. */
 .insp-link {
@@ -134,23 +114,9 @@
 /* ---- Low-performing schools within 5 miles ---- */
 /* The full list of nearby PLP anchors, each a jump link, with its distance
    right-aligned. Sits just under the verdict, before the first divider. */
-.insp-plps { margin-top: 14px; }
-.insp-plps__label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.insp-plps__count {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 20px; height: 18px; padding: 0 6px;
-  font-size: 11px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums;
-  color: var(--cds-text-on-color, #fff); background: #a2191f; border-radius: 9px;
-}
-.insp-plps__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
-.insp-plps__row {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-  font-size: 13px; line-height: 1.35;
-}
 /* A clickable link, so let a long name wrap within the panel (min-width:0 lets it
    shrink in the flex row) rather than truncate the jump target; distance stays right. */
 .insp-plps__name { text-align: left; font-weight: 400; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
-.insp-plps__mi { flex: none; color: var(--cds-text-helper, #6f6f6f); font-variant-numeric: tabular-nums; }
 
 /* ---- Key indicators: one compact row each, label left, verdict right ---- */
 .insp-indrow {
@@ -167,59 +133,22 @@
 
 /* ---- Enrollment & capacity ---- */
 .insp-util-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.insp-util-head__left { display: flex; align-items: center; gap: 6px; }
-.insp-util-tier {
-  padding: 1px 6px; font-size: 12px; font-weight: 600; line-height: 1.5;
-  /* color + background set inline (utilization tier). */
-}
 .insp-util-pct { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .insp-bar { height: 6px; border-radius: 999px; background: rgba(22, 22, 22, 0.06); overflow: hidden; }
 .insp-bar__fill { height: 100%; border-radius: 999px; }
 .insp-note { font-size: 12px; color: var(--cds-text-secondary, #525252); margin-top: 6px; line-height: 1.45; font-variant-numeric: tabular-nums; }
 .insp-note__lead { font-weight: 600; color: var(--cds-text-primary, #161616); }
 /* Small "live" label naming the enrollment year, inline after the count. */
-.insp-year {
-  display: inline-block; margin: 0 2px 0 6px; padding: 0 5px;
-  font-size: 10px; font-weight: 600; line-height: 15px; letter-spacing: 0.02em;
-  color: var(--cds-text-secondary, #525252);
-  background: var(--cds-layer-accent-01, #e8e8e8); border-radius: 3px;
-  font-variant-numeric: tabular-nums; white-space: nowrap; cursor: help;
-}
 
 /* Permanent-capacity callout: a disclosed secondary figure under the statutory
    utilization line. The tests above use total student stations; this shows how
    much of that capacity is in permanent buildings vs portables. */
-.insp-perm {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap;
-  margin-top: 8px; padding: 6px 8px; border-radius: 4px;
-  background: var(--cds-layer-accent-01, #e8e8e8);
-  border-left: 3px solid var(--cds-border-strong-01, #8d8d8d);
-}
-.insp-perm__label { font-size: 11px; font-weight: 600; color: var(--cds-text-secondary, #525252); cursor: help; white-space: nowrap; }
-.insp-perm__val { flex: 1 1 auto; font-size: 13px; font-weight: 600; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; text-align: right; }
-.insp-perm__sub { font-size: 11px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
 
-/* Available capacity (surplus): the co-location headline number, a highlighted
-   callout under the utilization line. Turns teal when it clears the 400-station
-   surplus threshold, matching the "Underused" tier color. */
-.insp-avail {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap;
-  margin-top: 8px; padding: 6px 8px; border-radius: 4px;
-  background: var(--cds-layer-accent-01, #e8e8e8);
-  border-left: 3px solid var(--cds-border-strong-01, #8d8d8d);
-}
-.insp-avail--surplus {
-  background: rgba(0, 125, 121, 0.10);
-  border-left-color: #007d79;
-}
-.insp-avail__label { font-size: 11px; font-weight: 600; color: var(--cds-text-secondary, #525252); cursor: help; white-space: nowrap; }
-.insp-avail__val { flex: 1 1 auto; font-size: 14px; font-weight: 600; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; text-align: right; }
-.insp-avail__unit { font-size: 11px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
-.insp-avail__tag {
-  display: inline-block; margin-left: 8px; padding: 0 6px;
-  font-size: 10px; font-weight: 600; line-height: 16px; letter-spacing: 0.02em;
-  color: #007d79; background: rgba(0, 125, 121, 0.14); border-radius: 3px; white-space: nowrap;
-}
+/* Capacity callouts under the utilization line: empty permanent seats (room)
+   first, then the statutory surplus (turns teal when it clears the 400-station
+   test, matching the "Underused" tier color). */
+/* The room figure (empty permanent seats) leads in the KIPP navy; the statutory
+   surplus below it reads as a secondary, test-only line. */
 
 /* "In the news": a compact card of external, unverified headlines. Sits inside a
    subtle tinted surface so it reads as a distinct companion block, not sourced
@@ -269,28 +198,15 @@
 /* ---- Enrollment trend chart ---- */
 .insp-trend { margin-top: 14px; }
 /* Header row: left-aligned title, with the paging arrows pushed to the right. */
-.insp-trend__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; min-height: 24px; }
 /* Chart title is a sub-heading, matching "Building utilization" and "Historic
    letter grades" so the section/sub-section tiers stay consistent. */
-.insp-trend__title {
-  margin: 0; text-align: left;
-  font-size: 12px; font-weight: 600; color: var(--cds-text-secondary, #525252);
-}
-.insp-trend__nav { display: flex; align-items: center; gap: 2px; flex: none; }
-.insp-trend__nav .cds--btn { min-height: 24px; }
 /* Legend left-aligned under the title, in a smaller type than the chart body. */
 .insp-trend__legend { display: flex; justify-content: flex-start; align-items: center; gap: 14px; margin-bottom: 8px; }
 .insp-legend { display: flex; align-items: center; gap: 5px; }
-.insp-legend__swatch { width: 13px; height: 0; }
-.insp-legend__label { font-size: 11px; font-weight: 600; color: var(--cds-text-secondary, #525252); }
 /* Pinned axes: the y-axis SVG is a fixed column and the X title is fixed below;
    only .insp-chart__scroll (the plot + year labels) scrolls, paged by the arrow
    buttons. The scrollbar is hidden since the arrows drive it. */
 .insp-trend__chart { display: flex; align-items: flex-start; }
-.insp-chart__yaxis { flex: none; display: block; }
-.insp-chart__scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-behavior: smooth; }
-.insp-chart__scroll::-webkit-scrollbar { display: none; }
-.insp-chart__plot { display: block; }
 .insp-chart__xtitle {
   text-align: center; margin-top: 4px;
   font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #001e62;
@@ -298,30 +214,6 @@
 .insp-trend__empty { font-size: 12px; color: var(--cds-text-secondary, #525252); margin-top: 8px; }
 
 /* Two KPI tiles in a recessed inlay (Carbon layer-02), split by a hairline. */
-.insp-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin-top: 12px;
-  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
-  background: var(--cds-layer-02, #f4f4f4);
-}
-.insp-stat { padding: 10px 14px; min-width: 0; }
-.insp-stat + .insp-stat { border-left: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
-.insp-stat__label {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.32px; text-transform: uppercase;
-  color: var(--cds-text-secondary, #525252);
-}
-.insp-stat__value {
-  display: flex; align-items: baseline; gap: 2px;
-  margin-top: 4px; font-size: 22px; font-weight: 600; line-height: 1.1;
-  color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.insp-stat__arrow { font-size: 17px; line-height: 1; }
-.insp-stat__sub {
-  font-size: 12px; color: var(--cds-text-secondary, #525252);
-  margin-top: 3px; line-height: 1.35; font-variant-numeric: tabular-nums;
-}
 
 /* ---- Key/value rows ---- */
 .insp-kv { padding: 8px 0; }
@@ -342,17 +234,6 @@
 .insp-district-btn:focus-visible { outline: 2px solid #001e62; outline-offset: 1px; }
 
 /* ---- Footer ---- */
-.insp-footer {
-  flex: none;
-  padding: 16px 20px;
-  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
-  background: var(--cds-layer-01, #ffffff);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.insp-footer .cds--btn { width: 100%; max-width: none; justify-content: space-between; }
-.insp-footer .export-button { width: 100%; max-width: none; }
 
 /* Neighborhood demographics: a compact metric-by-radius table. Values are
    estimates; each carries a muted margin-of-error line. Tabular figures keep
@@ -396,3 +277,407 @@ thead .insp-demo__rowhead { border-bottom: 1px solid var(--cds-border-subtle-01,
   font-size: 10px; line-height: 1.4; color: var(--cds-text-helper, #6f6f6f);
   margin-top: 8px;
 }
+
+/* Drive-time market: header row with the map toggle, and the colored key swatch
+   in each column head, matching the nested polygons drawn on the map. */
+.insp-drive__key { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 0; }
+.insp-drive__key--5 { background: #20275d; }
+.insp-drive__key--10 { background: #4a6fb5; }
+.insp-drive__key--15 { background: #52c3ed; }
+.insp-drive__retry {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--cds-link-primary, #0f62fe);
+  text-decoration: underline; cursor: pointer;
+}
+
+/* Header drive-time switch: a small button, live progress, and once ready a
+   one-line headline that jumps to the full table. */
+
+/* =====================================================================
+   Card structure (Nov 2026 overhaul). Header: identity, tags, one action
+   row, the drive-time switch. Body: verdict line, four figures, then a
+   Carbon accordion where only "Siting and eligibility" opens by default.
+   Carbon is flat and square; separation comes from 1px subtle borders and
+   the 8px grid, not shadows or colored side rules.
+   ===================================================================== */
+
+.insp-title { margin: 0; }
+.insp-head { padding: 16px 16px 12px; }
+.insp-tags { gap: 4px; margin-top: 8px; }
+
+/* Action row: one primary, then icon actions pushed to the right edge. */
+.insp-actions { display: flex; align-items: center; gap: 0; margin-top: 12px; }
+.insp-actions > .cds--btn--primary, .insp-actions > .cds--btn--secondary { margin-right: auto; }
+.insp-actions .cds--overflow-menu { width: 32px; height: 32px; }
+
+/* Drive-time switch: Carbon Toggle with its own text, then live status. */
+.insp-drive-toggle {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px;
+  margin-top: 8px; min-height: 24px;
+}
+.insp-drive-toggle .cds--toggle__label-text { display: none; }
+.insp-drive-toggle .cds--toggle__text { font-size: 14px; color: var(--cds-text-primary, #161616); }
+.insp-drive-toggle__hint { font-size: 12px; color: var(--cds-text-helper, #6f6f6f); }
+.insp-drive-toggle__status { width: auto; min-height: 0; font-size: 12px; color: var(--cds-text-secondary, #525252); }
+.insp-drive-toggle__status .cds--inline-loading__text { font-size: 12px; }
+.insp-drive-toggle__status--err { color: var(--cds-text-error, #da1e28); }
+.insp-drive-toggle__summary {
+  appearance: none; background: none; border: 0; padding: 0; cursor: pointer;
+  font: inherit; font-size: 12px; color: var(--cds-link-primary, #001e62);
+  text-decoration: underline; text-underline-offset: 2px; font-variant-numeric: tabular-nums;
+}
+.insp-drive-toggle__summary:hover { color: var(--cds-link-primary-hover, #001541); }
+.insp-drive-toggle__summary:focus-visible { outline: 2px solid var(--cds-focus, #001e62); outline-offset: 1px; }
+
+/* Body */
+.insp-body { padding: 16px; }
+
+/* Verdict: one line of answer, one line of why. Tinted surface, no side rule. */
+.insp-verdict {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 12px; background: var(--cds-layer-02, #f4f4f4);
+}
+.insp-verdict__icon { flex: none; margin-top: 2px; color: var(--cds-icon-secondary, #525252); }
+.insp-verdict--yes { background: var(--cds-support-success-inverse, #defbe6); background: #defbe6; }
+.insp-verdict--yes .insp-verdict__icon { color: var(--cds-support-success, #24a148); }
+.insp-verdict__title { margin: 0; font-size: 14px; font-weight: 600; line-height: 18px; color: var(--cds-text-primary, #161616); }
+.insp-verdict__text { margin: 2px 0 0; font-size: 12px; line-height: 16px; color: var(--cds-text-secondary, #525252); }
+
+/* At a glance: four label/value pairs on a 2 x 2 grid, hairline separated. */
+.insp-glance {
+  display: grid; grid-template-columns: 1fr 1fr; margin: 12px 0 0;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.insp-glance__cell { padding: 10px 0 10px; border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0); min-width: 0; }
+.insp-glance__cell:nth-child(odd) { padding-right: 12px; }
+.insp-glance__cell:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
+.insp-glance dt { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252); cursor: default; }
+.insp-glance__cell[title] dt { cursor: help; }
+.insp-glance dd {
+  margin: 2px 0 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  font-size: 16px; font-weight: 600; line-height: 22px; color: var(--cds-text-primary, #161616);
+  font-variant-numeric: tabular-nums;
+}
+.insp-glance__tier { font-size: 12px; font-weight: 400; line-height: 16px; }
+.insp-glance__aside { font-size: 12px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
+.insp-glance__na { font-size: 14px; font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
+
+/* Accordion: Carbon FLUSH variant (Carbon's guidance for side panels), so every
+   title sits on the card's 16px left edge and the chevron on the right. The
+   accordion spans the card edge to edge; Carbon insets its rules by 16px. */
+.insp-body .insp-acc.cds--accordion { margin: 24px -16px 0; inline-size: calc(100% + 32px); max-inline-size: none; }
+.insp-acc .cds--accordion__heading { min-height: 48px; align-items: center; }
+.insp-acc .cds--accordion__title { margin: 0; padding-inline-end: 8px; }
+.insp-acc .cds--accordion__content { padding: 0 16px 24px; }
+.insp-acc__title { display: block; min-width: 0; padding-block: 14px; }
+.insp-acc__name {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.16px;
+  color: var(--cds-text-primary, #161616); scroll-margin-top: 8px;
+}
+.insp-acc__meta {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12px; line-height: 16px; letter-spacing: 0.32px; font-weight: 400;
+  color: var(--cds-text-secondary, #525252); font-variant-numeric: tabular-nums;
+}
+.insp-acc .cds--accordion__item--active .insp-acc__meta { display: none; }
+
+/* Nearby PLP schools: name (a jump link) left, distance right. */
+.insp-plps__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.insp-plps__row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 18px; }
+.insp-plps__name { text-align: left; font-weight: 400; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.insp-plps__mi { flex: none; white-space: nowrap; font-size: 12px; color: var(--cds-text-helper, #6f6f6f); font-variant-numeric: tabular-nums; }
+
+/* Inside sections */
+.insp-subhead--spaced { margin-top: 20px; }
+.insp-subhead__aside { font-weight: 400; color: var(--cds-text-helper, #6f6f6f); }
+.insp-inds { margin-top: 12px; }
+.insp-note--dim { color: var(--cds-text-helper, #6f6f6f); }
+.insp-cite { margin: 8px 0 0; font-size: 12px; color: var(--cds-text-helper, #6f6f6f); }
+.insp-sec-cta { margin-top: 16px; }
+.insp-util-head { margin-bottom: 8px; }
+
+/* Capacity figures: label left, value and its calculation right. */
+.insp-kvlist { margin: 12px 0 0; }
+.insp-kvlist__row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px;
+  padding: 8px 0; border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.insp-kvlist__row dt { font-size: 14px; color: var(--cds-text-primary, #161616); }
+.insp-kvlist__row dt[title] { cursor: help; text-decoration: underline dotted; text-underline-offset: 3px; }
+.insp-kvlist__row dd { margin: 0; display: contents; }
+.insp-kvlist__row dd strong { grid-column: 2; grid-row: 1; justify-self: end; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.insp-kvlist__tag { grid-column: 1 / -1; justify-self: start; margin: 2px 0 0; }
+.insp-kvlist__calc { grid-column: 1 / -1; font-size: 12px; line-height: 16px; color: var(--cds-text-helper, #6f6f6f); }
+
+.insp-news__src { margin: 0 0 12px; }
+
+/* Overflow menu: wide enough for full action names (Carbon's default is 10rem). */
+.insp-actions__menu.cds--overflow-menu-options { inline-size: 15rem; }
+.insp-actions__menu .cds--overflow-menu-options__btn { max-inline-size: none; }
+
+/* ---------------------------------------------------------------------
+   Spacing system (Carbon tokens on the 8px grid, 4px for fine steps):
+     4  ($spacing-02)  a label and its value; a title and its subtitle
+     8  ($spacing-03)  items inside one group (tags, action icons)
+     16 ($spacing-05)  between groups; the card's inset on every side
+     24 ($spacing-06)  between major regions (summary vs sections)
+   One left edge: every block starts at the 16px inset.
+   --------------------------------------------------------------------- */
+.insp-head { padding: 16px; }
+.insp-head__row { gap: 12px; }
+.insp-sub { margin-top: 4px; }
+.insp-tags { margin-top: 16px; gap: 8px; }
+.insp-actions { margin-top: 16px; }
+.insp-drive-toggle { margin-top: 8px; }
+.insp-body { padding: 16px; }
+.insp-glance { margin-top: 16px; }
+.insp-glance__cell { padding-block: 12px; }
+.insp-glance dd { margin-top: 4px; }
+
+/* =====================================================================
+   Header, round 2: two rows. Identity, then a ghost toolbar. Status tags
+   moved down into the verdict, where they explain the answer.
+   ===================================================================== */
+.insp-head { padding: 16px 16px 8px; }
+.insp-head__row { gap: 12px; align-items: flex-start; }
+.insp-grade { width: 32px; height: 32px; font-size: 14px; }
+.insp-title { font-size: 16px; line-height: 22px; font-weight: 600; overflow-wrap: anywhere; }
+.insp-sub { margin-top: 2px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; }
+.insp-close { margin: -4px -8px 0 0; }
+
+/* Toolbar: ghost buttons on the card's left edge (offset by Carbon's ghost
+   padding so the icons line up with the badge), "More" at the right. */
+.insp-actions { display: flex; align-items: center; gap: 4px; margin: 12px 0 0 -12px; }
+.insp-actions .insp-action { color: var(--cds-text-primary, #161616); }
+.insp-actions .insp-action .cds--btn__icon { fill: currentColor; }
+.insp-action--on.cds--btn--ghost {
+  background: var(--cds-layer-selected-01, #e0e0e0);
+  color: var(--cds-text-primary, #161616);
+}
+.insp-actions .insp-actions__more { margin-left: auto; margin-right: -8px; }
+.insp-drive-status {
+  display: block; width: auto; margin: 4px 0 0; min-height: 0;
+  font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252);
+}
+.insp-drive-status--err { color: var(--cds-text-error, #da1e28); }
+.insp-drive-status__link {
+  appearance: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit;
+  color: var(--cds-link-primary, #001e62); font-variant-numeric: tabular-nums;
+}
+.insp-drive-status__link:hover { text-decoration: underline; }
+.insp-drive-status__link:focus-visible { outline: 2px solid var(--cds-focus, #001e62); outline-offset: 1px; }
+
+/* Verdict carries its tags. */
+.insp-verdict .insp-tags { margin-top: 8px; gap: 4px; }
+.insp-verdict .insp-tags .cds--tag { margin: 0; }
+
+/* =====================================================================
+   Legibility: people scan the left edge for the first words of each label,
+   then jump to the number. Labels short and quiet (12px), values larger
+   (20px), statements 14px on a 20px line, links underline only on hover.
+   ===================================================================== */
+.insp-glance dd { font-size: 20px; line-height: 28px; }
+.insp-glance__tier, .insp-glance__aside { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; font-weight: 400; }
+.insp-glance__na { font-size: 14px; line-height: 28px; }
+.insp-verdict__title { font-size: 14px; line-height: 20px; }
+.insp-verdict__text { font-size: 14px; line-height: 20px; margin: 0; }
+.insp-plps__list { gap: 8px; }
+.insp-plps__row { font-size: 14px; line-height: 20px; }
+.insp-plps__name.insp-link { text-decoration: none; font-weight: 400; color: var(--cds-link-primary, #001e62); }
+.insp-plps__name.insp-link:hover { text-decoration: underline; }
+.insp-subhead { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; margin-bottom: 8px; }
+.insp-note { font-size: 12px; line-height: 16px; margin-top: 12px; }
+.insp-indrow { padding: 12px 0; }
+.insp-indrow__label, .insp-indrow__verdict { font-size: 14px; line-height: 20px; }
+
+/* =====================================================================
+   No horizontal scroll, ever: the card clips sideways overflow, every flex
+   child may shrink, long words break, and the demographic tables fit the
+   card width (fixed layout) instead of scrolling.
+   ===================================================================== */
+.insp, .insp-head, .insp-body { overflow-x: hidden; }
+.insp-body * { min-width: 0; }
+.insp-body { overflow-wrap: anywhere; }
+.insp-demo__scroll { overflow-x: visible; margin-top: 8px; }
+.insp-demo__table { table-layout: fixed; width: 100%; }
+.insp-demo__table th, .insp-demo__table td { padding: 6px 2px; }
+.insp-demo__table .insp-demo__rowhead { white-space: normal; width: 30%; }
+.insp-demo__val { font-size: 12px; white-space: normal; }
+.insp-demo__moe { white-space: normal; }
+
+/* Grade timeline inside the card: wrap the years into rows (newest first,
+   reading left to right) instead of a sideways-scrolling strip, and lift the
+   year labels to the 12px type floor. */
+.insp .timeline-track {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 8px 4px; overflow-x: visible; padding-bottom: 0;
+}
+.insp .timeline-year { font-size: 12px; line-height: 16px; letter-spacing: 0; }
+.insp .timeline-divider { right: -3px; }
+
+/* Always-visible decision content: the notice action inside the verdict, and
+   the nearby low-performing schools directly under it (proximity = evidence). */
+.insp-verdict > div { min-width: 0; flex: 1; }
+.insp-verdict__cta { margin-top: 12px; }
+.insp-anchors { margin-top: 16px; }
+
+/* =====================================================================
+   Grouping (Gestalt): COMMON REGION puts each idea in its own container,
+   PROXIMITY keeps things inside a group tight (8px) and leaves clear space
+   between groups (16px between regions, 24px before the detail sections),
+   CHUNKING gives each group a short heading so it can be skipped as a unit.
+   Everything inside a region aligns to the region's own 16px inset.
+   ===================================================================== */
+.insp-region { background: var(--cds-layer-02, #f4f4f4); padding: 16px; }
+.insp-region + .insp-region { margin-top: 16px; }
+.insp-region__label {
+  margin: 0; font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.16px;
+  color: var(--cds-text-primary, #161616);
+}
+.insp-answer {
+  display: flex; align-items: center; gap: 8px; margin: 12px 0 0;
+  font-size: 16px; line-height: 22px; font-weight: 600; color: var(--cds-text-primary, #161616);
+}
+.insp-answer__icon { flex: none; color: var(--cds-icon-secondary, #525252); }
+.insp-answer--yes .insp-answer__icon { color: var(--cds-support-success, #24a148); }
+.insp-region .insp-tags { margin-top: 8px; gap: 8px; }
+.insp-region .insp-tags .cds--tag { margin: 0; }
+.insp-region__note { margin: 8px 0 0; font-size: 14px; line-height: 20px; color: var(--cds-text-secondary, #525252); }
+.insp-region__group { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--cds-border-subtle-02, #e0e0e0); }
+.insp-region__sublabel { margin: 0 0 8px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252); }
+.insp-region__cta { margin-top: 16px; }
+
+/* Figures inside the Building region: hairline grid, no outer frame. */
+.insp-region .insp-glance { margin: 8px 0 0; border-top: 0; }
+.insp-region .insp-glance__cell:nth-last-child(-n + 2) { border-bottom: 0; padding-bottom: 0; }
+
+/* Detail sections start clearly below the summary. */
+.insp-body .insp-acc.cds--accordion { margin-top: 24px; }
+
+/* Inside a section: each sub-topic is its own chunk with a heading and a
+   one-line caption; consecutive chunks are divided by a rule and 24px. */
+.insp-acc .insp-subhead {
+  margin: 0; font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.16px;
+  color: var(--cds-text-primary, #161616);
+}
+.insp-caption { margin: 4px 0 12px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252); }
+.insp-subgroup { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
+.insp-subgroup .insp-subhead { margin-bottom: 0; }
+.insp-subgroup .insp-subhead:only-child { margin-bottom: 12px; }
+.timeline-more {
+  appearance: none; background: none; border: 0; padding: 0; margin-top: 12px; cursor: pointer;
+  font: inherit; font-size: 14px; line-height: 20px; color: var(--cds-link-primary, #001e62);
+}
+.timeline-more:hover { text-decoration: underline; }
+.timeline-more:focus-visible { outline: 2px solid var(--cds-focus, #001e62); outline-offset: 1px; }
+.insp-region .insp-region__cta.cds--btn { margin-top: 16px; display: inline-flex; }
+
+/* =====================================================================
+   Feature strip: Compare / Drive times / Building notice, then More.
+   Equal cells (fixed positions build muscle memory), icon over label,
+   hairline dividers, edge to edge along the bottom of the header.
+   Pressed = Carbon selected layer + a 2px interactive rule (the tab
+   "selected" convention), so on/off reads without relying on color alone.
+   ===================================================================== */
+.insp-head { padding-bottom: 0; }
+.insp-actions {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 48px;
+  gap: 0; margin: 12px -16px 0; border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.insp-feature {
+  appearance: none; border: 0; background: none; cursor: pointer; font: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 56px; padding: 8px 4px; min-width: 0;
+  font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-primary, #161616);
+  border-right: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  box-shadow: inset 0 -2px 0 transparent;
+  transition: background-color 110ms cubic-bezier(0.2, 0, 0.38, 0.9);
+}
+.insp-feature span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.insp-feature svg { fill: currentColor; flex: none; }
+.insp-feature:hover:not(:disabled) { background: var(--cds-layer-hover-01, #e8e8e8); }
+.insp-feature:focus-visible { outline: 2px solid var(--cds-focus, #001e62); outline-offset: -2px; }
+.insp-feature--on {
+  background: var(--cds-layer-selected-01, #e0e0e0);
+  box-shadow: inset 0 -2px 0 var(--cds-border-interactive, #001e62);
+  font-weight: 600;
+}
+.insp-feature:disabled { color: var(--cds-text-disabled, #c6c6c6); cursor: not-allowed; }
+.insp-actions .insp-actions__more { margin: 0; width: 48px; height: 100%; min-height: 56px; }
+.insp-drive-status { margin: 0 -16px; padding: 8px 16px; border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
+@media (prefers-reduced-motion: reduce) { .insp-feature { transition: none; } }
+.insp-caption--first { margin-top: 0; }
+
+/* =====================================================================
+   Charts and data marks (Carbon data-viz): 12px axis/tick text in
+   text-secondary, recessive 1px gridlines, thresholds as neutral dashed
+   lines labeled in place, a legend for every multi-mark chart, square
+   marks (Carbon geometry), and text that never wears the series color.
+   ===================================================================== */
+.insp-trend { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
+.insp-trend__legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; }
+.insp-legend { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252); }
+.insp-legend__swatch--line { width: 16px; height: 0; border-top: 2px solid #001e62; }
+.insp-legend__swatch--threshold { width: 16px; height: 0; border-top: 2px dashed #525252; }
+.insp-trend__chart { width: 100%; overflow: hidden; }
+.insp-trend__chart svg { display: block; font-family: var(--cds-font-family, "IBM Plex Sans", sans-serif); }
+.insp-chart__tick { font-size: 12px; fill: var(--cds-text-secondary, #525252); font-variant-numeric: tabular-nums; }
+.insp-chart__threshold { font-size: 12px; fill: var(--cds-text-secondary, #525252); }
+.insp-chart__tip { font-size: 12px; fill: #c6c6c6; font-variant-numeric: tabular-nums; }
+.insp-chart__tip--title { font-weight: 600; fill: #ffffff; }
+.insp-chart__xtitle { margin: 2px 0 0; text-align: center; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252); }
+.insp-trend__change { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 14px; line-height: 20px; color: var(--cds-text-primary, #161616); }
+.insp-trend__change strong { font-weight: 600; }
+.insp-trend__up { flex: none; color: var(--cds-support-success, #24a148); }
+.insp-trend__down { flex: none; color: var(--cds-support-error, #da1e28); }
+.insp-trend__empty { margin: 24px 0 0; }
+
+/* Utilization meter: square, with the 75% legal line marked and labeled. */
+.insp-bar { position: relative; height: 8px; border-radius: 0; background: var(--cds-layer-accent-01, #e0e0e0); overflow: visible; }
+.insp-bar__fill { height: 100%; border-radius: 0; }
+.insp-bar__mark { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--cds-text-primary, #161616); }
+.insp-bar__scale { position: relative; display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; line-height: 16px; color: var(--cds-text-secondary, #525252); font-variant-numeric: tabular-nums; }
+.insp-bar__scale-mark { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+
+/* Student race bars: square marks, 8px track. */
+.insp-race { gap: 8px; margin-top: 4px; }
+.insp-race__label { width: 72px; font-size: 14px; line-height: 20px; color: var(--cds-text-primary, #161616); }
+.insp-race__track, .insp-race__fill { border-radius: 0; height: 8px; }
+.insp-race__val { width: 40px; font-size: 14px; line-height: 20px; }
+.insp-race__note { font-size: 12px; line-height: 16px; margin-top: 12px; color: var(--cds-text-secondary, #525252); }
+
+/* Demographic tables: margins of error at the 12px floor. */
+.insp-demo__moe { font-size: 12px; line-height: 16px; }
+.insp-demo__colhead, .insp-demo__rowhead { font-size: 12px; line-height: 16px; }
+
+/* Keys and badges: square (Carbon), 600 max weight. */
+.insp-drive__key { border-radius: 0; }
+.insp-grade { font-weight: 600; }
+.insp .grade-pill { font-weight: 600; border-width: 1px; }
+.insp-trend .insp-chart__xtitle { font-weight: 400; }
+/* Carbon's accordion wrapper adds its own bottom padding on top of the
+   content's 24px; drop it so every open section ends with one 24px gap. */
+.insp-acc .cds--accordion__wrapper { padding: 0; margin: 0; }
+.insp-body .insp-acc .cds--accordion__item .cds--accordion__wrapper { padding: 0; margin: 0; }
+.insp-body .insp-acc .cds--accordion__item .cds--accordion__content { padding: 4px 16px 24px; }
+/* News inside its section: no nested tile (the section is the container). */
+.insp-acc .insp-news { padding: 0; margin: 0; background: none; border: 0; }
+.insp-demo__foot { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; margin-top: 12px; }
+
+/* Eligibility checklist: grouped like the rule (siting, also required, to
+   share this building). Icon first on the left edge, label, muted detail below.
+   Unchecked tests use a dashed circle so "not evaluated" never reads as "failed". */
+.insp-checks__head {
+  margin: 20px 0 8px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; font-weight: 600;
+  color: var(--cds-text-secondary, #525252);
+}
+.insp-checks__head:first-child { margin-top: 4px; }
+.insp-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.insp-check { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; align-items: start; }
+.insp-check__icon { margin-top: 2px; fill: var(--cds-icon-secondary, #525252); }
+.insp-check__icon--yes { fill: var(--cds-support-success, #24a148); }
+.insp-check__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.insp-check__label { font-size: 14px; line-height: 20px; color: var(--cds-text-primary, #161616); }
+.insp-check--unchecked .insp-check__label { color: var(--cds-text-secondary, #525252); }
+.insp-check__detail { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252); }
+.insp-acc .insp-cite { margin-top: 20px; }

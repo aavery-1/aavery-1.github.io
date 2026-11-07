@@ -11,7 +11,7 @@
 // whose values are not all identical; it drives the "Differences only" filter
 // and a neutral marker, never a ranking.
 
-import { utilizationStyle, availableCapacity } from "../store";
+import { utilizationStyle, availableCapacity, emptyPermanentSeats, SOH_SURPLUS_STATIONS } from "../store";
 import {
   incomeAtPoint, boardDistrictAtPoint, opportunityZoneAtPoint,
   legislativeDistrictsAtPoint, formatIncomeWithMoe,
@@ -114,18 +114,17 @@ export function buildCompareSections(
     const p = schools[i].properties;
     return p.capacity != null ? `${p.capacity.toLocaleString("en-US")} stations` : "Not reported";
   };
-  // Available capacity (surplus) = total FISH student stations minus enrollment,
-  // floored at 0. Enrollment basis (like the List column and this view's own
-  // utilization row) so the capacity / utilization / surplus rows reconcile; the
-  // inspector shows the statutory COFTE-based figure. See [[soh-utilization-metrics]].
+  // Statutory surplus = total FISH stations minus COFTE (Rule 6A-1.0998271(1)(f)),
+  // the figure the 400-station test uses. Same basis as the inspector, so the two
+  // never disagree. Falls back to total stations minus enrollment where FISH
+  // reports no COFTE (labeled as an estimate). See [[soh-utilization-metrics]].
   const availCapValue = (i: number) => {
     const p = schools[i].properties;
-    const { stations, basis } = availableCapacity(p.enrollment, p.capacity);
+    const { stations, basis } = availableCapacity(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
     if (stations == null || basis === "none") return "Not reported";
-    if (stations === 0 && p.enrollment != null && p.capacity != null && p.enrollment >= p.capacity) {
-      return "0 (at or over capacity)";
-    }
-    return `${stations.toLocaleString("en-US")} stations`;
+    const tag = stations >= SOH_SURPLUS_STATIONS ? " (meets 400+ test)" : "";
+    const est = basis === "enrollment" ? " (estimate, no COFTE)" : "";
+    return `${stations.toLocaleString("en-US")} stations${tag}${est}`;
   };
   const permanentValue = (i: number) => {
     const p = schools[i].properties;
@@ -139,16 +138,16 @@ export function buildCompareSections(
     const p = schools[i].properties;
     return utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus).label;
   };
-  // Empty seats = permanent student stations minus the most recent enrollment.
-  // A negative value means enrollment exceeds the permanent building (portables in
-  // use), shown honestly rather than clamped. Null when either figure is missing.
+  // Empty permanent seats = permanent stations minus headcount enrollment (the
+  // room measure; see emptyPermanentSeats). Over the permanent building reads as
+  // 0 with the overage named, rather than a negative count.
   const emptySeatsValue = (i: number) => {
     const p = schools[i].properties;
-    if (p.permanent_capacity == null || p.enrollment == null) return "Not reported";
-    const empty = p.permanent_capacity - p.enrollment;
-    return empty >= 0
-      ? `${empty.toLocaleString("en-US")}`
-      : `${empty.toLocaleString("en-US")} (over permanent capacity)`;
+    const e = emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity);
+    if (e.seats == null) return "Not reported";
+    return e.overBy > 0
+      ? `0 (${e.overBy.toLocaleString("en-US")} over permanent capacity)`
+      : e.seats.toLocaleString("en-US");
   };
   const frlValue = (i: number) => {
     const p = schools[i].properties;
@@ -202,9 +201,9 @@ export function buildCompareSections(
       rows: [
         build("enroll", "Enrollment", enrollValue, "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count."),
         build("capacity", "FISH capacity", capacityValue, "Total student stations (permanent plus portable), from the FISH Level of Service report. This is the statute's measure for the utilization and co-location tests (Rule 6A-1.0998271)."),
-        build("availcap", "Available capacity (surplus)", availCapValue, "Total FISH student stations minus the most recent enrollment (floored at zero). 400+ surplus stations is one of the two co-location thresholds (Rule 6A-1.0998271); the inspector shows the statutory COFTE-based figure."),
-        build("permanent", "Permanent stations", permanentValue, "Student stations in permanent buildings only, excluding portables. A disclosed reference; the statutory tests use total student stations above."),
-        build("emptyseats", "Empty seats (permanent)", emptySeatsValue, "Permanent student stations minus the most recent enrollment. A rough measure of room in the permanent building; a negative value means enrollment exceeds the permanent stations (portables in use)."),
+        build("permanent", "Permanent stations", permanentValue, "Student stations in permanent buildings only, excluding portables."),
+        build("emptyseats", "Empty permanent seats", emptySeatsValue, "Permanent student stations minus current enrollment (headcount), the districts' own room measure and the number to size a co-located school against. Portables are not counted."),
+        build("availcap", "Statutory surplus (FISH)", availCapValue, "Total student stations (portables included) minus capital-outlay FTE, per Rule 6A-1.0998271(1)(f). This is the figure for the 400-station co-location test, not a sizing number: it can overstate the room free today when enrollment has fallen below funded FTE or portables are unusable."),
         build("util", "Utilization (enrollment / capacity)", utilValue, "Enrollment divided by total FISH student stations."),
         build("facility", "Facility use tier", facilityUseValue, "The statutory tier: underused (at or below 75%, or 400+ surplus stations), in use, or fully used (90% or above)."),
       ],

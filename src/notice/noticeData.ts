@@ -19,9 +19,10 @@
 import type { CountyName } from "../data/types";
 import type { NoticeDistrict, NoticeFields } from "./fillNotice";
 
-// The state's PLP list vintage the notices cite. Update when a newer official
-// FL DOE PLP list is loaded; the panel also lets the operator edit it per notice.
-export const PLP_LIST_YEAR = "2024-25";
+// Fallback PLP list vintage the notices cite. The inspector passes the loaded
+// list's own year (plp.sample.json designated_short), so this only applies when
+// no list is loaded; the panel also lets the operator edit it per notice.
+export const PLP_LIST_YEAR = "2025-26";
 
 export type EligibilityBasis = "oz+plp" | "plp-only" | "oz-only" | "none";
 

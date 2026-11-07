@@ -140,6 +140,40 @@ export function availableCapacity(
   return { stations: Math.max(0, capacity - enrollment), basis: "enrollment" };
 }
 
+// Empty permanent seats: the ROOM measure. Permanent student stations minus the
+// current HEADCOUNT enrollment, which is how the districts report empty seats
+// (e.g. BCPS's "empty permanent seats" = permanent capacity minus benchmark-day
+// enrollment). Use it for sizing how many students fit beside the host.
+//
+// It differs from the statutory surplus above on purpose. The Rule 6A-1.0998271
+// surplus subtracts capital-outlay FTE (funded FTE from the prior year) from
+// TOTAL stations, portables included. That is the right number for the legal
+// 400-station test and the 75% rate, so the co-location determination keeps it,
+// but it overstates the room actually free today wherever headcount has fallen
+// below funded FTE or portables are unusable (45 to 140 seats at the Broward
+// middle schools checked in Nov 2026).
+//   seats      = max(0, permanent - enrollment), null when either is missing
+//   overBy     = enrollment above the permanent building (portables in use), else 0
+//   portables  = total minus permanent stations (shown, never counted as room)
+export interface EmptySeats { seats: number | null; permanent: number | null; enrollment: number | null; overBy: number; portables: number; }
+export function emptyPermanentSeats(
+  enrollment: number | null,
+  permanentCapacity: number | null | undefined,
+  capacity: number | null = null,
+): EmptySeats {
+  const permanent = permanentCapacity != null && permanentCapacity > 0 ? permanentCapacity : null;
+  const portables = permanent != null && capacity != null && capacity > permanent ? capacity - permanent : 0;
+  if (permanent == null || enrollment == null) return { seats: null, permanent, enrollment, overBy: 0, portables };
+  const raw = Math.round(permanent - enrollment);
+  return { seats: Math.max(0, raw), permanent, enrollment, overBy: Math.max(0, -raw), portables };
+}
+
+// Tier labels use the rule's own words (Rule 6A-1.0998271): "Fully used" is
+// (1)(i), 90%+ of student stations. Everything under 90% is legally an
+// "underused, vacant or surplus facility" ((1)(h)), so the tool does NOT call
+// the bottom tier "underused"; it names the test that actually decides use by a
+// School of Hope, (5)(e): "Meets facility test" (FUR 75% or less, or 400+
+// surplus stations). The middle tier is "Not fully used" (fails (5)(e)).
 // "Fully used" per FL DOE Rule 6A-1.0998271(1)(i): a facility using >=90% of its
 // student stations. Between the 75% co-location line and here, a facility is in
 // active use but not full.
@@ -180,15 +214,15 @@ export function utilizationStyle(
   }
   const basis: "cofte" | "enrollment" = useCofte ? "cofte" : "enrollment";
   const pct = Math.round((num / capacity) * 100);
-  if (isUnderutilizedFacility(enrollment, capacity, cofte, surplus)) return { pct, key: "under", label: "Underused", color: UTIL_COLORS.under, basis };
+  if (isUnderutilizedFacility(enrollment, capacity, cofte, surplus)) return { pct, key: "under", label: "Meets facility test", color: UTIL_COLORS.under, basis };
   if (num / capacity >= UTIL_FULL) return { pct, key: "full", label: "Fully used", color: UTIL_COLORS.full, basis };
-  return { pct, key: "inuse", label: "In use", color: UTIL_COLORS.inuse, basis };
+  return { pct, key: "inuse", label: "Not fully used", color: UTIL_COLORS.inuse, basis };
 }
 
 // For a compact color key in the dock (in legal order).
 export const UTIL_LEGEND: Array<{ key: UtilKey; label: string }> = [
-  { key: "under", label: "Underused" },
-  { key: "inuse", label: "In use" },
+  { key: "under", label: "Meets facility test" },
+  { key: "inuse", label: "Not fully used" },
   { key: "full", label: "Fully used" },
 ];
 
@@ -198,8 +232,8 @@ export const UTIL_LEGEND: Array<{ key: UtilKey; label: string }> = [
 // matches a chosen tier, so selecting any tier excludes capacity-less schools.
 export type FacilityUseKey = "under" | "inuse" | "full";
 export const FACILITY_USE_TIERS: Array<{ key: FacilityUseKey; label: string; hint: string; color: string }> = [
-  { key: "under", label: "Underused", hint: "At or below 75%, or 400+ surplus stations", color: UTIL_COLORS.under },
-  { key: "inuse", label: "In use", hint: "Between 75% and 90%", color: UTIL_COLORS.inuse },
+  { key: "under", label: "Meets facility test", hint: "75% or below, or 400+ surplus stations (Rule 6A-1.0998271(5)(e))", color: UTIL_COLORS.under },
+  { key: "inuse", label: "Not fully used", hint: "Above 75% but under 90%: fails the facility test", color: UTIL_COLORS.inuse },
   { key: "full", label: "Fully used", hint: "90% or above", color: UTIL_COLORS.full },
 ];
 

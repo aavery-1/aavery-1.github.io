@@ -5,6 +5,7 @@
 // breaks would be misleading. Instead we mark subtle vertical dividers at the
 // formula-change years with a hover note.
 
+import { useState } from "react";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import type { GradeHistoryEntry } from "../data/types";
 
@@ -22,10 +23,15 @@ function startYear(academicYear: string): number {
 export function GradeTimeline({
   history,
   formulaChangeYears,
+  recentCount,
 }: {
   history: GradeHistoryEntry[];
   formulaChangeYears: string[];
+  // Show only the newest N years until the reader asks for more (chunking:
+  // recent grades drive a siting decision; 25 years at once is noise).
+  recentCount?: number;
 }) {
+  const [showAll, setShowAll] = useState(false);
   if (!history || history.length === 0) {
     return <div className="empty-state">No grade history on record.</div>;
   }
@@ -56,7 +62,7 @@ export function GradeTimeline({
   return (
     <div className="grade-timeline" role="img" aria-label="Letter grades by school year, most recent first, with dividers at formula-change years">
       <div className="timeline-track">
-        {slots.map((slot) => {
+        {(recentCount && !showAll ? slots.slice(0, recentCount) : slots).map((slot) => {
           const isChange = formulaChangeYears.includes(slot.year);
           return (
             <div className="timeline-slot" key={slot.year}>
@@ -91,6 +97,11 @@ export function GradeTimeline({
           );
         })}
       </div>
+      {recentCount != null && slots.length > recentCount && (
+        <button type="button" className="timeline-more" onClick={() => setShowAll((v) => !v)} aria-expanded={showAll}>
+          {showAll ? "Show recent years only" : `Show all ${slots.length} years`}
+        </button>
+      )}
     </div>
   );
 }

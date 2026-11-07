@@ -44,7 +44,7 @@ import { useActiveFilters } from "../status/useActiveFilters";
 import { AccountMenu } from "./AccountMenu";
 import { DISTRICT_KINDS, type DistrictKind } from "../data/derive/districts";
 import {
-  SCHOOL_LEVELS, SCHOOL_TYPES, TITLE_I_STATES, schoolTypeLabel, titleILabel,
+  SCHOOL_LEVELS, SCHOOL_TYPES, TITLE_I_STATES, schoolTypeLabel, titleILabel, levelFacetLabel,
   type CountyName, type SchoolLevel, type SchoolType, type TitleIState, type SchoolFeature,
 } from "../data/types";
 
@@ -730,7 +730,7 @@ function SchoolFacets() {
       {/* School level */}
       <FacetSection title="School level" icon={<EducationIcon size={15} />} activeCount={levelSelection.size} onClear={levelSelection.size ? clearLevels : undefined}>
         {presentLevels.map((l) => (
-          <CheckboxRow key={l} label={l} checked={levelSelection.has(l)} count={counts.level[l] ?? 0} onToggle={() => toggleLevel(l)} />
+          <CheckboxRow key={l} label={levelFacetLabel(l)} checked={levelSelection.has(l)} count={counts.level[l] ?? 0} onToggle={() => toggleLevel(l)} />
         ))}
       </FacetSection>
 

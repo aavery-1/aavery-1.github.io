@@ -20,8 +20,10 @@
 // exact click-to-toggle behavior.
 
 import { useEffect, useMemo } from "react";
-import { Button, IconButton, SelectableTag, Tooltip } from "@carbon/react";
-import { Ruler as StraightenIcon, CenterCircle as RadioButtonUncheckedIcon, Undo as UndoIcon } from "@carbon/icons-react";
+import { Button, IconButton, InlineLoading, SelectableTag, Tooltip } from "@carbon/react";
+import { Ruler as StraightenIcon, CenterCircle as RadioButtonUncheckedIcon, Undo as UndoIcon, Car as CarIcon, Close as CloseIcon } from "@carbon/icons-react";
+import { useDriveTimes, DRIVE_LAYER_ID, driveMethodNote } from "../geo/driveTime";
+import { DepartureControl } from "./DepartureControl";
 import { useStore, type ActiveTool } from "../store";
 import { useData } from "../data/DataContext";
 import { pathDistanceMiles, distanceMiles, milesToMeters, type LngLat } from "../geo/measure";
@@ -200,10 +202,63 @@ function RadiusControls() {
   );
 }
 
+// Drive-time mode bar: ONE 48px Carbon line at the top of the map while drive
+// times are on. It answers only what someone reading the map needs: which school
+// the areas come from, what each shade means, and the traffic assumption, plus
+// a way out. How the areas were computed (Mapbox, the Google check, the factor)
+// lives in the school card's Drive-time section, not here. While the mode is on,
+// selecting ANY school computes its areas.
+function DriveTimeBar() {
+  const msid = useStore((s) => s.selectedSchoolMsid);
+  const toggleLayer = useStore((s) => s.toggleLayer);
+  const { schools } = useData();
+  const school = msid ? schools?.features.find((f) => f.properties.msid === msid) ?? null : null;
+  const entry = useDriveTimes((s) => (msid ? s.byMsid[msid] : undefined));
+  const request = useDriveTimes((s) => s.request);
+  useEffect(() => {
+    if (school) request(school.properties.msid, school.geometry.coordinates[0], school.geometry.coordinates[1]);
+  }, [school, request]);
+
+  const ready = entry?.status === "ready" ? entry.result : null;
+
+  return (
+    <div className="drive-bar" role="status" aria-live="polite">
+      <CarIcon size={16} className="drive-bar__icon" aria-hidden="true" />
+      {!school ? (
+        <span className="drive-bar__text">Select a school to see its drive times</span>
+      ) : (
+        <>
+          <span className="drive-bar__school" title={school.properties.name}>{school.properties.name}</span>
+          {ready && (
+            <>
+              <span className="drive-bar__keys" aria-label="5, 10, and 15 minutes">
+                <span className="drive-bar__key drive-bar__key--5" />5
+                <span className="drive-bar__key drive-bar__key--10" />10
+                <span className="drive-bar__key drive-bar__key--15" />15 min
+              </span>
+            </>
+          )}
+          {(!entry || entry.status === "loading") && <InlineLoading className="drive-bar__loading" description="Computing" />}
+          {entry?.status === "error" && <span className="drive-bar__ctx drive-bar__ctx--err" title={entry.message}>Unavailable</span>}
+          {/* The traffic assumption, now a choice: day + time of departure. With
+              no traffic data (no Mapbox token) there is nothing to choose. */}
+          {ready?.engine === "valhalla"
+            ? <span className="drive-bar__ctx" title={driveMethodNote(ready)}>No traffic</span>
+            : <span className="drive-bar__depart" title={ready ? driveMethodNote(ready) : undefined}><DepartureControl id="bar-depart" compact /></span>}
+        </>
+      )}
+      <IconButton label="Turn off drive times" kind="ghost" size="md" align="bottom-right" className="drive-bar__close" onClick={() => toggleLayer(DRIVE_LAYER_ID)}>
+        <CloseIcon size={16} />
+      </IconButton>
+    </div>
+  );
+}
+
 export function Toolbar() {
   const activeTool = useStore((s) => s.activeTool);
   const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
   const viewMode = useStore((s) => s.viewMode);
+  const driveOn = useStore((s) => s.activeLayerIds.has(DRIVE_LAYER_ID));
 
   // The inspector floats over the map's right edge; when it is open the active
   // bar insets its right boundary so its actions never slide behind the panel.
@@ -214,7 +269,14 @@ export function Toolbar() {
   // sits over the map surface the tool needs you to click. The tool BUTTONS now
   // live in the top-right control cluster (see MapToolButtons), grouped with the
   // legend and base-map controls instead of a separate floating stack.
-  if (activeTool === "none") return null;
+  if (activeTool === "none") {
+    if (!driveOn || viewMode !== "map") return null;
+    return (
+      <div className={`toolbar-active${inspectorOnMap ? " toolbar-active--inspector" : ""}`}>
+        <DriveTimeBar />
+      </div>
+    );
+  }
   return (
     <div className={`toolbar-active${inspectorOnMap ? " toolbar-active--inspector" : ""}`}>
       {activeTool === "measure" && <MeasureControls />}
@@ -231,9 +293,19 @@ export function Toolbar() {
 export function MapToolButtons() {
   const activeTool = useStore((s) => s.activeTool);
   const setTool = useStore((s) => s.setTool);
+  const driveOn = useStore((s) => s.activeLayerIds.has(DRIVE_LAYER_ID));
+  const toggleLayer = useStore((s) => s.toggleLayer);
   const toggle = (tool: ActiveTool) => setTool(activeTool === tool ? "none" : tool);
   return (
     <>
+      <Tooltip label={driveOn ? "Hide drive times" : "Drive times"} align="left">
+        <button type="button" className={`map-ctrl-btn${driveOn ? " map-ctrl-btn--active" : ""}`}
+          aria-label="Drive times: 5, 10, and 15 minute areas around a school in morning traffic" aria-pressed={driveOn}
+          onClick={() => { if (activeTool !== "none") setTool("none"); toggleLayer(DRIVE_LAYER_ID); }}>
+          <CarIcon size={18} />
+        </button>
+      </Tooltip>
+      <span className="map-ctrl-sep" aria-hidden />
       <Tooltip label="Measure distance" align="left">
         <button type="button" className={`map-ctrl-btn${activeTool === "measure" ? " map-ctrl-btn--active" : ""}`}
           aria-label="Measure distance: trace a path (geodesic)" aria-pressed={activeTool === "measure"} onClick={() => toggle("measure")}>

@@ -31,6 +31,8 @@ export interface NoticeFacility {
   fishVintage: string | null;
   anchors: Array<{ name: string; miles: number }>;
   inOZ: boolean;
+  plpListYear?: string | null; // vintage of the loaded official PLP list, e.g. "2025-26"
+  emptySeats?: number | null;   // empty permanent seats (permanent stations - headcount)
 }
 
 function today(): string {
@@ -61,8 +63,11 @@ const BASIS_COPY: Record<string, { kind: "info" | "warning"; title: string; text
 };
 
 export function NoticeDialog({ facility, onClose }: { facility: NoticeFacility; onClose: () => void }) {
-  const defaultProjected =
-    facility.availableStations != null ? String(Math.max(0, Math.floor(facility.availableStations))) : "";
+  // Seed projected enrollment from the ROOM figure (empty permanent seats), not
+  // the statutory surplus, which overstates what fits today. The letter's
+  // capacity line still cites the statutory surplus. Operator can edit either.
+  const seed = facility.emptySeats ?? facility.availableStations;
+  const defaultProjected = seed != null ? String(Math.max(0, Math.floor(seed))) : "";
 
   // Build once from the source facts, seeding the human inputs with defaults.
   // district / basis / warnings depend only on the source, so they stay stable;
@@ -78,6 +83,7 @@ export function NoticeDialog({ facility, onClose }: { facility: NoticeFacility; 
         fishVintage: facility.fishVintage,
         anchors: facility.anchors,
         inOZ: facility.inOZ,
+        plpListYear: facility.plpListYear ?? undefined,
         date: today(),
         startYear: DEFAULT_START_YEAR,
         projectedEnrollment: defaultProjected,

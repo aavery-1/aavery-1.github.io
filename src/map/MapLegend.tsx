@@ -195,9 +195,9 @@ export function MapLegend() {
                 {has("drive_time_reach") && (
                   <li className="map-legend-row">
                     <span className="map-legend-swatch">
-                      <span className="map-legend-area" style={{ display: "block", background: "rgba(0,137,123,0.12)", border: "1.5px solid #00897B" }} />
+                      <span className="map-legend-area" style={{ display: "block", background: "linear-gradient(90deg, rgba(32,39,93,0.35), rgba(74,111,181,0.25), rgba(82,195,237,0.2))", border: "1.5px solid #20275d" }} />
                     </span>
-                    <span>15-min drive reach</span>
+                    <span>Drive time 5 / 10 / 15 min (morning traffic)</span>
                   </li>
                 )}
               </ul>

@@ -51,6 +51,7 @@ Plain-language steps. Two parts: **A) set up the password in Supabase**, then
    - `VITE_SUPABASE_ANON_KEY` = the anon public key from Part A step 4
    - `VITE_GOOGLE_MAPS_API_KEY` = your Google Maps key (the map needs this; the
      rest of the site works without it)
+   - `VITE_MAPBOX_TOKEN` = your Mapbox public token (pk.*), for traffic-aware drive times. Restrict it to the site URL in your Mapbox account. Without it, drive times fall back to empty-road routing.
 5. Turn on Pages: repo **Settings > Pages**. Under **Build and deployment >
    Source**, choose **GitHub Actions**.
 6. The included workflow (`.github/workflows/deploy.yml`) builds and publishes

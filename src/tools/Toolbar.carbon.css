@@ -20,9 +20,11 @@
   justify-content: center;
   pointer-events: none;
 }
+/* Clear the floating school card: its 340px width + its 64px inset from the
+   right edge (the control column) + a 16px gap. */
 @media (min-width: 600px) {
   .toolbar-active--inspector {
-    right: 372px;
+    right: 420px;
   }
 }
 /* Phone: the top-left Filters/Search cluster (MapQuickActions) lives at the same
@@ -208,3 +210,41 @@
   outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
+
+/* Drive-time bar: one Carbon line. Square, white layer, 1px subtle border; the
+   shadow is allowed because it floats over the map (Carbon overlay rule). 48px
+   tall to match Carbon md controls; body-compact-01 type, label-01 for detail. */
+.drive-bar {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 12px;
+  max-width: 100%; min-height: 48px; padding: 0 0 0 16px;
+  background: var(--cds-layer-01, #ffffff);
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.drive-bar__icon { flex: none; color: var(--cds-icon-primary, #161616); }
+.drive-bar__text, .drive-bar__school {
+  font-size: 14px; line-height: 18px; letter-spacing: 0.16px; color: var(--cds-text-primary, #161616);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.drive-bar__school { font-weight: 600; flex: 0 1 auto; }
+.drive-bar__keys {
+  flex: none; display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-primary, #161616);
+  font-variant-numeric: tabular-nums;
+}
+.drive-bar__key { display: inline-block; width: 12px; height: 12px; margin-left: 6px; }
+.drive-bar__key--5 { background: #20275d; margin-left: 0; }
+.drive-bar__key--10 { background: #4a6fb5; }
+.drive-bar__key--15 { background: #52c3ed; }
+.drive-bar__ctx {
+  flex: none; font-size: 12px; line-height: 16px; letter-spacing: 0.32px;
+  color: var(--cds-text-secondary, #525252); white-space: nowrap; cursor: help;
+}
+.drive-bar__ctx--err { color: var(--cds-text-error, #da1e28); }
+.drive-bar__loading { width: auto; min-height: 0; flex: none; }
+.drive-bar__close { flex: none; margin-left: auto; }
+.drive-bar__depart { flex: none; display: inline-flex; align-items: center; }
+/* Narrow map: the color key goes first (the map legend still has it); the
+   school name truncates; the departure picker and close always stay. */
+@media (max-width: 900px) { .drive-bar__keys { display: none; } }

@@ -69,7 +69,7 @@ const DataContext = createContext<DataContextValue | null>(null);
 // test can assert the inspector's point-query sources stay eager.
 export const EAGER_IDS = [
   "school_locations", "historic_grades", "plp_designations", "household_income",
-  "board_districts", "drive_time_reach",
+  "board_districts",
   "population_growth", "opportunity_zones", "legislative_districts",
   "representatives", "school_enrollment_history", "existing_soh",
   "orange_board_districts", "school_demographics",

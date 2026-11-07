@@ -18,37 +18,39 @@
 // No em dashes in this file.
 
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
-import { Button, IconButton, Tag, SkeletonText } from "@carbon/react";
-import { Close as CloseIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Launch as LaunchIcon, Link as LinkIcon, Checkmark as CheckmarkIcon, Document as DocumentIcon, View as ViewIcon, ViewOff as ViewOffIcon } from "@carbon/icons-react";
+import { Accordion, AccordionItem, IconButton, OverflowMenu, OverflowMenuItem, Tag, SkeletonText } from "@carbon/react";
+import { Close as CloseIcon, Compare as CompareIcon, Location as PlaceIcon, CheckmarkFilled as CheckCircleIcon, Misuse as CancelIcon, Filter as FilterIcon, Help as HelpIcon, CircleDash as CircleDashIcon, ArrowUp as ArrowUpIcon, ArrowDown as ArrowDownIcon, Launch as LaunchIcon, Document as DocumentIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
-import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, SOH_SURPLUS_STATIONS } from "../store";
+import { useStore, MAX_COMPARE, utilizationStyle, availableCapacity, emptyPermanentSeats, SOH_SURPLUS_STATIONS } from "../store";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { GradeTimeline } from "./GradeTimeline";
 import {
   incomeAtPoint, boardDistrictAtPoint, opportunityZoneAtPoint,
   legislativeDistrictsAtPoint,
 } from "../data/derive/contextReads";
-import { ExportButton } from "../tools/ExportButton";
 import { evaluateSitingArea, isCoLocationTarget, isDistrictOperated } from "../data/derive/filters";
 import { isKippSchool } from "../data/derive/hopeOperators";
 import { useSchoolNews, type SchoolNews } from "../news/useSchoolNews";
 import { evaluatePlp, plpMsids } from "../data/derive/plp";
+import { plpShortYear } from "../data/adapters/plp";
 import { districtFromCounty } from "../notice/noticeData";
 import { distanceMiles, type LngLat } from "../geo/measure";
-import { titleILabel } from "../data/types";
+import { titleILabel, levelLabel } from "../data/types";
 // Lazy so the notice generator (fflate + the two .docx templates) is its own
 // chunk, loaded only when an operator opens the dialog, never in the main bundle.
 const NoticeDialog = lazy(() => import("../notice/NoticeDialog").then((m) => ({ default: m.NoticeDialog })));
 import type { LegislativeProps, Representative, DemographicsRing, SchoolDemographicsEntry, SchoolDemographicsFile, SchoolProps } from "../data/types";
+import { DriveTimeMarket, DriveTimeToggle, DriveTimeStatus } from "./DriveTimeMarket";
+import { toCsv, downloadCsv, stamp } from "../data/csv";
+import { useInspectorSections, type InspectorSection } from "./inspectorSections";
+import { useDriveTimes } from "../geo/driveTime";
 import "./SchoolInspector.carbon.css";
 
 // Local color constants (Carbon roles / brand), so the inspector needs no MUI.
 const NAVY = "#001e62";     // KIPP navy, interactive / chart line
-const GREEN = "#24a148";    // Carbon green 50, eligible / growth
-const RED = "#da1e28";      // Carbon red 60, decline
 const DIM = "#525252";      // text-secondary, chart labels
 const HAIRLINE = "#e0e0e0"; // border-subtle, gridlines
-const CAPACITY = "#ef6c00"; // capacity reference line (amber)
+const THRESHOLD = "#525252"; // Carbon gray 70: reference/threshold lines (capacity)
 const tint = (c: string, pct: number) => `color-mix(in srgb, ${c} ${pct}%, transparent)`;
 
 function GradeBadge({ grade }: { grade: string }) {
@@ -81,234 +83,139 @@ function niceNum(x: number, round: boolean): number {
   return nf * Math.pow(10, exp);
 }
 
-// Enrollment trend: real annual membership plotted against building capacity.
-// Y-axis runs from 0 to the facility capacity (or the peak enrollment if that is
-// higher), so the reader sees enrollment relative to how much room the building
-// has. A dashed capacity line makes the ceiling explicit.
+// Enrollment trend: annual membership against the building's capacity.
+// Carbon data-viz conventions: one series (line + light area, named in the
+// legend), the capacity shown as a THRESHOLD (neutral dashed line, labeled on the
+// chart), a zero baseline, recessive gridlines, 12px axis text in text-secondary,
+// axis titles with units, and a hover tooltip per year. The plot measures its
+// container and fits it exactly (the card never scrolls sideways); year labels
+// thin out to fit, while every year keeps a point and a hover target.
 function EnrollmentTrend({ history, capacity }: { history: Array<{ year: string; enrollment: number }>; capacity: number | null }) {
   const [hover, setHover] = useState<number | null>(null);
-  // The plot pane scrolls under the pinned axes, but with no scrollbar: two arrow
-  // buttons page it instead. `nav` tracks whether each direction has more to show.
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [nav, setNav] = useState({ canLeft: false, canRight: false });
-  const updateNav = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    const canLeft = el.scrollLeft > 1;
-    const canRight = el.scrollLeft < max - 1;
-    setNav((prev) => (prev.canLeft === canLeft && prev.canRight === canRight ? prev : { canLeft, canRight }));
-  }, []);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(300);
   useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollLeft = 0;
-    updateNav();
-    window.addEventListener("resize", updateNav);
-    return () => window.removeEventListener("resize", updateNav);
-  }, [history, updateNav]);
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setWidth(Math.max(200, Math.floor(e.contentRect.width))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   if (history.length < 2) {
     return <p className="insp-trend__empty">Not enough enrollment history to chart.</p>;
   }
 
-  // Geometry for a PINNED-axis chart: the Y axis (values + "Students") and the X
-  // title stay fixed while only the plot (line, area, points) and the year labels
-  // scroll horizontally. Two SVGs of equal height share one vertical scale so
-  // their rows line up: a fixed AXISW-wide y-axis, and a data-width plot that
-  // scrolls inside .insp-chart__scroll.
-  const AXISW = 52;          // fixed y-axis column width
-  const xInset = 4;          // tiny inset so the end points aren't clipped (no visible gap at the axis)
-  const perYear = 42;        // comfortable horizontal spacing per school year
-  const padT = 12, plotH = 116, xLabelH = 24;
-  const Hsvg = padT + plotH + xLabelH;
-  const plotSpan = Math.max(200, (history.length - 1) * perYear);
-  const dataW = plotSpan + xInset * 2;
+  const AXISW = 44;                       // y tick labels
+  const padT = 8, plotH = 120, xLabelH = 22, padR = 8;
+  const H = padT + plotH + xLabelH;
+  const plotW = width - AXISW - padR;
   const vals = history.map((d) => d.enrollment);
   const maxEnroll = Math.max(...vals);
-  // Y domain: a fixed 0 baseline (never truncated, since this is a count and a
-  // cut baseline would distort the visual) up to a "nice" rounded ceiling at or above
-  // both the capacity line and the peak enrollment. Gridlines then land on
-  // readable intervals (0 / 500 / 1,000) instead of arbitrary values.
+  // Zero baseline (a count; never truncated) up to a "nice" ceiling above both
+  // the capacity and the peak, so gridlines land on readable values.
   const rawMax = Math.max(capacity ?? 0, maxEnroll, 1);
   const step = niceNum(rawMax / 2, true) || 1;
   const yMax = Math.max(step, Math.ceil(rawMax / step) * step);
-  const x = (i: number) => xInset + (history.length === 1 ? plotSpan / 2 : (i / (history.length - 1)) * plotSpan);
+  const x = (i: number) => AXISW + (i / (history.length - 1)) * plotW;
   const y = (v: number) => padT + (1 - v / yMax) * plotH;
-
   const pts = history.map((d, i) => `${x(i).toFixed(1)},${y(d.enrollment).toFixed(1)}`);
   const area = `${x(0).toFixed(1)},${padT + plotH} ${pts.join(" ")} ${x(history.length - 1).toFixed(1)},${padT + plotH}`;
   const first = history[0], last = history[history.length - 1];
-  // School-year labels follow the house convention: the SHORT axis form is the
-  // END year with an "SY" prefix ("2020-2021" -> "SY21"); the FULL form keeps both
-  // years ("2020-2021" -> "SY2020-2021"). Odd formats fall back raw.
-  const yrTick = (s: string) => {
-    const m = s.match(/^(\d{4})-(\d{4})$/);
-    return m ? `SY${m[2].slice(2)}` : s;
-  };
+  const yrTick = (s: string) => { const m = s.match(/^(\d{4})-(\d{4})$/); return m ? `SY${m[2].slice(2)}` : s; };
   const syFull = (s: string) => (/^\d{4}-\d{4}$/.test(s) ? `SY${s}` : s);
-  // Thin the x-axis year labels only when they would crowd (a long history).
-  // Every year keeps its point and hover target; we drop some text labels,
-  // always keeping the first and last, so the axis stays legible either way.
-  const labelStride = history.length > 12 ? 2 : 1;
-  const showYearLabel = (i: number) => i === 0 || i === history.length - 1 || i % labelStride === 0;
-  const active = hover;
+  // ~40px per 12px "SY21" label; always keep the first and last.
+  const stride = Math.max(1, Math.ceil(history.length / Math.max(2, Math.floor(plotW / 40))));
+  const showYear = (i: number) => i === 0 || i === history.length - 1 || (i % stride === 0 && history.length - 1 - i >= stride / 2);
   const yTicks: number[] = [];
   for (let v = 0; v <= yMax + step / 2; v += step) yTicks.push(v);
-  const scrollByYears = (dir: number) => {
-    scrollRef.current?.scrollBy({ left: dir * perYear * 4, behavior: "smooth" });
-  };
-  const showNav = nav.canLeft || nav.canRight;
+  const capY = capacity != null && capacity <= yMax ? y(capacity) : null;
+
+  const delta = last.enrollment - first.enrollment;
+  const pctChange = first.enrollment ? Math.round((delta / first.enrollment) * 100) : 0;
+  const TrendIcon = delta > 0 ? ArrowUpIcon : delta < 0 ? ArrowDownIcon : null;
 
   return (
     <div className="insp-trend">
-      <div className="insp-trend__head">
-        <p className="insp-trend__title">Enrollment over time</p>
-        {showNav && (
-          <div className="insp-trend__nav">
-            <IconButton label="Earlier years" kind="ghost" size="sm" disabled={!nav.canLeft} onClick={() => scrollByYears(-1)}>
-              <ChevronLeftIcon size={16} />
-            </IconButton>
-            <IconButton label="Later years" kind="ghost" size="sm" disabled={!nav.canRight} onClick={() => scrollByYears(1)}>
-              <ChevronRightIcon size={16} />
-            </IconButton>
-          </div>
-        )}
+      <p className="insp-subhead insp-subhead--chart">Enrollment over time</p>
+      <div className="insp-trend__legend" aria-hidden="true">
+        <span className="insp-legend"><span className="insp-legend__swatch insp-legend__swatch--line" />Enrollment</span>
+        {capacity != null && <span className="insp-legend"><span className="insp-legend__swatch insp-legend__swatch--threshold" />Capacity</span>}
       </div>
-      <div className="insp-trend__legend">
-        <Legend swatch={NAVY} label="Enrollment" />
-        {capacity != null && <Legend swatch={CAPACITY} dashed label={`Capacity (${capacity.toLocaleString("en-US")})`} />}
-      </div>
-      <div className="insp-trend__chart">
-        {/* FIXED y axis: value labels + the bold navy "Students" title. Same
-            height and vertical scale as the plot, so their rows line up. */}
-        <svg className="insp-chart__yaxis" viewBox={`0 0 ${AXISW} ${Hsvg}`} width={AXISW} height={Hsvg} aria-hidden="true">
+      <div className="insp-trend__chart" ref={boxRef}>
+        <svg
+          viewBox={`0 0 ${width} ${H}`}
+          width={width}
+          height={H}
+          role="img"
+          aria-label={`Enrollment from ${first.enrollment.toLocaleString("en-US")} students in ${syFull(first.year)} to ${last.enrollment.toLocaleString("en-US")} in ${syFull(last.year)}${capacity != null ? `, against a capacity of ${capacity.toLocaleString("en-US")} student stations` : ""}.`}
+          onMouseLeave={() => setHover(null)}
+        >
+          {/* gridlines + y ticks */}
           {yTicks.map((v) => (
-            <text key={v} x={AXISW - 8} y={y(v) + 3} textAnchor="end" fontSize={9} fill={DIM} style={{ fontVariantNumeric: "tabular-nums" }}>
-              {v.toLocaleString("en-US")}
-            </text>
+            <g key={v}>
+              <line x1={AXISW} x2={AXISW + plotW} y1={y(v)} y2={y(v)} stroke={HAIRLINE} strokeWidth={1} />
+              <text x={AXISW - 8} y={y(v) + 4} textAnchor="end" className="insp-chart__tick">{v.toLocaleString("en-US")}</text>
+            </g>
           ))}
-          <line x1={AXISW - 0.5} x2={AXISW - 0.5} y1={padT} y2={padT + plotH} stroke={HAIRLINE} strokeWidth={0.75} />
-          <text transform={`translate(13 ${padT + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fontWeight={700} letterSpacing={1} fill={NAVY}>Students</text>
-        </svg>
-        {/* SCROLLING plot: gridlines, capacity line, area + line, points, and the
-            year labels. Only this pane scrolls horizontally. */}
-        <div className="insp-chart__scroll" ref={scrollRef} onScroll={updateNav}>
-          <svg
-            className="insp-chart__plot"
-            viewBox={`0 0 ${dataW} ${Hsvg}`}
-            width={dataW}
-            height={Hsvg}
-            role="img"
-            aria-label={`Enrollment from ${first.enrollment} students in ${syFull(first.year)} to ${last.enrollment} in ${syFull(last.year)}, against a capacity of ${capacity ?? "unknown"}.`}
-            onMouseLeave={() => setHover(null)}
-          >
-            {/* horizontal gridlines (span the full plot; identical at any scroll) */}
-            {yTicks.map((v) => (
-              <line key={v} x1={0} x2={dataW} y1={y(v)} y2={y(v)} stroke={HAIRLINE} strokeWidth={0.75} />
-            ))}
-            {/* capacity reference line */}
-            {capacity != null && capacity <= yMax && (
-              <line x1={0} x2={dataW} y1={y(capacity)} y2={y(capacity)} stroke={CAPACITY} strokeWidth={1.5} strokeDasharray="5 3" />
-            )}
-            {/* area + line */}
-            <polygon points={area} fill={tint(NAVY, 12)} />
-            <polyline points={pts.join(" ")} fill="none" stroke={NAVY} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
-            {/* x ticks: compact two-digit year label, thinned only if crowded. The
-                first/last labels anchor inward so they never clip at the edges now
-                that the points sit right against the axis. */}
-            {history.map((d, i) => (
-              showYearLabel(i) ? (
-                <text key={d.year} x={i === 0 ? 2 : i === history.length - 1 ? dataW - 2 : x(i)} y={padT + plotH + 16} textAnchor={i === 0 ? "start" : i === history.length - 1 ? "end" : "middle"} fontSize={9.5} fill={DIM} style={{ fontVariantNumeric: "tabular-nums" }}>
-                  {yrTick(d.year)}
-                </text>
-              ) : null
-            ))}
-            {/* points + hover targets */}
-            {history.map((d, i) => (
-              <g key={d.year}>
-                <circle cx={x(i)} cy={y(d.enrollment)} r={i === active ? 4 : 2.5} fill={i === active ? NAVY : "#FFFFFF"} stroke={NAVY} strokeWidth={1.5} />
-                <rect x={x(i) - plotSpan / (history.length * 2)} y={padT} width={plotSpan / history.length} height={plotH} fill="transparent" onMouseEnter={() => setHover(i)} style={{ cursor: "pointer" }} />
+          {/* capacity threshold, labeled where it sits */}
+          {capY != null && (
+            <g>
+              <line x1={AXISW} x2={AXISW + plotW} y1={capY} y2={capY} stroke={THRESHOLD} strokeWidth={1.5} strokeDasharray="4 4" />
+              <text x={AXISW + plotW} y={capY - 6} textAnchor="end" className="insp-chart__threshold">Capacity</text>
+            </g>
+          )}
+          {/* series */}
+          <polygon points={area} fill={tint(NAVY, 10)} />
+          <polyline points={pts.join(" ")} fill="none" stroke={NAVY} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          {/* x labels */}
+          {history.map((d, i) => showYear(i) ? (
+            <text key={d.year} x={x(i)} y={padT + plotH + 16} textAnchor={i === 0 ? "start" : i === history.length - 1 ? "end" : "middle"} className="insp-chart__tick">
+              {yrTick(d.year)}
+            </text>
+          ) : null)}
+          {/* points + generous hover targets */}
+          {history.map((d, i) => (
+            <g key={d.year}>
+              <circle cx={x(i)} cy={y(d.enrollment)} r={i === hover ? 4 : 3} fill={i === hover ? NAVY : "#ffffff"} stroke={NAVY} strokeWidth={1.5} />
+              {(() => {
+                // Hover target: half a column either side, clamped to the plot so
+                // the end targets never widen the chart past its container.
+                const half = plotW / (history.length - 1) / 2;
+                const left = Math.max(AXISW, x(i) - half), right = Math.min(AXISW + plotW, x(i) + half);
+                return <rect x={left} y={padT} width={right - left} height={plotH + xLabelH} fill="transparent" onMouseEnter={() => setHover(i)} />;
+              })()}
+            </g>
+          ))}
+          {/* tooltip: Carbon inverse surface, square, flips to stay inside */}
+          {hover != null && (() => {
+            const d = history[hover];
+            const cx = x(hover), py = y(d.enrollment);
+            const pct = capacity ? Math.round((d.enrollment / capacity) * 100) : null;
+            const boxW = 148, boxH = pct != null ? 60 : 42;
+            const above = py - 10 - boxH >= 0;
+            const by = above ? py - 10 - boxH : py + 10;
+            const bx = Math.max(AXISW, Math.min(AXISW + plotW - boxW, cx - boxW / 2));
+            return (
+              <g pointerEvents="none">
+                <line x1={cx} x2={cx} y1={padT} y2={padT + plotH} stroke="#8d8d8d" strokeWidth={1} />
+                <rect x={bx} y={by} width={boxW} height={boxH} fill="#393939" />
+                <text x={bx + 12} y={by + 18} className="insp-chart__tip insp-chart__tip--title">{syFull(d.year)}</text>
+                <text x={bx + 12} y={by + 34} className="insp-chart__tip">{d.enrollment.toLocaleString("en-US")} enrolled</text>
+                {pct != null && <text x={bx + 12} y={by + 50} className="insp-chart__tip">{pct}% of capacity</text>}
               </g>
-            ))}
-            {/* Hover tooltip: a Carbon inverse popover (gray-80 surface, white /
-                gray-30 text) with a caret to the point and real padding. It flips
-                above or below so it never clips, and clamps within the plot. The
-                % line stays neutral so it never implies a utilization tier that
-                disagrees with the tier chip above (utilizationStyle owns that). */}
-            {active != null && (() => {
-              const d = history[active];
-              const cx = x(active);
-              const py = y(d.enrollment);
-              const pct = capacity ? Math.round((d.enrollment / capacity) * 100) : null;
-              const boxW = 152, boxH = pct != null ? 62 : 44;
-              const caretH = 6, gap = 3;
-              const placeAbove = py - gap - caretH - boxH >= padT;
-              const by = placeAbove ? py - gap - caretH - boxH : py + gap + caretH;
-              const bx = Math.max(2, Math.min(dataW - boxW - 2, cx - boxW / 2));
-              const caretX = Math.max(bx + 12, Math.min(bx + boxW - 12, cx));
-              const caret = placeAbove
-                ? `${caretX - 6},${by + boxH} ${caretX + 6},${by + boxH} ${caretX},${by + boxH + caretH}`
-                : `${caretX - 6},${by} ${caretX + 6},${by} ${caretX},${by - caretH}`;
-              return (
-                <g>
-                  <line x1={cx} x2={cx} y1={padT} y2={padT + plotH} stroke={tint(NAVY, 45)} strokeWidth={1} />
-                  <polygon points={caret} fill="#393939" />
-                  <rect x={bx} y={by} width={boxW} height={boxH} rx={2} fill="#393939" />
-                  <text x={bx + 12} y={by + 20} fontSize={12.5} fontWeight={600} fill="#ffffff">{syFull(d.year)}</text>
-                  <text x={bx + 12} y={by + 37} fontSize={11} fill="#c6c6c6" style={{ fontVariantNumeric: "tabular-nums" }}>
-                    {d.enrollment.toLocaleString("en-US")} enrolled
-                  </text>
-                  {pct != null && (
-                    <text x={bx + 12} y={by + 53} fontSize={11} fontWeight={600} fill="#ffffff" style={{ fontVariantNumeric: "tabular-nums" }}>
-                      {pct}% of capacity
-                    </text>
-                  )}
-                </g>
-              );
-            })()}
-          </svg>
-        </div>
+            );
+          })()}
+        </svg>
       </div>
-      {/* FIXED x-axis title, centered under the scrolling plot (right of the y axis). */}
-      <div className="insp-chart__xtitle" style={{ marginLeft: AXISW }}>School year</div>
-      {(() => {
-        // Two KPI tiles side by side in a recessed inlay (Carbon layer-02): the
-        // current count, and the net change against the first year on record.
-        // The percentage is the headline of the change tile (the arrow + color
-        // carry direction), with the absolute count and baseline year beneath.
-        const delta = last.enrollment - first.enrollment;
-        const pctChange = first.enrollment ? Math.round((delta / first.enrollment) * 100) : 0;
-        const trendColor = delta > 0 ? GREEN : delta < 0 ? RED : DIM;
-        const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "→";
-        const word = delta > 0 ? "more" : delta < 0 ? "fewer" : "change";
-        return (
-          <div className="insp-stats">
-            <div className="insp-stat">
-              <div className="insp-stat__label">Latest enrollment</div>
-              <div className="insp-stat__value">{last.enrollment.toLocaleString("en-US")}</div>
-              <div className="insp-stat__sub">{syFull(last.year)}</div>
-            </div>
-            <div className="insp-stat">
-              <div className="insp-stat__label">Net change</div>
-              <div className="insp-stat__value" style={{ color: trendColor }}>
-                <span className="insp-stat__arrow">{arrow}</span>{Math.abs(pctChange)}%
-              </div>
-              <div className="insp-stat__sub">
-                {delta === 0 ? `No change since ${syFull(first.year)}` : `${Math.abs(delta).toLocaleString("en-US")} ${word} since ${syFull(first.year)}`}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      <p className="insp-chart__xtitle">School year</p>
+      <p className="insp-trend__change">
+        {TrendIcon && <TrendIcon size={16} className={delta > 0 ? "insp-trend__up" : "insp-trend__down"} aria-hidden="true" />}
+        <span>
+          <strong>{delta === 0 ? "No change" : `${delta > 0 ? "Up" : "Down"} ${Math.abs(pctChange)}%`}</strong>
+          {" "}since {syFull(first.year)}{delta !== 0 ? ` (${Math.abs(delta).toLocaleString("en-US")} ${delta > 0 ? "more" : "fewer"} students)` : ""}
+        </span>
+      </p>
     </div>
-  );
-}
-
-function Legend({ swatch, label, dashed }: { swatch: string; label: string; dashed?: boolean }) {
-  return (
-    <span className="insp-legend">
-      <span className="insp-legend__swatch" style={{ borderTop: `2px ${dashed ? "dashed" : "solid"} ${swatch}` }} />
-      <span className="insp-legend__label">{label}</span>
-    </span>
   );
 }
 
@@ -344,17 +251,24 @@ function DistrictKv({ label, text, onFilter }: { label: string; text: string; on
 // audience knows the Schools of Hope statute, so a Yes/No (or a neutral "Unknown"
 // for a tri-state fact like Title I) is the whole answer; the reasoning lives in
 // the data elsewhere in the panel.
-function IndRow({ label, yes, unknown }: { label: string; yes: boolean; unknown?: boolean }) {
+// One line of the eligibility checklist: status icon first (the eye scans the
+// left edge), then the test, then a short muted detail. "unchecked" marks a test
+// the tool can't evaluate from its data, so it reads as open, not failed.
+type CheckState = "yes" | "no" | "unknown" | "unchecked";
+function CheckItem({ state, label, detail }: { state: CheckState; label: string; detail?: string }) {
+  const icon = state === "yes" ? <CheckCircleIcon size={16} className="insp-check__icon insp-check__icon--yes" />
+    : state === "no" ? <CancelIcon size={16} className="insp-check__icon" />
+    : state === "unknown" ? <HelpIcon size={16} className="insp-check__icon" />
+    : <CircleDashIcon size={16} className="insp-check__icon" />;
+  const sr = state === "yes" ? "Yes" : state === "no" ? "No" : state === "unknown" ? "Unknown" : "Not checked";
   return (
-    <div className="insp-indrow">
-      <span className="insp-indrow__label">{label}</span>
-      <span className={`insp-indrow__verdict${!unknown && yes ? " insp-indrow__verdict--yes" : ""}`}>
-        {unknown
-          ? <HelpIcon size={16} style={{ color: DIM }} />
-          : yes ? <CheckCircleIcon size={16} style={{ color: GREEN }} /> : <CancelIcon size={16} style={{ color: DIM }} />}
-        {unknown ? "Unknown" : yes ? "Yes" : "No"}
+    <li className={`insp-check insp-check--${state}`}>
+      {icon}
+      <span className="insp-check__body">
+        <span className="insp-check__label"><span className="cds--visually-hidden">{sr}: </span>{label}</span>
+        {detail && <span className="insp-check__detail">{detail}</span>}
       </span>
-    </div>
+    </li>
   );
 }
 
@@ -378,11 +292,7 @@ function StudentDemographics({ p }: { p: SchoolProps }) {
   ];
   return (
     <>
-      <hr className="insp-divider" />
-      <p className="insp-label">Student demographics</p>
-      <p className="insp-subhead">
-        {network ? "KIPP Miami network" : "Enrolled students"} &middot; FL DOE {p.race_year}
-      </p>
+
       <div className="insp-race">
         {rows.map(([label, v]) => (
           <div key={label} className="insp-race__row">
@@ -393,10 +303,8 @@ function StudentDemographics({ p }: { p: SchoolProps }) {
         ))}
       </div>
       {p.race_total != null && (
-        <p className="insp-race__note">
-          {network
-            ? `Network total ${p.race_total.toLocaleString("en-US")} students across KIPP Miami's campuses, which report to FL DOE as one school (13-2332). Shown for each campus.`
-            : `${p.race_total.toLocaleString("en-US")} students. Groups under 10 are suppressed at source, so small schools are approximate.`}
+        <p className="insp-race__note" title={network ? "KIPP Miami's campuses report to FL DOE as one school (13-2332)." : "Groups under 10 students are suppressed at the source."}>
+          {network ? `KIPP Miami network, ${p.race_total.toLocaleString("en-US")} students` : `${p.race_total.toLocaleString("en-US")} students`} · FL DOE {p.race_year}
         </p>
       )}
     </>
@@ -432,7 +340,6 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
 
   return (
     <div className="insp-demo">
-      <p className="insp-label" style={{ marginBottom: 4 }}>Neighborhood demographics</p>
       <div className="insp-demo__scroll">
         <table className="insp-demo__table">
           <thead>
@@ -478,9 +385,7 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
           Some rings reach beyond the mapped county data; those totals are partial and understated.
         </p>
       )}
-      <p className="insp-demo__foot">
-        Estimate, not a count. Source: {meta.source}.
-      </p>
+      <p className="insp-demo__foot" title={`Source: ${meta.source}`}>Census ACS 2019-23 estimates; ± is the margin of error.</p>
     </div>
   );
 }
@@ -491,6 +396,11 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   // During the slide-away close the store selection is already null, so an
   // overrideMsid lets the panel keep rendering the school it is animating out.
   const selectedSchoolMsid = overrideMsid ?? storeSelectedMsid;
+  // Section state + drive-time entry: called up here, before any early return,
+  // so the hook order is identical on every render.
+  const openSections = useInspectorSections((s) => s.open);
+  const toggleSection = useInspectorSections((s) => s.toggle);
+  const driveEntry = useDriveTimes((s) => (selectedSchoolMsid ? s.byMsid[selectedSchoolMsid] : undefined));
   const selectSchool = useStore((s) => s.selectSchool);
   const comparePinnedMsids = useStore((s) => s.comparePinnedMsids);
   const toggleComparePin = useStore((s) => s.toggleComparePin);
@@ -578,6 +488,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   const plpEval = isOfficialPlp
     ? { isPlp: true, reason: `Designated by the Florida Department of Education as a Persistently Low-Performing school for ${data.plp?.designated_year ?? "the latest year"}.`, belowCInLast5: 0, recent2: [] as string[] }
     : evaluatePlp(history);
+  const plpYear = plpShortYear(data.plp);
   const anchors = officialAnchors ?? plpMsids(data.grades);
   const anchorsWithin: Array<{ msid: string; name: string; miles: number }> = [];
   if (data.schools && anchors.size) {
@@ -614,9 +525,12 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   const util = utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
   const utilPct = util.pct;
   const utilColor = util.color;
-  // Available capacity (surplus student stations), the co-location headline number.
+  // Statutory surplus (stations - COFTE): the figure for the 400-station test.
   // Same numerator basis as the tier above, so the two can never disagree.
   const avail = availableCapacity(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
+  // Empty permanent seats (permanent stations - headcount): the ROOM figure, how
+  // many students fit beside the host. Shown first; see emptyPermanentSeats.
+  const empty = emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity);
   // Free/reduced-price lunch: the real student-poverty rate. Null (suppressed or
   // not in the FL DOE report) reads as "Not reported", never a fake 0.
   const frlPct = p.frl_rate != null ? Math.round(p.frl_rate * 100) : null;
@@ -631,12 +545,13 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   // in a School of Hope siting area (5-mi of a PLP school or an Opportunity Zone).
   const coLocationEligible = isCoLocationTarget(school, inSitingArea);
 
-  // District-operated schools carry a lower-cased operator string in the data
-  // ("Miami-dade"); use the properly-cased county instead so the subtitle reads
-  // cleanly. Non-district schools keep their real operator name (e.g. "KIPP Miami").
-  const operatorName = districtOperated ? `${p.county} County` : (p.operator ?? `${p.county} County`);
-  const operatorLine = [p.type === "Traditional" ? "District school" : p.type, operatorName, p.level]
-    .filter(Boolean).join(", ");
+  // One-line subtitle: who runs it and what grades. District schools read
+  // "District school"; others name their operator (e.g. "Charter · KIPP Miami").
+  // The county is on the map and in the Location section, so it is left out here.
+  const operatorLine = [
+    districtOperated ? "District" : [p.type, p.operator].filter(Boolean).join(" · "),
+    levelLabel(p),
+  ].filter(Boolean).join(" · ");
 
   // Municipality: the postal city parsed from the address ("street, city, FL,
   // zip"), normalizing the "Ft." abbreviation. A display-only locator; the
@@ -653,7 +568,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
 
   // CSV export.
   const exportRows: Array<[string, string]> = [
-    ["MSID", p.msid], ["Name", p.name], ["Level", p.level], ["Type", p.type],
+    ["MSID", p.msid], ["Name", p.name], ["Level", p.level], ["Grades offered", p.grades_offered ?? ""], ["Type", p.type],
     ["Operator", p.operator ?? ""], ["County", p.county],
     ["Board district", boardLabel],
     ["Congressional district", cd ? `${cd.district_number} ${repLabel(cdRep)}` : ""],
@@ -669,7 +584,9 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
     ["In School of Hope siting area", sohEligible ? "yes" : "no"],
     ["Enrollment", p.enrollment != null ? String(p.enrollment) : "unknown"],
     ["Capacity", p.capacity != null ? String(p.capacity) : "unknown"],
-    ["Available capacity (surplus)", avail.stations != null ? String(avail.stations) : "unknown"],
+    ["Permanent stations", p.permanent_capacity != null ? String(p.permanent_capacity) : "unknown"],
+    ["Empty permanent seats", empty.seats != null ? String(empty.seats) : "unknown"],
+    ["Statutory surplus (FISH, stations minus COFTE)", avail.stations != null ? String(avail.stations) : "unknown"],
     ["Median household income", income?.median_household_income != null ? String(income.median_household_income) : ""],
     ["In opportunity zone", inOZ ? "yes" : "no"],
     ["Address", p.address],
@@ -691,293 +608,329 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
     }
   }
 
+  // Accordion section state (remembered per viewer) and the one-line summaries
+  // each collapsed heading carries, so a closed section still answers "anything
+  // here worth opening?" at a glance.
+  const driveK8 = driveEntry?.status === "ready"
+    ? driveEntry.result.contours.find((c) => c.minutes === 15)?.demographics?.k8_pop ?? null
+    : null;
+  const ring2 = demo?.rings.find((r) => r.r === 2) ?? null;
+  const gradeYear = p.current_grade_year ? syShort(p.current_grade_year) : "";
+  const canNotice = coLocationEligible && Boolean(districtFromCounty(p.county));
+  // Collapsed rows show the title only: a second summary line on every row
+  // doubled what the eye had to scan. The detail is one click away.
+  const section = (id: InspectorSection, title: string, _meta: React.ReactNode, body: React.ReactNode) => (
+    <AccordionItem
+      key={id}
+      className={`insp-acc__item insp-acc__item--${id}`}
+      open={openSections.has(id)}
+      onHeadingClick={() => toggleSection(id)}
+      title={
+        <span className="insp-acc__title">
+          <span className="insp-acc__name" id={`insp-sec-${id}`}>{title}</span>
+        </span>
+      }
+    >
+      {body}
+    </AccordionItem>
+  );
+
   return (
     <aside className={`insp ${compact ? "insp--compact" : "insp--full"}`} aria-label={`Inspector for ${p.name}`}>
-      {/* Header */}
+      {/* HEADER: two rows only. Identity (who is this), then a quiet toolbar of
+          the two things people do from here, with everything else under "More".
+          Status (PLP, co-location) lives with the verdict in the body, where it
+          explains the answer, not up here. */}
       <div className="insp-head">
         <div className="insp-head__row">
           <GradeBadge grade={p.current_grade} />
           <div className="insp-head__id">
-            <div className="insp-title">{p.name}</div>
+            <h2 className="insp-title">{p.name}</h2>
             <div className="insp-sub">{operatorLine}</div>
           </div>
-          <IconButton
-            label={copiedLink ? "Link copied" : "Copy link to this school"}
-            kind="ghost"
-            size="sm"
-            className="insp-share"
-            onClick={copyShareLink}
-          >
-            {copiedLink ? <CheckmarkIcon size={16} /> : <LinkIcon size={16} />}
-          </IconButton>
-          <IconButton label="Close inspector" kind="ghost" size="sm" className="insp-close" onClick={() => selectSchool(null)}>
+          <IconButton label="Close" kind="ghost" size="sm" align="bottom-right" className="insp-close" onClick={() => selectSchool(null)}>
             <CloseIcon size={16} />
           </IconButton>
         </div>
-        {(plpEval.isPlp || coLocationEligible) && (
-          <div className="insp-tags">
-            {plpEval.isPlp && <Tag type="red" size="md">PLP</Tag>}
-            {isOfficialPlp && <span className="insp-tag-asof">as of SY24-25</span>}
-            {coLocationEligible && <Tag size="md" className="insp-tag-coloc">Co-location candidate</Tag>}
-          </div>
-        )}
+
+        {/* Feature strip: the three things people do with a school, in fixed
+            positions (icon over label), then "More". Unavailable actions stay in
+            place, disabled with the reason, so the strip never reshuffles. */}
+        <div className="insp-actions" role="toolbar" aria-label="School actions">
+          <button
+            type="button"
+            className={`insp-feature${pinned ? " insp-feature--on" : ""}`}
+            aria-pressed={pinned}
+            disabled={!canPin}
+            title={!canPin ? `You can compare up to ${MAX_COMPARE} schools` : pinned ? "Remove from the comparison" : "Add to the side-by-side comparison"}
+            onClick={() => toggleComparePin(p.msid)}
+          >
+            <CompareIcon size={20} aria-hidden="true" />
+            <span>{pinned ? "Comparing" : "Compare"}</span>
+          </button>
+          <DriveTimeToggle msid={p.msid} lng={school.geometry.coordinates[0]} lat={school.geometry.coordinates[1]} />
+          <button
+            type="button"
+            className="insp-feature"
+            disabled={!canNotice}
+            title={canNotice ? "Draft the School of Hope building notice for this facility" : "Available for co-location candidates in Miami-Dade and Broward"}
+            onClick={() => setNoticeOpen(true)}
+          >
+            <DocumentIcon size={20} aria-hidden="true" />
+            <span>Building notice</span>
+          </button>
+          <OverflowMenu size="sm" flipped align="bottom" aria-label="More actions" iconDescription="More actions" className="insp-actions__more" menuOptionsClass="insp-actions__menu">
+            <OverflowMenuItem itemText={picked ? "Remove from my map" : "Add to my map"} onClick={() => togglePicked(p.msid)} />
+            {pickedMsids.size >= 1 && (
+              <OverflowMenuItem
+                itemText={isolatePicked ? "Show all schools again" : `Show only my map (${pickedMsids.size})`}
+                onClick={() => setIsolatePicked(!isolatePicked)}
+              />
+            )}
+            {comparePinnedMsids.length >= 1 && (
+              <OverflowMenuItem
+                itemText={`Open comparison (${comparePinnedMsids.length})`}
+                onClick={() => { setViewMode("map"); setShortlistOpen(true); selectSchool(null); }}
+              />
+            )}
+            <OverflowMenuItem itemText="Export to CSV" onClick={() => downloadCsv(`school_${p.msid}_${stamp()}.csv`, toCsv(["Field", "Value"], exportRows))} />
+            <OverflowMenuItem itemText={copiedLink ? "Link copied" : "Copy link"} onClick={copyShareLink} />
+          </OverflowMenu>
+        </div>
+        <DriveTimeStatus msid={p.msid} />
       </div>
 
-      {/* Body */}
+      {/* BODY. Two labeled regions (common region + proximity: each idea in its
+          own container, tight inside, clear space between), then the detail
+          sections. Everything aligns to the 16px left edge. */}
       <div className="insp-body">
         {!isKipp && (
-        <>
-        {/* 1. THE VERDICT FIRST. A site scout opens the inspector to learn one
-            thing: can a School of Hope open here? Lead with that answer, per the
-            content guide's altitude rule, before identity or districts. */}
-        <div className={`insp-verdict${sohEligible ? " insp-verdict--eligible" : ""}`}>
-          <div className="insp-verdict__head">
-            {sohEligible
-              ? <CheckCircleIcon size={18} style={{ color: GREEN, flex: "none" }} />
-              : <CancelIcon size={18} style={{ color: DIM, flex: "none" }} />}
-            <span className="insp-verdict__title" style={{ color: sohEligible ? GREEN : undefined }}>
-              {sohEligible ? "A School of Hope may open here" : "Not a location for a new School of Hope"}
-            </span>
-          </div>
-          <div className="insp-verdict__text">
-            {plpEval.isPlp
-              ? "Persistently low-performing, so a School of Hope may open within 5 miles."
-              : anchorsWithin.length > 0
-                ? <>Within 5 miles of {anchorsWithin.length} persistently low-performing school{anchorsWithin.length === 1 ? "" : "s"} (listed below).</>
-                : inOZ
-                  ? "Inside an Opportunity Zone, which counts as a siting area."
-                  : "No persistently low-performing school within 5 miles, and not in an Opportunity Zone."}
-          </div>
-          {titleIDisqualifies && (
-            <div className="insp-verdict__note">Not Title I eligible, so it does not qualify even inside a siting area.</div>
-          )}
-          {!inSitingArea && (
-            <div className="insp-verdict__caveat">Attendance-zone boundaries aren't loaded, so a school just outside 5 miles but inside a PLP school's zone could still qualify.</div>
-          )}
-          {(sohEligible || inSitingArea) && (
-            <div className="insp-verdict__cite">F.S. 1002.333</div>
-          )}
-        </div>
-
-        {/* Every persistently low-performing school within 5 miles: the anchors a
-            School of Hope at this site could serve, nearest first. Each row jumps
-            the whole view to that school. Shown whenever there is at least one,
-            including for a PLP anchor with other low-performers nearby. */}
-        {anchorsWithin.length > 0 && (
-          <div className="insp-plps">
-            <p className="insp-label insp-plps__label">
-              Low-performing schools within 5 miles
-              <span className="insp-plps__count">{anchorsWithin.length}</span>
-            </p>
-            <ul className="insp-plps__list">
-              {anchorsWithin.map((a) => (
-                <li key={a.msid} className="insp-plps__row">
-                  <button type="button" className="insp-link insp-plps__name" onClick={() => selectSchool(a.msid)}>{a.name}</button>
-                  <span className="insp-plps__mi">{a.miles.toFixed(1)} mi</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <hr className="insp-divider" />
-
-        {/* 2. KEY INDICATORS: the verdicts that drive the decision, nothing else. */}
-        <p className="insp-label">Key indicators</p>
-        <div className="insp-inds">
-          <IndRow label="Co-location candidate" yes={coLocationEligible} />
-          <IndRow label="Persistently low-performing (PLP)" yes={plpEval.isPlp} />
-          <IndRow label="In an Opportunity Zone" yes={inOZ} />
-          <IndRow label="Title I eligible" yes={p.title_i === "yes"} unknown={p.title_i === "unknown"} />
-        </div>
-
-        <hr className="insp-divider" />
-
-        {/* 3. ENROLLMENT & CAPACITY */}
-        <p className="insp-label">Enrollment &amp; capacity</p>
-        <div className="insp-util-head">
-          <div className="insp-util-head__left">
-            <span className="insp-subhead" style={{ margin: 0 }}>Building utilization</span>
-            {utilPct != null && (
-              <span className="insp-util-tier" style={{ background: tint(utilColor, 14), color: utilColor }}>{util.label}</span>
-            )}
-          </div>
-          <span className="insp-util-pct" style={{ color: utilColor }}>{utilPct != null ? `${Math.round(utilPct)}%` : "n/a"}</span>
-        </div>
-        {utilPct != null && (
-          <div className="insp-bar">
-            <div className="insp-bar__fill" style={{ width: `${Math.min(100, utilPct)}%`, background: utilColor }} />
-          </div>
-        )}
-        <p className="insp-note">
-          {p.enrollment != null ? (
-            <>
-              <strong className="insp-note__lead">{p.enrollment.toLocaleString("en-US")}</strong> enrolled
-              {p.enrollment_year && (
-                <span className="insp-year" title={`Most recent enrollment year (SY${p.enrollment_year})`}>SY{syShort(p.enrollment_year)}</span>
-              )}
-              {p.capacity != null && <> of {p.capacity.toLocaleString("en-US")} capacity</>}
-            </>
-          ) : p.capacity != null ? (
-            <><strong className="insp-note__lead">{p.capacity.toLocaleString("en-US")}</strong> capacity; enrollment not reported</>
-          ) : (
-            <>Enrollment and capacity not reported</>
-          )}
-        </p>
-        {avail.stations != null && (
-          <div
-            className={`insp-avail${avail.stations >= SOH_SURPLUS_STATIONS ? " insp-avail--surplus" : ""}`}
-            title={`Available capacity (surplus) = student stations minus ${avail.basis === "cofte" ? "capital-outlay FTE (the FISH figure)" : "current enrollment (estimate; no FISH COFTE reported)"}. A surplus of ${SOH_SURPLUS_STATIONS}+ student stations is one of the two co-location thresholds under Rule 6A-1.0998271(5)(e).`}
-          >
-            <span className="insp-avail__label">Available capacity (surplus)</span>
-            <span className="insp-avail__val">
-              {avail.stations.toLocaleString("en-US")}
-              <span className="insp-avail__unit"> student stations</span>
-              {avail.stations >= SOH_SURPLUS_STATIONS && (
-                <span className="insp-avail__tag">meets {SOH_SURPLUS_STATIONS}+ threshold</span>
-              )}
-            </span>
-          </div>
-        )}
-        {p.permanent_capacity != null && (
-          <div
-            className="insp-perm"
-            title="Permanent building student stations, from the FISH Level of Service report; portable classrooms are excluded. The utilization and co-location tests above use total student stations (permanent plus portable), which is the statute's measure (Rule 6A-1.0998271)."
-          >
-            <span className="insp-perm__label">Permanent student stations</span>
-            <span className="insp-perm__val">
-              {p.permanent_capacity.toLocaleString("en-US")}
-              {p.capacity != null && p.capacity !== p.permanent_capacity && (
-                <span className="insp-perm__sub">
-                  {" "}of {p.capacity.toLocaleString("en-US")} total (
-                  {(p.capacity - p.permanent_capacity).toLocaleString("en-US")} in portables)
-                </span>
-              )}
-            </span>
-          </div>
-        )}
-        <EnrollmentTrend history={enrollHistory} capacity={p.capacity} />
-
-        <div className="insp-frl">
-          <span className="insp-frl__label" title="Share of students certified for free or reduced-price meals. FL DOE Fall Survey 2, 2025-26.">Free/reduced-price lunch</span>
-          {frlPct != null ? (
-            <span className="insp-frl__val">
-              {frlPct}%
-              {p.frl_denominator != null && <span className="insp-frl__of"> of {p.frl_denominator.toLocaleString("en-US")} students</span>}
-            </span>
-          ) : (
-            <span className="insp-frl__val insp-frl__val--none">Not reported</span>
-          )}
-        </div>
-
-        <hr className="insp-divider" />
-        </>
-        )}
-
-        {/* Academic performance */}
-        <p className="insp-label">Academic performance</p>
-        <p className="insp-subhead">Historic letter grades</p>
-        <GradeTimeline history={history} formulaChangeYears={formulaChangeYears} />
-
-        {/* Student demographics: who ENROLLS (KIPP shows its network figure). */}
-        <StudentDemographics p={p} />
-
-        {/* 4. NEIGHBORHOOD DEMOGRAPHICS: who lives around this site, by distance.
-            Real Census data; every number labeled as an estimate with its error. */}
-        {!isKipp && demo && data.schoolDemographics && (
           <>
-            <hr className="insp-divider" />
-            <NeighborhoodDemographics entry={demo} meta={data.schoolDemographics} />
+            <section className="insp-region" aria-labelledby={`siting-${p.msid}`}>
+              <h3 className="insp-region__label" id={`siting-${p.msid}`}>School of Hope siting</h3>
+
+              <p className={`insp-answer${sohEligible ? " insp-answer--yes" : ""}`}>
+                {sohEligible
+                  ? <CheckCircleIcon size={16} className="insp-answer__icon" />
+                  : <CancelIcon size={16} className="insp-answer__icon" />}
+                {sohEligible ? "May open here" : "Not a siting location"}
+              </p>
+
+              {(plpEval.isPlp || coLocationEligible) && (
+                <div className="insp-tags">
+                  {plpEval.isPlp && (
+                    <Tag type="red" size="sm" title={isOfficialPlp && plpYear ? `On the FL DOE ${plpYear} persistently low-performing list` : "Persistently low-performing"}>
+                      Low-performing (PLP)
+                    </Tag>
+                  )}
+                  {coLocationEligible && <Tag type="teal" size="sm">Co-location candidate</Tag>}
+                </div>
+              )}
+
+              {titleIDisqualifies ? (
+                <p className="insp-region__note">Inside a siting area, but not Title I eligible.</p>
+              ) : anchorsWithin.length === 0 && !plpEval.isPlp ? (
+                <p className="insp-region__note">{inOZ ? "Inside an Opportunity Zone." : "No low-performing school within 5 miles, and not in an Opportunity Zone."}</p>
+              ) : null}
+
+              {/* The evidence, never collapsed: the low-performing schools a School
+                  of Hope here would serve (what a notice cites). */}
+              {anchorsWithin.length > 0 && (
+                <div className="insp-region__group">
+                  <p className="insp-region__sublabel">Low-performing schools within 5 miles</p>
+                  <ul className="insp-plps__list">
+                    {anchorsWithin.map((a) => (
+                      <li key={a.msid} className="insp-plps__row">
+                        <button type="button" className="insp-link insp-plps__name" onClick={() => selectSchool(a.msid)}>{a.name}</button>
+                        <span className="insp-plps__mi">{a.miles.toFixed(1)} mi</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+            </section>
+
+            <section className="insp-region" aria-labelledby={`building-${p.msid}`}>
+              <h3 className="insp-region__label" id={`building-${p.msid}`}>Building</h3>
+              <dl className="insp-glance">
+              <div className="insp-glance__cell" title="Facility Utilization Rate, the statute's measure: funded FTE divided by all student stations, portables included. It decides the underused test.">
+                <dt>Utilization</dt>
+                <dd>
+                  {utilPct != null ? <>{Math.round(utilPct)}%{util.basis === "enrollment" && <span className="insp-glance__aside"> est.</span>}</> : <span className="insp-glance__na">Not reported</span>}
+                  {utilPct != null && <span className="insp-glance__tier" style={{ color: utilColor }}>{util.label}</span>}
+                </dd>
+              </div>
+              <div className="insp-glance__cell" title="Empty permanent seats: permanent student stations minus current enrollment, the room beside the host. Portables are not counted.">
+                <dt>Empty seats</dt>
+                <dd>{empty.seats != null ? empty.seats.toLocaleString("en-US") : <span className="insp-glance__na">Not reported</span>}</dd>
+              </div>
+              <div className="insp-glance__cell">
+                <dt>Enrollment</dt>
+                <dd>
+                  {p.enrollment != null ? p.enrollment.toLocaleString("en-US") : <span className="insp-glance__na">Not reported</span>}
+                  {p.enrollment != null && p.enrollment_year && <span className="insp-glance__aside">SY{syShort(p.enrollment_year).slice(2)}</span>}
+                </dd>
+              </div>
+              <div className="insp-glance__cell" title="Share of students certified for free or reduced-price meals. FL DOE Fall Survey 2, 2025-26.">
+                <dt>Free/reduced lunch</dt>
+                <dd>{frlPct != null ? `${frlPct}%` : <span className="insp-glance__na">Not reported</span>}</dd>
+              </div>
+              </dl>
+            </section>
           </>
         )}
 
-        <hr className="insp-divider" />
+        <Accordion isFlush size="md" className="insp-acc">
+          {!isKipp && section(
+            "siting",
+            "Eligibility checklist",
+            "",
+            <>
+              <p className="insp-checks__head">Siting, any one</p>
+              <ul className="insp-checks">
+                <CheckItem
+                  state={plpEval.isPlp || anchorsWithin.length > 0 ? "yes" : "no"}
+                  label="Near a low-performing school"
+                  detail={plpEval.isPlp ? "This school is one" : anchorsWithin.length > 0 ? `${anchorsWithin.length} within 5 mi` : "None within 5 mi"}
+                />
+                <CheckItem state={inOZ ? "yes" : "no"} label="In an Opportunity Zone" />
+                <CheckItem state="unchecked" label="In a low-performing school's zone" detail="Zones not loaded" />
+              </ul>
+              <p className="insp-checks__head">Also required</p>
+              <ul className="insp-checks">
+                <CheckItem state={p.title_i === "yes" ? "yes" : p.title_i === "unknown" ? "unknown" : "no"} label="Title I eligible" />
+              </ul>
+              <p className="insp-checks__head">To share this building</p>
+              <ul className="insp-checks">
+                <CheckItem state={districtOperated ? "yes" : "no"} label="District-run building" />
+                <CheckItem
+                  state={util.key === "unknown" ? "unknown" : util.key === "under" ? "yes" : "no"}
+                  label="Meets facility test"
+                  detail={utilPct != null ? `${Math.round(utilPct)}%; needs 75% or less, or 400+ surplus` : "No capacity data"}
+                />
+                <CheckItem state="unchecked" label="In service 4+ years" detail="Building age not in data" />
+              </ul>
+              <p className="insp-cite">F.S. 1002.333; Rule 6A-1.0998271</p>
+            </>,
+          )}
 
-        {/* 5. LOCATION & DISTRICTS: identity and representation, below the siting
-            decision the analyst came for. Each district row drills the whole view. */}
-        <p className="insp-label">Location &amp; districts</p>
-        {municipality && <Kv label="Municipality" value={municipality} />}
-        <Kv label="Address" value={
-          <span className="insp-kv__addr">
-            <PlaceIcon size={14} style={{ color: DIM, marginTop: 2, flex: "none" }} />
-            <span>{p.address}</span>
-          </span>
-        } />
-        <Kv label="MSID" value={p.msid} mono />
-        <DistrictKv label="School board district" text={boardLabel} onFilter={districtTags?.board ? () => setDistrictFilter({ kind: "board", value: districtTags.board! }) : undefined} />
-        <DistrictKv label="Congressional district" text={cd ? `District ${cd.district_number}${cdRep ? `, ${repLabel(cdRep)}` : ""}` : "Not mapped for this location"} onFilter={districtTags?.CD ? () => setDistrictFilter({ kind: "CD", value: districtTags.CD! }) : undefined} />
-        <DistrictKv label="State House district" text={sldl ? `District ${sldl.district_number}${sldlRep ? `, ${repLabel(sldlRep)}` : " (representative not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDL ? () => setDistrictFilter({ kind: "SLDL", value: districtTags.SLDL! }) : undefined} />
-        <DistrictKv label="State Senate district" text={sldu ? `District ${sldu.district_number}${slduRep ? `, ${repLabel(slduRep)}` : " (senator not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDU ? () => setDistrictFilter({ kind: "SLDU", value: districtTags.SLDU! }) : undefined} />
+          {!isKipp && section(
+            "capacity",
+            "Capacity and enrollment trend",
+            empty.seats != null ? `${empty.seats.toLocaleString("en-US")} empty seats` : "",
+            <>
+              <div className="insp-util-head">
+                <span className="insp-subhead" style={{ margin: 0 }}>Utilization (statutory)</span>
+                <span className="insp-util-pct">{utilPct != null ? `${Math.round(utilPct)}%` : "n/a"}</span>
+              </div>
+              {utilPct != null && (
+                <>
+                  <div className="insp-bar" aria-hidden="true">
+                    <div className="insp-bar__fill" style={{ width: `${Math.min(100, utilPct)}%`, background: utilColor }} />
+                    <span className="insp-bar__mark" style={{ left: "75%" }} />
+                  </div>
+                  <div className="insp-bar__scale" aria-hidden="true">
+                    <span>0%</span>
+                    <span className="insp-bar__scale-mark" style={{ left: "75%" }} title="At or below 75% counts as underused">75%</span>
+                    <span>100%</span>
+                  </div>
+                </>
+              )}
+              <p className="insp-note">
+                {p.enrollment != null
+                  ? <>{p.enrollment.toLocaleString("en-US")} enrolled{p.capacity != null && <> · {p.capacity.toLocaleString("en-US")} student stations</>}</>
+                  : p.capacity != null ? <>{p.capacity.toLocaleString("en-US")} student stations · enrollment not reported</> : <>Enrollment and capacity not reported</>}
+              </p>
+              <dl className="insp-kvlist">
+                {empty.seats != null && empty.permanent != null && empty.enrollment != null && (
+                  <div className="insp-kvlist__row">
+                    <dt>Empty permanent seats</dt>
+                    <dd>
+                      <strong>{empty.seats.toLocaleString("en-US")}</strong>
+                      <span className="insp-kvlist__calc">
+                        {empty.permanent.toLocaleString("en-US")} permanent stations minus {empty.enrollment.toLocaleString("en-US")} enrolled
+                        {empty.overBy > 0 && <>; {empty.overBy.toLocaleString("en-US")} over the permanent building</>}
+                        {empty.portables > 0 && <>; {empty.portables.toLocaleString("en-US")} portable stations not counted</>}
+                      </span>
+                    </dd>
+                  </div>
+                )}
+                {avail.stations != null && (
+                  <div className="insp-kvlist__row">
+                    <dt title={`Total student stations (portables included) minus ${avail.basis === "cofte" ? "the prior year's funded FTE (COFTE)" : "current enrollment (estimate)"}. The figure for the ${SOH_SURPLUS_STATIONS}-station co-location test, not a sizing number.`}>
+                      Statutory surplus
+                    </dt>
+                    <dd>
+                      <strong>{avail.stations.toLocaleString("en-US")}</strong>
+                      {avail.stations >= SOH_SURPLUS_STATIONS && <Tag type="teal" size="sm" className="insp-kvlist__tag">Meets {SOH_SURPLUS_STATIONS}+ test</Tag>}
+                      <span className="insp-kvlist__calc">
+                        For the {SOH_SURPLUS_STATIONS}-station test only
+                      </span>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+              <EnrollmentTrend history={enrollHistory} capacity={p.capacity} />
+            </>,
+          )}
 
-        {/* 6. IN THE NEWS: a live, external, UNVERIFIED headline feed matching the
-            school name. Applies to every school (KIPP included), so it sits outside
-            the facility blocks. Fails soft (see useSchoolNews). */}
-        <hr className="insp-divider" />
-        <NewsCard news={news} name={p.name} />
-      </div>
+          {(p.pct_black != null || p.pct_hispanic != null || p.pct_white != null) && section(
+            "students",
+            "Enrolled students",
+            "",
+            <StudentDemographics p={p} />,
+          )}
 
-      {/* Footer: stacked full-width Carbon actions. Primary (pin) on top; Export
-          below; a jump to the shortlist last (it closes this panel so the tray
-          takes focus). */}
-      <div className="insp-footer">
-        <Button
-          kind={pinned ? "primary" : "tertiary"}
-          size="md"
-          disabled={!canPin}
-          title={!canPin ? `The shortlist holds up to ${MAX_COMPARE} sites` : undefined}
-          renderIcon={pinned ? BookmarkFilledIcon : BookmarkIcon}
-          onClick={() => toggleComparePin(p.msid)}
-        >
-          {pinned ? "On your shortlist" : "Add to shortlist"}
-        </Button>
-        {/* Manual pick: add this school to the hand-picked set that "Show only
-            picked schools" isolates. Distinct from the shortlist (which is a
-            capped, side-by-side compare set): this list is uncapped and controls
-            what the map draws. */}
-        <Button
-          kind={picked ? "primary" : "tertiary"}
-          size="md"
-          renderIcon={picked ? ViewOffIcon : ViewIcon}
-          onClick={() => togglePicked(p.msid)}
-        >
-          {picked ? "Remove from my map" : "Add to my map"}
-        </Button>
-        {/* A one-click isolate toggle, so the whole "clear the map, keep my picks"
-            flow works from the inspector without opening the filter panel. Shown
-            once at least one school is picked. */}
-        {pickedMsids.size >= 1 && (
-          <Button
-            kind="ghost"
-            size="sm"
-            renderIcon={isolatePicked ? ViewOffIcon : ViewIcon}
-            onClick={() => setIsolatePicked(!isolatePicked)}
-          >
-            {isolatePicked
-              ? "Show all schools again"
-              : `Show only my map (${pickedMsids.size})`}
-          </Button>
-        )}
-        <div>
-          <ExportButton filenameBase={`school_${p.msid}`} headers={["Field", "Value"]} rows={exportRows} label="Export" />
-        </div>
-        {/* A building notice is drafted for an underused district FACILITY in a
-            siting area, in a district with an approved template (MDCPS/Broward).
-            Shown only for those co-location candidates. */}
-        {coLocationEligible && districtFromCounty(p.county) && (
-          <Button kind="tertiary" size="md" renderIcon={DocumentIcon} onClick={() => setNoticeOpen(true)}>
-            Prepare building notice
-          </Button>
-        )}
-        {comparePinnedMsids.length >= 1 && (
-          <Button
-            kind="ghost"
-            size="sm"
-            renderIcon={BookmarkIcon}
-            onClick={() => { setViewMode("map"); setShortlistOpen(true); selectSchool(null); }}
-          >
-            Open shortlist ({comparePinnedMsids.length} site{comparePinnedMsids.length === 1 ? "" : "s"})
-          </Button>
-        )}
+          {section(
+            "academics",
+            "Letter grades",
+            /^[A-F]$/.test(p.current_grade) ? `${p.current_grade}${gradeYear ? ` in ${gradeYear}` : ""}` : "",
+            <>
+              <GradeTimeline history={history} formulaChangeYears={formulaChangeYears} recentCount={6} />
+            </>,
+          )}
+
+          {!isKipp && demo && data.schoolDemographics && section(
+            "neighborhood",
+            "Residents by distance",
+            ring2 ? `${ring2.k8_pop.toLocaleString("en-US")} K-8 age within 2 mi` : "",
+            <NeighborhoodDemographics entry={demo} meta={data.schoolDemographics} />,
+          )}
+
+          {section(
+            "drive",
+            "Residents by drive time",
+            driveK8 != null ? `${driveK8.toLocaleString("en-US")} K-8 age within 15 min` : driveEntry?.status === "loading" ? "Computing..." : "Not computed",
+            <DriveTimeMarket msid={p.msid} lng={school.geometry.coordinates[0]} lat={school.geometry.coordinates[1]} open={openSections.has("drive")} />,
+          )}
+
+          {section(
+            "location",
+            "Address and political districts",
+            municipality || "",
+            <>
+              <Kv label="Address" value={
+                <span className="insp-kv__addr">
+                  <PlaceIcon size={14} style={{ color: DIM, marginTop: 2, flex: "none" }} />
+                  <span>{p.address.replace(/,\s*FL,\s*(\d{5})/, ", FL $1")}</span>
+                </span>
+              } />
+              <Kv label="MSID" value={p.msid} mono />
+              <DistrictKv label="School board district" text={boardLabel} onFilter={districtTags?.board ? () => setDistrictFilter({ kind: "board", value: districtTags.board! }) : undefined} />
+              <DistrictKv label="Congressional district" text={cd ? `District ${cd.district_number}${cdRep ? `, ${repLabel(cdRep)}` : ""}` : "Not mapped for this location"} onFilter={districtTags?.CD ? () => setDistrictFilter({ kind: "CD", value: districtTags.CD! }) : undefined} />
+              <DistrictKv label="State House district" text={sldl ? `District ${sldl.district_number}${sldlRep ? `, ${repLabel(sldlRep)}` : " (representative not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDL ? () => setDistrictFilter({ kind: "SLDL", value: districtTags.SLDL! }) : undefined} />
+              <DistrictKv label="State Senate district" text={sldu ? `District ${sldu.district_number}${slduRep ? `, ${repLabel(slduRep)}` : " (senator not in dataset)"}` : "Not mapped for this location"} onFilter={districtTags?.SLDU ? () => setDistrictFilter({ kind: "SLDU", value: districtTags.SLDU! }) : undefined} />
+            </>,
+          )}
+
+          {section(
+            "news",
+            "Recent news",
+            news.status === "ok" ? (news.items.length ? `${news.items.length} headline${news.items.length === 1 ? "" : "s"}` : "None recent") : "",
+            <NewsCard news={news} name={p.name} />,
+          )}
+        </Accordion>
       </div>
 
       {noticeOpen && (
@@ -992,6 +945,8 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
               fishVintage: p.fish_vintage ?? null,
               anchors: anchorsWithin.map((a) => ({ name: a.name, miles: a.miles })),
               inOZ,
+              plpListYear: plpShortYear(data.plp),
+              emptySeats: empty.seats,
             }}
             onClose={() => setNoticeOpen(false)}
           />
@@ -1021,10 +976,7 @@ function relativeDate(rfc822: string | null): string {
 function NewsCard({ news, name }: { news: SchoolNews; name: string }) {
   return (
     <section className="insp-news" aria-label={`Recent news mentioning ${name}`}>
-      <div className="insp-news__head">
-        <p className="insp-label" style={{ margin: 0 }}>In the news</p>
-        <span className="insp-news__src">Google News</span>
-      </div>
+      <p className="insp-news__src" title="Headlines are matched to the school by name; verify before citing.">Google News · not verified</p>
 
       {news.status === "loading" && (
         <SkeletonText paragraph lineCount={3} aria-label="Loading headlines" />
@@ -1063,9 +1015,6 @@ function NewsCard({ news, name }: { news: SchoolNews; name: string }) {
               </li>
             ))}
           </ul>
-          <p className="insp-news__disclaimer">
-            Auto-matched by name. Please verify before citing.
-          </p>
         </>
       )}
     </section>

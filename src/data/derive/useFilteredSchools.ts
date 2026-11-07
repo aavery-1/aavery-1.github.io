@@ -6,7 +6,7 @@
 
 import { useMemo } from "react";
 import { useData } from "../DataContext";
-import { useStore, utilizationBucket, isUnderutilizedFacility, availableCapacity, type MapBounds } from "../../store";
+import { useStore, utilizationBucket, isUnderutilizedFacility, emptyPermanentSeats, type MapBounds } from "../../store";
 import { buildFilterContext, passesFilters, type SchoolFilterInput, type SchoolFilterContext } from "./filters";
 import type { SchoolFeature } from "../types";
 
@@ -30,7 +30,7 @@ export interface FilteredSchools {
   plpVisible: number;
   plpTotal: number;
   underutilizedVisible: number;   // known utilization below the under threshold
-  availableCapacityVisible: number; // total surplus student stations across the underused filtered set
+  emptySeatsVisible: number; // total empty permanent seats across the underused filtered set
   overCapacityVisible: number;
   sohEligibleVisible: number;
   avgUtilization: number | null;  // mean of known utilizations, as a fraction
@@ -42,7 +42,7 @@ export interface FilteredSchools {
   inViewPlp: number;
   inViewUnderutilized: number;
   inViewCoLocation: number;       // co-location candidates in view (same set as the map dots / filter)
-  inViewAvailableCapacity: number; // total surplus student stations across the underused schools in view
+  inViewEmptySeats: number; // total empty permanent seats across the underused schools in view
 }
 
 export function useFilteredSchools(): FilteredSchools {
@@ -103,10 +103,12 @@ export function useFilteredSchools(): FilteredSchools {
     const features = all.filter((f) => passesFilters(f, input, ctx));
     let plpVisible = 0, underutilizedVisible = 0, overCapacityVisible = 0, sohEligibleVisible = 0;
     let utilSum = 0, utilN = 0;
-    // Available capacity (surplus): the total unused student stations carried by the
-    // underutilized schools in the filtered set, so a scout can read the co-location
-    // supply across a district/view at a glance. Statutory basis, matching the count.
-    let availableCapacityVisible = 0;
+    // Room: the total EMPTY PERMANENT SEATS (permanent stations minus headcount)
+    // across the underused schools in the filtered set, so a scout can read the
+    // co-location supply across a district/view at a glance. WHICH schools count
+    // is the statutory test; HOW MUCH room each has is the headcount measure, so
+    // the total does not inherit the FISH surplus's overstatement.
+    let emptySeatsVisible = 0;
     for (const f of features) {
       const p = f.properties;
       const b = utilizationBucket(p.enrollment, p.capacity);
@@ -114,7 +116,7 @@ export function useFilteredSchools(): FilteredSchools {
       // stations), not just the visual bucket, so the count matches Rule 6A-1.0998271.
       if (isUnderutilizedFacility(p.enrollment, p.capacity, p.cofte, p.fish_surplus)) {
         underutilizedVisible++;
-        availableCapacityVisible += availableCapacity(p.enrollment, p.capacity, p.cofte, p.fish_surplus).stations ?? 0;
+        emptySeatsVisible += emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity).seats ?? 0;
       }
       if (b === "over") overCapacityVisible++;
       if (p.enrollment != null && p.capacity && p.capacity > 0) { utilSum += p.enrollment / p.capacity; utilN++; }
@@ -123,13 +125,13 @@ export function useFilteredSchools(): FilteredSchools {
     }
     // Viewport-limited slice for the "in view" dock + summary.
     const inViewFeatures = features.filter((f) => inBounds(f, mapBounds));
-    let inViewPlp = 0, inViewUnderutilized = 0, inViewCoLocation = 0, inViewAvailableCapacity = 0;
+    let inViewPlp = 0, inViewUnderutilized = 0, inViewCoLocation = 0, inViewEmptySeats = 0;
     for (const f of inViewFeatures) {
       const p = f.properties;
       if (ctx.plp.has(p.msid)) inViewPlp++;
       if (isUnderutilizedFacility(p.enrollment, p.capacity, p.cofte, p.fish_surplus)) {
         inViewUnderutilized++;
-        inViewAvailableCapacity += availableCapacity(p.enrollment, p.capacity, p.cofte, p.fish_surplus).stations ?? 0;
+        inViewEmptySeats += emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity).seats ?? 0;
       }
       // Co-location candidates: the exact set the map dots, filter, list, and
       // inspector use, so the dock count can never disagree with them.
@@ -146,7 +148,7 @@ export function useFilteredSchools(): FilteredSchools {
       plpVisible,
       plpTotal: ctx.plp.size,
       underutilizedVisible,
-      availableCapacityVisible,
+      emptySeatsVisible,
       overCapacityVisible,
       sohEligibleVisible,
       avgUtilization: utilN ? utilSum / utilN : null,
@@ -155,7 +157,7 @@ export function useFilteredSchools(): FilteredSchools {
       inViewPlp,
       inViewUnderutilized,
       inViewCoLocation,
-      inViewAvailableCapacity,
+      inViewEmptySeats,
     };
   }, [schools, input, ctx, mapBounds]);
 }

@@ -23,13 +23,13 @@ import {
 import { Search as SearchIcon, Location as MyLocationIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Close as CloseIcon, ArrowUp as ArrowUpIcon, ArrowDown as ArrowDownIcon, Filter as FilterIcon } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
-import { useStore, utilizationBucket, availableCapacity, MAX_COMPARE } from "../store";
+import { useStore, utilizationBucket, emptyPermanentSeats, MAX_COMPARE } from "../store";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { useActiveFilters } from "../status/useActiveFilters";
 import { ACCENT_TEXT, TEAL } from "../muiTheme";
-import { schoolTypeLabel, titleILabel, type SchoolFeature } from "../data/types";
+import { schoolTypeLabel, titleILabel, levelLabel, type SchoolFeature } from "../data/types";
 import "./SchoolTable.carbon.css";
 
 const RED_STRONG = "#B71C1C";  // PLP
@@ -37,7 +37,7 @@ const CO_LOC_BLUE = "#1D4ED8";  // co-location target
 const TITLE_I_PURPLE = "#7C3AED"; // economic-disadvantage proxy (Title I)
 
 type Order = "asc" | "desc";
-type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "black" | "enrollment" | "capacity" | "availCap" | "utilization";
+type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "black" | "enrollment" | "capacity" | "emptySeats" | "utilization";
 
 interface Row {
   feature: SchoolFeature;
@@ -52,7 +52,7 @@ interface Row {
   black: number | null; // % Black students (0-100), FL DOE membership by race; null when not reported
   enrollment: number | null;
   capacity: number | null;
-  availCap: number | null; // available capacity (surplus): student stations minus enrollment; null when either is missing
+  emptySeats: number | null; // empty permanent seats: permanent stations minus headcount enrollment; null when either is missing
   utilization: number | null;
   bucket: "over" | "target" | "under" | "unknown";
   isPlp: boolean;
@@ -162,14 +162,14 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           name: p.name,
           type: p.type,
           county: p.county,
-          level: p.level,
+          level: levelLabel(p),
           grade: p.current_grade,
           titleI: p.title_i_schoolwide ? "Schoolwide" : titleILabel(p.title_i),
           frl: p.frl_rate ?? null,
           black: p.pct_black ?? null,
           enrollment: p.enrollment,
           capacity: p.capacity,
-          availCap: availableCapacity(p.enrollment, p.capacity).stations,
+          emptySeats: emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity).seats,
           utilization: util,
           bucket: utilizationBucket(p.enrollment, p.capacity),
           isPlp: ctx.plp.has(p.msid),
@@ -345,7 +345,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
             <MenuItem value="black" sx={{ fontSize: 13 }}>% Black</MenuItem>
             <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
             <MenuItem value="capacity" sx={{ fontSize: 13 }}>Capacity</MenuItem>
-            <MenuItem value="availCap" sx={{ fontSize: 13 }}>Available capacity</MenuItem>
+            <MenuItem value="emptySeats" sx={{ fontSize: 13 }}>Empty seats</MenuItem>
             <MenuItem value="level" sx={{ fontSize: 13 }}>Level</MenuItem>
             <MenuItem value="type" sx={{ fontSize: 13 }}>Type</MenuItem>
           </Select>
@@ -500,8 +500,8 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             <span className="school-card__fact-value"><FrlCell rate={r.frl} /></span>
                           </div>
                           <div className="school-card__fact">
-                            <span className="school-card__fact-label">Available capacity</span>
-                            <span className="school-card__fact-value"><AvailCapCell value={r.availCap} /></span>
+                            <span className="school-card__fact-label">Empty seats</span>
+                            <span className="school-card__fact-value"><EmptySeatsCell value={r.emptySeats} /></span>
                           </div>
                         </div>
                       </div>
@@ -608,7 +608,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                     </TableCell>
                   )}
                   {!compact && (
-                    <TableCell align="right"><AvailCapCell value={r.availCap} /></TableCell>
+                    <TableCell align="right"><EmptySeatsCell value={r.emptySeats} /></TableCell>
                   )}
                   {/* On phone the actions stack and use a 44px touch target (Fluent
                       minimum); on desktop they stay compact inline icons. */}
@@ -725,15 +725,14 @@ function BlackCell({ pct }: { pct: number | null }) {
   );
 }
 
-// Available capacity (surplus): total student stations minus the most recent
-// enrollment, floored at 0 (an over-capacity building carries no slack). A
-// right-aligned count; null (either figure missing) reads as a muted "-", and a
-// surplus at or above the 400-station co-location threshold is tinted teal.
-function AvailCapCell({ value }: { value: number | null }) {
+// Empty permanent seats: permanent stations minus headcount enrollment, floored
+// at 0. A right-aligned count; null (either figure missing) reads as a muted "-".
+// Not tinted at 400: that threshold belongs to the statutory surplus, a
+// different figure (see emptyPermanentSeats in store.ts).
+function EmptySeatsCell({ value }: { value: number | null }) {
   if (value == null) return <Typography variant="body2" color="text.secondary">-</Typography>;
-  const surplus = value >= 400;
   return (
-    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums", fontWeight: surplus ? 600 : 400, color: surplus ? "#007d79" : "text.primary" }}>
+    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
       {value.toLocaleString("en-US")}
     </Typography>
   );
@@ -774,7 +773,7 @@ function UtilizationCell({ util, bucket, dense, fill }: { util: number | null; b
 const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: boolean; tier?: "full" | "mid"; width?: number; help?: string }[] = [
   { key: "name", label: "School", width: 280 },
   { key: "county", label: "County", tier: "mid", width: 100 },
-  { key: "level", label: "Level", tier: "full", width: 90 },
+  { key: "level", label: "Level", tier: "full", width: 136 },
   { key: "type", label: "Type", tier: "full", width: 92 },
   { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Title I eligibility (FL DOE Title I Part A list, 2025-26)." },
   { key: "frl", label: "F/R lunch", numeric: true, tier: "full", width: 92, help: "Share of students on free or reduced-price meals, the school-level poverty measure (FL DOE Fall Survey 2, 2025-26)." },
@@ -782,6 +781,6 @@ const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: bo
   { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
   { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count." },
   { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Total FISH student stations (permanent plus portable), the statutory measure. The inspector also shows the permanent-only figure." },
-  { key: "availCap", label: "Avail. cap.", numeric: true, tier: "full", width: 98, help: "Available capacity (surplus): total FISH student stations minus the most recent enrollment. 400+ is one of the two co-location thresholds (Rule 6A-1.0998271); the inspector shows the statutory COFTE-based figure." },
+  { key: "emptySeats", label: "Empty seats", numeric: true, tier: "full", width: 98, help: "Empty permanent seats: permanent student stations minus current enrollment (headcount), the districts' own room measure. Portables are not counted. The statutory surplus for the 400-station test (total stations minus funded FTE) is in each school's details." },
   { key: "actions", label: "", numeric: true, width: 86 },
 ];

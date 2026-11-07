@@ -100,11 +100,11 @@ export const MAP_LAYERS: MapLayerDef[] = [
   },
   {
     id: "drive_time_reach",
-    label: "15-minute drive-time reach",
+    label: "Drive times (selected school)",
     group: "Context",
-    description: "Population reachable within a 15-minute drive.",
-    swatch: { kind: "outline", color: "#00897B" },
-    needs: "isochrones",
+    description: "5, 10, and 15 minute drive-time areas around the selected school in typical traffic for a departure you choose (default Tuesday 7:30am), checked against Google. While on, selecting any school computes its areas.",
+    swatch: { kind: "outline", color: "#20275d" },
+    needs: null,
   },
   {
     id: "population_growth",

@@ -20,6 +20,7 @@ with an empty placeholder. This script instead:
      them from the FISH Level of Service reports.
 
 Re-run:  python3 scripts/refresh-schools-directory.py && python3 scripts/parse-fish-los.py
+         python3 scripts/refresh-schools-directory.py --spans-only   (level + grade span only)
          (then: npm run test / build)
 """
 import json, re, sys, subprocess, tempfile, os
@@ -31,6 +32,34 @@ SCHOOLS = DATA / "schools.sample.geojson"
 YEAR = 2024  # CCD 2023-24, the newest Urban Institute vintage
 COUNTY = {"12086": "Miami-Dade", "12011": "Broward", "12095": "Orange"}
 LEVEL_MAP = {1: "Elementary", 2: "Middle", 3: "High", 4: "Combination", 5: "Other", 6: "Adult"}
+
+# Level comes from the GRADE SPAN, not CCD's school_level. NCES files any school
+# whose lowest grade is PK-3 and highest is 8 or below as "Primary", and any
+# school ending at 12 whose lowest grade is 7 or above as "High", so the raw code
+# labeled every K-8 "Elementary" and every 6-12 "High". FL DOE calls both
+# "Combination" (School Type 04), which is how a siting analyst reads them.
+#   Elementary  = starts PK-5 and ends by grade 6 (PK-5, K-5, K-6)
+#   Middle      = starts 5-7 and ends 8-9 (6-8, 5-8, 7-9)
+#   High        = starts 9 or later (9-12)
+#   Combination = everything else that spans levels (K-8, PK-8, 6-12, K-12, 4-8)
+# PK-only centers and ungraded rows keep CCD's own level ("Other").
+GRADE_NAMES = {-1: "PK", 0: "K"}
+
+def grade_name(g):
+    return GRADE_NAMES.get(g, str(g))
+
+def span_label(lo, hi):
+    if not isinstance(lo, int) or not isinstance(hi, int) or lo < -1 or hi < -1:
+        return None
+    return grade_name(lo) if lo == hi else f"{grade_name(lo)}-{grade_name(hi)}"
+
+def level_from_span(lo, hi, fallback):
+    if not isinstance(lo, int) or not isinstance(hi, int) or lo < -1 or hi < 0:
+        return fallback  # ungraded or PK-only
+    if lo <= 5 and hi <= 6: return "Elementary"
+    if 5 <= lo <= 7 and hi <= 9: return "Middle"
+    if lo >= 9: return "High"
+    return "Combination"
 GRADED = {"A", "B", "C", "D", "F"}
 # CCD school_status: 1 open, 2 closed, 3 new, 4 added, 5 changed-agency, 6 temp-closed,
 # 7 future/inactive, 8 reopened. "New/added/reopened/changed" schools are actively
@@ -69,8 +98,33 @@ def cur_grade(msid, grades):
             return e["grade"], e["year"]
     return (h[-1]["grade"], h[-1]["year"]) if h else ("NR", f"{YEAR-1}-{YEAR}")
 
+def spans_only(rows):
+    """Patch level + grades_offered on the CURRENT schools file in place, leaving
+    every other field (FISH, enrollment, demographics, KIPP fixes) untouched."""
+    by = {r.get("seasch"): r for r in rows if r.get("seasch")}
+    data = json.loads(SCHOOLS.read_text())
+    changed, nospan = [], []
+    for f in data["features"]:
+        p = f["properties"]
+        r = by.get(p["msid"])
+        if not r:
+            nospan.append(p["msid"]); continue
+        lo, hi = r.get("lowest_grade_offered"), r.get("highest_grade_offered")
+        p["grades_offered"] = span_label(lo, hi)
+        new = level_from_span(lo, hi, p["level"])
+        if new != p["level"]:
+            changed.append((p["msid"], p["name"], p["level"], new, p["grades_offered"]))
+            p["level"] = new
+    SCHOOLS.write_text(json.dumps(data, indent=2) + "\n")
+    from collections import Counter
+    print(f"recoded {len(changed)} levels from CCD grade span:", Counter((a, b) for _, _, a, b, _ in changed))
+    for c in changed[:12]: print("  ", c)
+    print(f"{len(nospan)} schools not in CCD {YEAR-1}-{YEAR} (level unchanged):", nospan)
+
 def main():
     rows = fetch_ccd()
+    if "--spans-only" in sys.argv:
+        return spans_only(rows)
     print(f"fetched {len(rows)} FL schools from CCD {YEAR-1}-{YEAR}")
     grades = json.loads((DATA / "grades.sample.json").read_text())["schools"]
     prev = json.loads(SCHOOLS.read_text())
@@ -105,7 +159,8 @@ def main():
             "properties": {
                 "msid": msid,
                 "name": title_case(r.get("school_name") or msid),
-                "level": LEVEL_MAP.get(r.get("school_level"), "Other"),
+                "level": level_from_span(r.get("lowest_grade_offered"), r.get("highest_grade_offered"), LEVEL_MAP.get(r.get("school_level"), "Other")),
+                "grades_offered": span_label(r.get("lowest_grade_offered"), r.get("highest_grade_offered")),
                 "type": infer_type(r),
                 "operator": title_case(r.get("lea_name")) if r.get("lea_name") else None,
                 "county": COUNTY[cc],

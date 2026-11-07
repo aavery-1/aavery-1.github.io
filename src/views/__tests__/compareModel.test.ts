@@ -12,7 +12,8 @@ import type { Grade } from "../../map/gradeEncoding";
 function school(o: {
   msid: string; name?: string; county?: CountyName; grade?: Grade;
   enrollment?: number | null; capacity?: number | null; operator?: string | null;
-  permanent_capacity?: number | null; lng?: number; lat?: number;
+  permanent_capacity?: number | null; cofte?: number | null; fish_surplus?: number | null;
+  lng?: number; lat?: number;
 }): SchoolFeature {
   return {
     type: "Feature",
@@ -32,8 +33,8 @@ function school(o: {
       enrollment_year: "2024-2025",
       capacity: o.capacity === undefined ? 1200 : o.capacity,
       permanent_capacity: o.permanent_capacity === undefined ? null : o.permanent_capacity,
-      cofte: null,
-      fish_surplus: null,
+      cofte: o.cofte ?? null,
+      fish_surplus: o.fish_surplus ?? null,
       title_i: "yes",
       title_i_schoolwide: false,
       title_i_eligible: true,
@@ -111,7 +112,7 @@ describe("buildCompareSections", () => {
     expect(rowByKey(secs, "level")!.diff).toBe(false);  // both High
   });
 
-  it("computes empty seats as permanent stations minus enrollment", () => {
+  it("computes empty permanent seats as permanent stations minus headcount", () => {
     const secs = buildCompareSections(
       [
         school({ msid: "A", permanent_capacity: 800, enrollment: 500 }), // 300 free
@@ -123,25 +124,26 @@ describe("buildCompareSections", () => {
     );
     const row = rowByKey(secs, "emptyseats")!;
     expect(row.values[0]).toBe("300");
-    expect(row.values[1]).toBe("-100 (over permanent capacity)");
+    expect(row.values[1]).toBe("0 (100 over permanent capacity)");
     expect(row.values[2]).toBe("Not reported");
   });
 
-  it("shows available capacity (surplus) as total stations minus enrollment, floored at zero", () => {
+  it("shows the statutory surplus on the COFTE basis, flagging the 400 test", () => {
     const secs = buildCompareSections(
       [
-        school({ msid: "A", capacity: 1000, enrollment: 600 }), // 400 surplus
-        school({ msid: "B", capacity: 800, enrollment: 900 }),  // over capacity
-        school({ msid: "C", capacity: null, enrollment: 500 }), // no capacity
+        school({ msid: "A", capacity: 1206, cofte: 725.9, fish_surplus: 480.1, permanent_capacity: 928, enrollment: 577 }),
+        school({ msid: "B", capacity: 800, cofte: null, enrollment: 600 }), // no COFTE: enrollment estimate
+        school({ msid: "C", capacity: null, enrollment: 500 }),             // no capacity
       ],
       ctx(),
       data,
     );
     const row = rowByKey(secs, "availcap")!;
-    expect(row.values[0]).toBe("400 stations");
-    expect(row.values[1]).toBe("0 (at or over capacity)");
+    expect(row.values[0]).toBe("480 stations (meets 400+ test)");
+    expect(row.values[1]).toBe("200 stations (estimate, no COFTE)");
     expect(row.values[2]).toBe("Not reported");
-    expect(row.diff).toBe(true);
+    // Same building, the room measure is smaller: 928 permanent - 577 enrolled.
+    expect(rowByKey(secs, "emptyseats")!.values[0]).toBe("351");
   });
 
   it("reads yes/no eligibility rows from the context sets, per site", () => {

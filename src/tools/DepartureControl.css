@@ -1,0 +1,23 @@
+/* Departure picker: "Leaving [Tuesday v] [7:30am v]" on one line. Carbon inline
+   dropdowns, with their internal gaps tightened so the phrase reads as one unit. */
+.departure { display: inline-flex; align-items: center; gap: 0; min-width: 0; }
+.departure__lead {
+  font-size: 12px; line-height: 16px; letter-spacing: 0.32px;
+  color: var(--cds-text-secondary, #525252); margin-right: 4px; white-space: nowrap;
+}
+.departure .cds--dropdown__wrapper--inline { display: inline-flex; gap: 0; margin: 0; }
+.departure .cds--dropdown--inline { inline-size: auto; }
+.departure .cds--dropdown--inline .cds--list-box__field { padding-inline: 4px 28px; }
+.departure .cds--dropdown--inline .cds--list-box__label {
+  font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-primary, #161616);
+}
+.departure .cds--list-box__menu { min-inline-size: 9rem; max-block-size: 16rem; }
+/* Reserve room for Carbon's chevron (24px icon, 12px from the edge) so it never
+   overlaps the value. */
+.departure .cds--dropdown--inline .cds--list-box__field { padding-inline: 4px 40px; }
+/* Breathing room: 8px between the value and Carbon's chevron (icon is 24px,
+   12px from the edge), 8px of inset on the left so the focus box never hugs the
+   text, and 8px between "Leaving" and the first dropdown. */
+.departure .cds--dropdown--inline .cds--list-box__field { padding-inline: 8px 44px; }
+.departure__lead { margin-right: 4px; }
+.departure .cds--dropdown__wrapper--inline + .cds--dropdown__wrapper--inline { margin-left: 4px; }

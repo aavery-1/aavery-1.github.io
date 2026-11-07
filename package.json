@@ -16,6 +16,8 @@
     "typecheck": "tsc --noEmit",
     "data:layers": "node --env-file=.env scripts/fetch-real-layers.mjs",
     "data:schools": "node scripts/fetch-real-data.mjs",
+    "data:plp": "node scripts/parse-plp.mjs",
+    "data:poppoints": "node --env-file=.env scripts/build-population-points.mjs",
     "data:fish": "node scripts/parse-fish-capacity.mjs",
     "data:charters": "node scripts/reconcile-charters.mjs",
     "data:legislators": "node scripts/parse-legislators.mjs",

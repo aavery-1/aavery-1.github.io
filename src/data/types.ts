@@ -26,6 +26,20 @@ export function titleILabel(state: TitleIState | undefined): string {
 // User-facing label for a school type. NCES codes district-run schools as
 // "Traditional"; the UI names them "District" consistently across the filter,
 // map tooltip, inspector, and list.
+// User-facing level with its grade span: "Combination (K-8)", "Middle (6-8)".
+// Level itself is derived from the CCD grade span (scripts/refresh-schools-
+// directory.py), so a K-8 or 6-12 reads "Combination", matching FL DOE School
+// Type 04. The span is shown wherever level is, so the bucket never hides what a
+// school actually serves.
+export function levelLabel(p: { level: string; grades_offered?: string | null }): string {
+  return p.grades_offered ? `${p.level} (${p.grades_offered})` : p.level;
+}
+
+// Filter-facet label: spell out what "Combination" covers.
+export function levelFacetLabel(level: string): string {
+  return level === "Combination" ? "Combination (K-8, 6-12)" : level;
+}
+
 export function schoolTypeLabel(type: SchoolType | string): string {
   return type === "Traditional" ? "District" : type;
 }
@@ -40,6 +54,9 @@ export interface SchoolProps {
   report_msid?: string | null;
   name: string;
   level: SchoolLevel;
+  // Grades offered, from the CCD lowest/highest grade ("K-8", "PK-5", "6-12").
+  // Null for schools not in the CCD directory (new charters, KIPP campuses).
+  grades_offered?: string | null;
   type: SchoolType;
   operator: string | null;
   county: CountyName;

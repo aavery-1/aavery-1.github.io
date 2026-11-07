@@ -74,7 +74,7 @@ function UsageDonut({ enrollment, capacity, cofte, surplus }: { enrollment: numb
 }
 
 export function OverviewDock() {
-  const { ready, inViewFeatures, inViewTotal, inViewPlp, inViewUnderutilized, inViewCoLocation, inViewAvailableCapacity, ctx } = useFilteredSchools();
+  const { ready, inViewFeatures, inViewTotal, inViewPlp, inViewUnderutilized, inViewCoLocation, inViewEmptySeats, ctx } = useFilteredSchools();
   const selectedMsid = useStore((s) => s.selectedSchoolMsid);
   const selectSchool = useStore((s) => s.selectSchool);
   const setViewMode = useStore((s) => s.setViewMode);
@@ -243,7 +243,7 @@ export function OverviewDock() {
               <span className="dock-row__sub">
                 {p.county}, {schoolTypeLabel(p.type)}
                 {isPlp ? <>, <span style={{ color: PLP_RED, fontWeight: 600 }}>PLP</span></> : null}
-                {underused ? <>, <span style={{ fontWeight: 600, color: UTIL_COLORS.under }}>Underused</span></> : null}
+                {underused ? <>, <span style={{ fontWeight: 600, color: UTIL_COLORS.under }}>meets facility test</span></> : null}
               </span>
             </span>
             <UsageDonut enrollment={p.enrollment} capacity={p.capacity} cofte={p.cofte} surplus={p.fish_surplus} />
@@ -264,14 +264,14 @@ export function OverviewDock() {
     </button>
   );
 
-  // A plain readout (not a filter): the total available capacity (surplus student
-  // stations) carried by the underused schools currently in view, so a scout can
-  // read the co-location supply across the district/viewport at a glance. Declared
-  // before the phone/desktop branches so both can render it.
-  const availCapReadout = !empty && inViewAvailableCapacity > 0 && (
-    <div className="dock-availcap" title="Total available capacity (surplus): unused student stations across the underused facilities now in view. Statutory basis (Rule 6A-1.0998271); each school's figure is in its details.">
-      <span className="dock-availcap__num">≈{inViewAvailableCapacity.toLocaleString("en-US")}</span>
-      <span className="dock-availcap__label">available student stations in view</span>
+  // A plain readout (not a filter): the total empty permanent seats across the
+  // underused schools currently in view, so a scout can read the co-location
+  // supply across the district/viewport at a glance. Declared before the
+  // phone/desktop branches so both can render it.
+  const availCapReadout = !empty && inViewEmptySeats > 0 && (
+    <div className="dock-availcap" title="Empty permanent seats (permanent student stations minus current enrollment) across the underused buildings now in view. Portables are not counted. Which buildings count as underused follows the statutory test (Rule 6A-1.0998271); each school's figures are in its details.">
+      <span className="dock-availcap__num">≈{inViewEmptySeats.toLocaleString("en-US")}</span>
+      <span className="dock-availcap__label">empty permanent seats in underused buildings in view</span>
     </div>
   );
 
@@ -374,7 +374,7 @@ export function OverviewDock() {
             <FilterStat compact label="PLP" value={inViewPlp} color={PLP_RED} active={plpOnly}
               onClick={() => { setPlpOnly(!plpOnly); revealOnFilter(); }}
               title="Persistently low-performing schools (F.S. 1002.333). Tap to show only these." />
-            <FilterStat compact label="Underused" value={inViewUnderutilized} color={SLATE} active={underusedActive}
+            <FilterStat compact label="Meet facility test" value={inViewUnderutilized} color={SLATE} active={underusedActive}
               onClick={() => { toggleFacilityUse("under"); revealOnFilter(); }}
               title="Facilities under the 75% / 400-station threshold. Tap to show only these." />
             <FilterStat compact label="Co-location" value={inViewCoLocation} color={CO_LOC_TEAL} active={coLocationOnly}
@@ -402,7 +402,7 @@ export function OverviewDock() {
       <FilterStat compact label="PLP" value={inViewPlp} color={PLP_RED} active={plpOnly}
         onClick={() => { setPlpOnly(!plpOnly); }}
         title="Persistently low-performing schools (F.S. 1002.333). Click to show only these." />
-      <FilterStat compact label="Underused" value={inViewUnderutilized} color={SLATE} active={underusedActive}
+      <FilterStat compact label="Meet facility test" value={inViewUnderutilized} color={SLATE} active={underusedActive}
         onClick={() => { toggleFacilityUse("under"); }}
         title="Facilities under the 75% / 400-station threshold, all types. Click to show only these." />
       <FilterStat compact label="Co-location" value={inViewCoLocation} color={CO_LOC_TEAL} active={coLocationOnly}

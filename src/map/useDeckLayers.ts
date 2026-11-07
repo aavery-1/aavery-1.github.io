@@ -9,7 +9,7 @@ import { GeoJsonLayer, ScatterplotLayer, TextLayer, PathLayer, IconLayer } from 
 import type { Layer } from "@deck.gl/core";
 import { centroid, bboxClip, pointOnFeature, union } from "@turf/turf";
 import { layerById } from "../config/layers";
-import { useStore, utilizationStyle, isUnderutilizedFacility, type UtilKey } from "../store";
+import { useStore, utilizationStyle, isUnderutilizedFacility, emptyPermanentSeats, type UtilKey } from "../store";
 import type { MapBounds } from "../store";
 import { useData } from "../data/DataContext";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
@@ -22,6 +22,8 @@ import { placeLabels, measureLabel, LABEL_PAD_X, LABEL_PAD_Y, type PlacedLabel }
 import { useMapFont } from "./mapFonts";
 import { geodesicBufferMiles } from "../geo/buffer";
 import type { SchoolFeature, LegislativeProps } from "../data/types";
+import { levelLabel } from "../data/types";
+import { useDriveTimes } from "../geo/driveTime";
 
 const SOH_RADIUS_MILES = 5;
 
@@ -61,7 +63,7 @@ export interface SchoolHoverInfo {
   grade: string;
   type: string;
   level: string;
-  // The statutory Facility Utilization Rate (COFTE / permanent stations) from the
+  // The statutory Facility Utilization Rate (COFTE / TOTAL stations) from the
   // shared utilizationStyle helper, so the tooltip agrees with the inspector, the
   // dock, and the list. `utilPct` is that rate; when no COFTE is reported it falls
   // back to an enrollment proxy, flagged by `utilBasis === "enrollment"`. We show
@@ -70,6 +72,9 @@ export interface SchoolHoverInfo {
   utilPct: number | null;
   utilKey: UtilKey;                 // under | inuse | full | unknown (statutory tiers)
   utilBasis: "cofte" | "enrollment" | "none";
+  // The room figure: permanent stations minus headcount (emptyPermanentSeats).
+  // Shown as a COUNT beside the statutory rate, never as a second percentage.
+  emptySeats: number | null;
   // The statutory underused test (FUR <= 75% OR >= 400 surplus stations), as an
   // explicit yes/no; null when capacity is unreported so we can say so.
   underutilized: boolean | null;
@@ -263,7 +268,10 @@ export function useDeckLayers(
   const mapZoom = useStore((s) => s.mapZoom);
   const mapBounds = useStore((s) => s.mapBounds);
   const activeTool = useStore((s) => s.activeTool);
-  const { income, boardDistricts, isochrones, populationGrowth, opportunityZones, legislative } = useData();
+  const { income, boardDistricts, populationGrowth, opportunityZones, legislative } = useData();
+  // Drive times are computed on demand per school (geo/driveTime.ts); the map
+  // draws the selected school's once the "Drive times" layer is on.
+  const driveEntry = useDriveTimes((s) => (selectedSchoolMsid ? s.byMsid[selectedSchoolMsid] : undefined));
   const { features: filteredFeats, inViewFeatures, all, ctx } = useFilteredSchools();
   const font = useMapFont();
 
@@ -393,21 +401,27 @@ export function useDeckLayers(
       });
     }
 
-    // Drive-time reach (isochrone)
-    if (has("drive_time_reach") && isochrones) {
-      const cfg = layerById("drive_time_reach")!;
-      const [fr, fg, fb] = hexToRgb(cfg.style.fillColor ?? "#0D9488");
+    // Drive times for the selected school: nested 15 / 10 / 5 minute areas,
+    // drawn outermost first so the inner (darker) bands sit on top. Colors match
+    // the inspector's column keys (KIPP navy to light blue).
+    if (has("drive_time_reach") && driveEntry?.status === "ready") {
+      const DRIVE_COLORS: Record<number, Rgb> = { 5: [32, 39, 93], 10: [74, 111, 181], 15: [82, 195, 237] };
+      const contours = [...driveEntry.result.contours].sort((a, b) => b.minutes - a.minutes);
       built.push({
         z: 40,
         layer: new GeoJsonLayer({
           id: "drive_time_reach",
-          data: isochrones as unknown as GeoJSON.FeatureCollection,
+          data: {
+            type: "FeatureCollection",
+            features: contours.map((c) => ({ type: "Feature", geometry: c.geometry, properties: { minutes: c.minutes } })),
+          } as GeoJSON.FeatureCollection,
           stroked: true,
           filled: true,
-          getFillColor: [fr, fg, fb, Math.round((cfg.style.fillOpacity ?? 0.15) * 255)],
-          getLineColor: [fr, fg, fb, 255],
+          getFillColor: (f: GeoJSON.Feature) => [...(DRIVE_COLORS[(f.properties as { minutes: number }).minutes] ?? [32, 39, 93]), 34] as [number, number, number, number],
+          getLineColor: (f: GeoJSON.Feature) => [...(DRIVE_COLORS[(f.properties as { minutes: number }).minutes] ?? [32, 39, 93]), 230] as [number, number, number, number],
           getLineWidth: 1.5,
           lineWidthUnits: "pixels",
+          pickable: false,
         }),
       });
     }
@@ -525,8 +539,9 @@ export function useDeckLayers(
           const coLoc = ctx.coLocationMsids.has(p.msid);
           const reason = coLoc ? ctx.coLocationReasons.get(p.msid) : undefined;
           onSchoolHover({
-            x: info.x, y: info.y, name: p.name, grade: p.current_grade, type: p.type, level: p.level,
+            x: info.x, y: info.y, name: p.name, grade: p.current_grade, type: p.type, level: levelLabel(p),
             utilPct: us.pct, utilKey: us.key, utilBasis: us.basis, underutilized,
+            emptySeats: emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity).seats,
             sohEligible: ctx.sohEligibleMsids.has(p.msid), isPlp: ctx.plp.has(p.msid),
             coLocationEligible: coLoc,
             coLocInOZ: reason?.inOpportunityZone ?? false,
@@ -911,7 +926,7 @@ export function useDeckLayers(
     }
 
     return built.sort((a, b) => a.z - b.z).map((b) => b.layer);
-  }, [activeLayerIds, income, isochrones, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover, inViewFeatures, font, plpArea]);
+  }, [activeLayerIds, income, driveEntry, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover, inViewFeatures, font, plpArea]);
 }
 
 // PLP anchor centers among all loaded schools, restricted to the selected
