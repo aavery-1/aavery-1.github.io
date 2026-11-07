@@ -59,7 +59,7 @@ A pin encodes only grade, so charters and district schools look identical on the
   (`src/views/SchoolListView.tsx`); the filter labels Traditional as "District"
   (`src/shell/LeftRail.tsx`). Make sure Magnet is handled and labeled.
 - ACCURACY: school `type` comes from NCES and is ~97% aligned to the authoritative FL DOE
-  charter directory. `SchoolList.xls` (in the project root) lists 282 charters in the 3
+  charter directory. `scripts/sources/charters/SchoolList.xls` lists 282 charters in the 3
   counties vs the tool's 273. RECONCILE: parse `SchoolList.xls` (columns District + School
   Code; MSID = `{districtNumber}-{schoolCode}`, e.g. Miami-Dade district 13 + code 3501 ->
   "13-3501"), mark exact matches as Charter, and log the mismatches so the charter filter

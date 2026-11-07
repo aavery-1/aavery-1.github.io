@@ -11,7 +11,7 @@ list gained a Type column.
 
 Data made real (each step is a re-runnable `npm run data:*` script):
 
-- Charters reconciled against `SchoolList.xls` (`data:charters`): 274 charters, log
+- Charters reconciled against `scripts/sources/charters/SchoolList.xls` (`data:charters`): 274 charters, log
   in `scripts/out/charter-reconciliation.log.txt`.
 - Florida House + Senate representative names (`data:legislators`) from the roster
   files; U.S. Senators removed (statewide, no district value).
@@ -85,7 +85,7 @@ adapter (the PEP file carries both components).
 **Building capacity / FISH (co-location pathway).** Real per-school capacity is
 now wired from the Florida Inventory of School Houses (FISH, FL DOE, May 2026)
 via `scripts/parse-fish-capacity.mjs` (`npm run data:fish`). Because FL DOE files
-are Akamai-gated, the FISH workbook (`0074722-summary.xls`, `FacilityData` sheet)
+are Akamai-gated, the FISH workbook (`scripts/sources/fish-workbooks/0074722-summary.xls`, `FacilityData` sheet)
 is a manual download; the script parses its `Capacity` column and patches
 `schools.sample.geojson` (592 of ~1,116 schools matched by normalized name within
 district; charters/virtual/ambiguous are left `null`, never guessed). This lights

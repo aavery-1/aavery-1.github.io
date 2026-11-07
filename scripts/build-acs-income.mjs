@@ -98,7 +98,7 @@ const acs = await fetchAcs();
 console.error(`ACS tracts: ${acs.size}`);
 
 const features = [];
-let withGeom = 0, withIncome = 0;
+let withIncome = 0;
 for (const [countyFips, countyName] of Object.entries(COUNTIES)) {
   const geoms = await fetchTractGeom(countyFips);
   console.error(`${countyName}: ${geoms.length} tract polygons`);
@@ -108,7 +108,6 @@ for (const [countyFips, countyName] of Object.entries(COUNTIES)) {
     if (!a) continue;
     const poly = toPolygon(g.geometry);
     if (!poly) continue;
-    withGeom++;
     if (a.median_household_income != null) withIncome++;
     features.push({
       type: "Feature",

@@ -8,9 +8,10 @@
 //   - Dashboard (simplest): Supabase project -> Edge Functions -> Deploy a new
 //     function named "school-news", paste this whole file, Deploy.
 //   - CLI: supabase functions deploy school-news
-// It is invoked from the client via supabase.functions.invoke("school-news",
-// { body: { name } }); the platform's JWT check accepts the app's anon key, so
-// this is not an open proxy. Free: Google News RSS needs no API key.
+// It is called with a POST from src/auth/access.ts (fetchSchoolNews, body
+// { name, limit }) and requires a live session token from the password gate
+// in the x-access-token header (see hasLiveSession). Free: Google News RSS needs
+// no API key.
 //
 // NOTE: the RSS parser below is an in-sync COPY of src/news/parseGoogleNews.ts
 // (the app's vitest-tested source of truth). It is inlined here, rather than
@@ -61,7 +62,7 @@ function parseGoogleNewsRss(xml: string, limit = 6): NewsItem[] {
       title = title.slice(0, -(` - ${decodedSource}`.length)).trim();
     }
     const url = decodeEntities(rawLink);
-    if (!title || !url) continue;
+    if (!title || !/^https?:\/\//i.test(url)) continue; // only web links, never javascript: etc.
     const key = title.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -71,27 +72,59 @@ function parseGoogleNewsRss(xml: string, limit = 6): NewsItem[] {
   return items;
 }
 
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+// Only the deployed site and local dev may call this from a browser.
+const ALLOWED_ORIGINS = new Set([
+  "https://aavery-1.github.io",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
 
-function json(body: unknown, status = 200): Response {
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "https://aavery-1.github.io",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-access-token",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    Vary: "Origin",
+  };
+}
+
+function json(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: { ...corsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
-// deno-lint-ignore no-explicit-any
+// The caller must hold a live session token from the password gate (unlock() in
+// supabase/002_session_gate.sql). The public anon key alone is not enough, so
+// this cannot be used as an open proxy by anyone who reads the site's code.
+async function hasLiveSession(token: string): Promise<boolean> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return false;
+  const base = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!base || !key) return false;
+  const res = await fetch(`${base}/rest/v1/rpc/session_valid`, {
+    method: "POST",
+    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  return res.ok && (await res.json()) === true;
+}
+
+const MAX_NAME_LENGTH = 200;
+
 Deno.serve(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req) });
+  if (req.method !== "POST") return json(req, { error: "Method not allowed", items: [] }, 405);
   try {
+    if (!(await hasLiveSession(req.headers.get("x-access-token") ?? ""))) {
+      return json(req, { error: "Session expired", items: [] }, 401);
+    }
     const body = await req.json().catch(() => ({}));
     const name = typeof body?.name === "string" ? body.name.trim() : "";
-    const limit = typeof body?.limit === "number" ? Math.min(20, Math.max(1, body.limit)) : 6;
-    if (!name) return json({ error: "Missing school name", items: [] }, 400);
+    const limit = typeof body?.limit === "number" ? Math.min(20, Math.max(1, Math.floor(body.limit))) : 6;
+    if (!name || name.length > MAX_NAME_LENGTH) return json(req, { error: "Missing or invalid school name", items: [] }, 400);
 
     // Quote the name for a phrase match so "Miami Senior High School" does not
     // match every article containing "Miami" or "High".
@@ -99,13 +132,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const rssUrl = `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`;
     const upstream = await fetch(rssUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; SOH-Geomapping-Tool/1.0)" },
+      signal: AbortSignal.timeout(10_000),
     });
-    if (!upstream.ok) return json({ error: `Upstream ${upstream.status}`, items: [] }, 502);
+    if (!upstream.ok) return json(req, { error: `Upstream ${upstream.status}`, items: [] }, 502);
 
     const xml = await upstream.text();
     const items = parseGoogleNewsRss(xml, limit);
-    return json({ items });
+    return json(req, { items });
   } catch (err) {
-    return json({ error: String(err), items: [] }, 500);
+    // Log the detail server-side; never echo internals to the caller.
+    console.error(err);
+    return json(req, { error: "News lookup failed", items: [] }, 500);
   }
 });

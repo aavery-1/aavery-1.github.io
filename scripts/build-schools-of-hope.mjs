@@ -1,6 +1,6 @@
 // Builds public/data/schools_of_hope.json from the Schools of Hope Revolving
 // Loan Fund payment ledger (F.S. 1001.292; FL DOE loan-fund page, reproduced in
-// "Copy of Schools of Hope Resources.pdf"). These are the real Schools of Hope
+// "reference/Copy of Schools of Hope Resources.pdf"). These are the real Schools of Hope
 // sites that have drawn revolving-loan capital. Addresses are geocoded with the
 // free U.S. Census geocoder (no key) so the points are rooftop-accurate, matching
 // the accuracy standard used for the school layer.

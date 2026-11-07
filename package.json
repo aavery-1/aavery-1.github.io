@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Internal analyst tool for exploring school-facilities data across Miami-Dade, Broward, and Orange counties. Shows facts on a map. Never scores or ranks.",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19"
   },
   "scripts": {
     "dev": "vite",
@@ -14,6 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "check": "npm run lint && npm run typecheck && npm test",
     "data:layers": "node --env-file=.env scripts/fetch-real-layers.mjs",
     "data:schools": "node scripts/fetch-real-data.mjs",
     "data:plp": "node scripts/parse-plp.mjs",
@@ -27,7 +29,6 @@
     "data:titlei:ccd": "node scripts/fetch-title-i.mjs",
     "data:frl": "python3 scripts/parse-frl-lunch.py",
     "data:tenthday": "python3 scripts/parse-broward-tenthday.py",
-    "data:flood": "node scripts/fetch-flood.mjs",
     "data:income": "node --env-file=.env scripts/build-acs-income.mjs",
     "data:demographics": "node --env-file=.env scripts/build-school-demographics.mjs",
     "data:soh": "node scripts/build-schools-of-hope.mjs"
@@ -40,30 +41,37 @@
     "@deck.gl/layers": "^9.0.38",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
-    "@supabase/supabase-js": "^2.116.0",
     "@tanstack/react-virtual": "^3.14.11",
     "@turf/turf": "^7.1.0",
     "fflate": "^0.8.3",
-    "lucide-react": "^0.462.0",
     "rbush": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sass": "^1.104.0",
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@types/google.maps": "^3.58.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^5.2.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^17.14.0",
     "jsdom": "^25.0.1",
+    "sass": "^1.108.1",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11",
-    "vitest": "^2.1.8",
-    "xlsx": "^0.18.5"
+    "typescript-eslint": "^8.72.1",
+    "vite": "^7.3.7",
+    "vitest": "^4.1.12",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.5"
+    }
   }
 }

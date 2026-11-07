@@ -34,12 +34,18 @@ export const SUCCESS_COLOCATION_MSIDS: ReadonlySet<string> = new Set([
 ]);
 
 // KIPP Miami requested buildings: MDCPS facilities KIPP has requested. Host = the
-// current occupant school; the deck shows that host school's data.
-export const KIPP_REQUESTED_MSIDS: ReadonlySet<string> = new Set([
-  "13-6051", // Carol City Middle School
-  "13-1681", // Lillie C. Evans K-8 Center
-  "13-3621", // Coconut Palm K-8 Academy
-]);
+// current occupant school; the deck shows that host school's data. This list is
+// PRIVATE: it is not in the public website code. It is served by Supabase only to
+// an unlocked session (supabase/002_session_gate.sql, private_config) and
+// installed here by the password gate before the app renders. Local dev reads
+// the gitignored private/kipp_requested.local.json instead.
+const kippRequested = new Set<string>();
+export const KIPP_REQUESTED_MSIDS: ReadonlySet<string> = kippRequested;
+
+export function setKippRequestedMsids(msids: readonly string[]): void {
+  kippRequested.clear();
+  for (const m of msids) if (typeof m === "string" && m) kippRequested.add(m);
+}
 
 export function isSuccessColocation(msid: string): boolean {
   return SUCCESS_COLOCATION_MSIDS.has(msid);

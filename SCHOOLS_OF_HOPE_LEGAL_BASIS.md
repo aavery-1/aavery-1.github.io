@@ -55,13 +55,13 @@ Coverage and accuracy in the tool:
 - `src/data/derive/plp.ts` implements criterion 1 only, as a fallback used **just
   when the official list is absent**; it can only under-count relative to the
   list, so it never overrides it. Verified 2026-09-09 against the statute text
-  reproduced in "Copy of Schools of Hope Resources.pdf".
+  reproduced in "reference/Copy of Schools of Hope Resources.pdf".
 
 ## 1a. Designated hope operators (who may run a School of Hope)
 
 A "school of hope" is a charter operated by a **hope operator** designated by the
 State Board of Education under s. 1002.333(2), F.S. FL DOE publishes the roster;
-as reproduced in "Copy of Schools of Hope Resources.pdf" (p.2), the six Florida
+as reproduced in "reference/Copy of Schools of Hope Resources.pdf" (p.2), the six Florida
 designated hope operators are:
 
 1. **Mater Academy**

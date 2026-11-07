@@ -25,7 +25,7 @@ const TARGET_DISTRICT_CODES = new Set(["13", "06", "48"]); // Miami-Dade, Browar
 
 function newestPlpFile() {
   const found = [];
-  for (const dir of [ROOT, resolve(homedir(), "Downloads")]) {
+  for (const dir of [resolve(ROOT, "scripts", "sources", "plp"), resolve(homedir(), "Downloads")]) {
     if (!existsSync(dir)) continue;
     for (const f of readdirSync(dir)) {
       const m = /^PLP(\d{2})( \(\d+\))?\.xlsx$/i.exec(f);

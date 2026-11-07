@@ -45,6 +45,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Vite's own lazy-load helper (preload-helper) is shared by every
+          // dynamic import. Left to Rollup it lands inside whichever vendor chunk
+          // comes first, and it landed in vendor-deckgl, which made the entry
+          // statically import the whole map renderer before the password screen
+          // could paint. Pin it to the small React chunk that always loads first.
+          if (id.includes("vite/preload-helper")) return "vendor-react";
           if (!id.includes("node_modules")) return undefined;
           if (id.includes("@deck.gl") || id.includes("@luma.gl") || id.includes("@math.gl") || id.includes("@loaders.gl")) return "vendor-deckgl";
           // React core must match EXACTLY on the react/react-dom/scheduler packages.

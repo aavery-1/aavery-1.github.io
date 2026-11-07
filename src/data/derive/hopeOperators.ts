@@ -1,7 +1,7 @@
 // Designated Hope Operators, per s. 1002.333(2), F.S. A "school of hope" is a
 // charter operated by a state-designated hope operator, so the tool stars the
 // schools run by those operators. The authoritative roster is published by FL
-// DOE and reproduced in "Copy of Schools of Hope Resources.pdf" (p.2):
+// DOE and reproduced in "reference/Copy of Schools of Hope Resources.pdf" (p.2):
 //
 //   The six Florida designated hope operators are: Mater Academy, RCMA, IDEA
 //   Public Schools, Success Academy, Renaissance/Warrington Preparatory Academy,

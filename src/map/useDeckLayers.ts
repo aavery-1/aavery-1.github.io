@@ -926,7 +926,7 @@ export function useDeckLayers(
     }
 
     return built.sort((a, b) => a.z - b.z).map((b) => b.layer);
-  }, [activeLayerIds, income, driveEntry, boardDistricts, populationGrowth, opportunityZones, legislative, feats, all, ctx, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, countySelection, mapZoom, mapBounds, activeTool, onSchoolHover, inViewFeatures, font, plpArea]);
+  }, [activeLayerIds, income, driveEntry, boardDistricts, populationGrowth, opportunityZones, legislative, feats, ctx, selectedSchoolMsid, comparePinnedMsids, pickedMsids, isolatePicked, selectSchool, radiusCenter, radiusMiles, measurePoints, drawnCircle, mapZoom, mapBounds, activeTool, onSchoolHover, inViewFeatures, font, plpArea]);
 }
 
 // PLP anchor centers among all loaded schools, restricted to the selected

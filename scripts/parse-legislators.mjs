@@ -19,8 +19,8 @@ import { dirname, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
-const HOUSE_HTML = resolve(ROOT, "Representatives for 2024 - 2026 ( Speaker Perez ) _ Florida House of Representatives.html");
-const SENATE_HTML = resolve(ROOT, "Senators - The Florida Senate.html");
+const HOUSE_HTML = resolve(ROOT, "scripts", "sources", "legislators", "Representatives for 2024 - 2026 ( Speaker Perez ) _ Florida House of Representatives.html");
+const SENATE_HTML = resolve(ROOT, "scripts", "sources", "legislators", "Senators - The Florida Senate.html");
 const REPS_JSON = resolve(ROOT, "public/data/representatives.json");
 
 function decode(s) {

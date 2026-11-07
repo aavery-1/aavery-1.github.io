@@ -23,4 +23,9 @@ describe("toCsv", () => {
     const csv = toCsv(["A", "B"], [[null, undefined]]);
     expect(csv.trimEnd().split("\r\n")[1]).toBe(",");
   });
+
+  it("neutralizes cells a spreadsheet would run as formulas, but keeps numbers numeric", () => {
+    const csv = toCsv(["A", "B", "C", "D", "E"], [["=HYPERLINK(\"x\")", "@SUM(A1)", "-4.2%", -3, "+1,200"]]);
+    expect(csv.trimEnd().split("\r\n")[1]).toBe('"\'=HYPERLINK(""x"")",\'@SUM(A1),-4.2%,-3,"+1,200"');
+  });
 });

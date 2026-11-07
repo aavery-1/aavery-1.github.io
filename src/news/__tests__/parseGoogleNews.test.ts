@@ -50,4 +50,12 @@ describe("parseGoogleNewsRss", () => {
   it("returns an empty list for a feed with no items", () => {
     expect(parseGoogleNewsRss("<rss><channel></channel></rss>")).toEqual([]);
   });
+
+  it("drops items whose link is not an http(s) URL", () => {
+    const xml = "<rss><channel>" +
+      "<item><title>Bad</title><link>javascript:alert(1)</link></item>" +
+      "<item><title>Good</title><link>https://example.com/a</link></item>" +
+      "</channel></rss>";
+    expect(parseGoogleNewsRss(xml).map((i) => i.title)).toEqual(["Good"]);
+  });
 });

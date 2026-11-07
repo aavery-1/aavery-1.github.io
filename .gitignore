@@ -10,3 +10,18 @@ coverage
 *.log
 .vite
 __pycache__/
+
+# Private values and local-only files: never commit.
+#   private/                      local dev copy of the private Supabase data
+#   *.local.*                     e.g. supabase/private_seed.local.sql
+/private/
+*.local.*
+*.pyc
+
+# Working deliverables that live in the project folder but are not part of the
+# tool (memos, notice trackers, analysis exports). Keep them out of the public repo.
+/*_Memo*.docx
+/*_Memo*.pdf
+/*Memo*.docx
+/*Tracker*.xlsx
+/*_Eligible_Schools*.xlsx

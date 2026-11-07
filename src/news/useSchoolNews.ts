@@ -1,11 +1,11 @@
 // Live headlines for one school, for the inspector's "In the news" card. Fetches
-// from the Supabase `school-news` Edge Function (see supabaseClient.fetchSchoolNews)
+// from the Supabase `school-news` Edge Function (see access.fetchSchoolNews)
 // and FAILS SOFT, mirroring useDriveTime: if Supabase is not configured it reports
 // "unavailable", and a transport/function error reports "error", so the inspector
 // never breaks over a missing or flaky feed.
 
 import { useEffect, useRef, useState } from "react";
-import { fetchSchoolNews, newsConfigured } from "../auth/supabaseClient";
+import { fetchSchoolNews, newsConfigured } from "../auth/access";
 import type { NewsItem } from "./parseGoogleNews";
 
 export type SchoolNews =

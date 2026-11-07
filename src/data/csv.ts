@@ -4,11 +4,15 @@
 // itself never scores or ranks; the CSV is just the facts, laid out in rows.
 
 // RFC-4180-ish quoting: wrap in quotes when the value contains a comma, quote,
-// or newline; double any embedded quotes.
+// or line break; double any embedded quotes. A text cell that starts with = + -
+// @ or a tab/CR is prefixed with an apostrophe so Excel and Sheets show it as
+// text instead of running it as a formula (CSV formula injection). Numbers, and
+// number-like text such as "-4.2%" or "+1,200", are left alone so they stay numeric.
 function cell(value: unknown): string {
   if (value == null) return "";
-  const s = String(value);
-  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  let s = String(value);
+  if (typeof value !== "number" && /^[=+\-@\t\r]/.test(s) && !/^[-+]?[\d.,]+%?$/.test(s)) s = `'${s}`;
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }
 

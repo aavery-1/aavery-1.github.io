@@ -64,7 +64,7 @@ export function parseGoogleNewsRss(xml: string, limit = 6): NewsItem[] {
       title = title.slice(0, -(` - ${decodedSource}`.length)).trim();
     }
     const url = decodeEntities(rawLink);
-    if (!title || !url) continue;
+    if (!title || !/^https?:\/\//i.test(url)) continue; // only web links, never javascript: etc.
     const key = title.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);

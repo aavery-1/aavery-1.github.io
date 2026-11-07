@@ -25,6 +25,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, "..", "public", "data");
 
 const DOWNLOADS = resolve(homedir(), "Downloads");
+// Committed copies live in scripts/sources/; ~/Downloads is the fallback for a
+// freshly downloaded file that has not been filed yet.
+const GRADES_DIRS = [resolve(__dirname, "sources", "grades"), DOWNLOADS];
+const PLP_DIRS = [resolve(__dirname, "sources", "plp"), DOWNLOADS];
 const GRADES_XLSX_CANDIDATES = [
   "SchoolGrades26 (2).xlsx",
   "SchoolGrades26 (1).xlsx",
@@ -69,10 +73,12 @@ const GRADE_YEAR_COLS = {
 
 const ALLOWED_GRADES = new Set(["A", "B", "C", "D", "F", "I", "NR", "NG"]);
 
-function firstExisting(files, dir) {
-  for (const f of files) {
-    const p = resolve(dir, f);
-    if (existsSync(p)) return p;
+function firstExisting(files, dirs) {
+  for (const dir of dirs) {
+    for (const f of files) {
+      const p = resolve(dir, f);
+      if (existsSync(p)) return p;
+    }
   }
   return null;
 }
@@ -95,10 +101,10 @@ function toMsid(districtCode, schoolNumber) {
 function main() {
   mkdirSync(OUT_DIR, { recursive: true });
 
-  const gradesPath = firstExisting(GRADES_XLSX_CANDIDATES, DOWNLOADS);
+  const gradesPath = firstExisting(GRADES_XLSX_CANDIDATES, GRADES_DIRS);
   if (!gradesPath) {
     console.error(
-      `No SchoolGrades .xlsx found in ${DOWNLOADS}. Expected one of: ${GRADES_XLSX_CANDIDATES.join(", ")}`,
+      `No SchoolGrades .xlsx found in ${GRADES_DIRS.join(" or ")}. Expected one of: ${GRADES_XLSX_CANDIDATES.join(", ")}`,
     );
     process.exit(1);
   }
@@ -144,7 +150,7 @@ function main() {
   console.log(`Wrote ${gradesOutPath} (${(JSON.stringify(gradesOut).length / 1024).toFixed(0)} KB)`);
 
   // Optional: parse the official PLP designations too.
-  const plpPath = firstExisting(PLP_XLSX_CANDIDATES, DOWNLOADS);
+  const plpPath = firstExisting(PLP_XLSX_CANDIDATES, PLP_DIRS);
   if (plpPath) {
     console.log(`\nReading official PLP list from ${plpPath}`);
     const plpWb = xlsx.readFile(plpPath);
@@ -178,7 +184,7 @@ function main() {
     writeFileSync(plpOutPath, JSON.stringify(plpOut, null, 2) + "\n");
     console.log(`Wrote ${plpOutPath}`);
   } else {
-    console.log(`\nNo PLP .xlsx found in ${DOWNLOADS}; skipping (grades-based PLP inference will still work)`);
+    console.log(`\nNo PLP .xlsx found in ${PLP_DIRS.join(" or ")}; skipping (grades-based PLP inference will still work)`);
   }
 }
 

@@ -33,7 +33,7 @@ import XLSX from "xlsx";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
-const FISH_FILE = resolve(ROOT, "0074722-summary.xls");
+const FISH_FILE = resolve(ROOT, "scripts", "sources", "fish-workbooks", "0074722-summary.xls");
 const SCHOOLS_FILE = resolve(ROOT, "public", "data", "schools.sample.geojson");
 const OUT_FILE = resolve(ROOT, "public", "data", "fish_capacity.json");
 

@@ -20,7 +20,6 @@ export class MapErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
-    // eslint-disable-next-line no-console
     console.error("Map error boundary caught:", error);
   }
 

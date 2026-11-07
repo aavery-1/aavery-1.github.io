@@ -26,7 +26,6 @@ export class RootErrorBoundary extends Component<Props, State> {
       this.setState({ updating: true });
       return;
     }
-    // eslint-disable-next-line no-console
     console.error("Root error boundary caught:", error);
   }
 

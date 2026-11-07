@@ -1,49 +1,65 @@
-// The KIPP-branded access screen shown before the app when the Supabase gate is
-// configured. The password is verified on Supabase's server (see supabaseClient);
-// on success we remember it for the session so a refresh does not re-prompt.
-import { useState, type FormEvent, type ReactNode } from "react";
+// The KIPP-branded access screen shown before the app. The password is checked on
+// Supabase's server (see access.ts), which returns a session token; the token is
+// what unlocks the private data, so setting a browser flag by hand gets nothing.
+// On a refresh the saved token is re-checked silently; the load splash stays up
+// meanwhile, so a returning user never sees the password screen flash.
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Button, PasswordInput } from "@carbon/react";
 import { ArrowRight } from "@carbon/icons-react";
-import { gateConfigured, checkAccess } from "./supabaseClient";
+import { AccessError, resumeSession, unlock, type PrivateData } from "./access";
+import { setKippRequestedMsids } from "../data/derive/sohSites";
 import "./PasswordGate.css";
 
-const UNLOCK_KEY = "fft_unlocked";
+type Phase = "resuming" | "locked" | "unlocked";
+type Status = "idle" | "checking" | "wrong" | "rate-limited" | "error";
 
-function alreadyUnlocked(): boolean {
-  try { return sessionStorage.getItem(UNLOCK_KEY) === "1"; } catch { return false; }
+// Install private values into the app's registries BEFORE the app renders, so
+// every map layer and label computes with them from the first frame.
+function applyPrivateData(data: PrivateData) {
+  setKippRequestedMsids(Array.isArray(data.kipp_requested_msids) ? data.kipp_requested_msids : []);
 }
 
-type Status = "idle" | "checking" | "wrong" | "error";
-
 export function PasswordGate({ children }: { children: ReactNode }) {
-  // Render the app immediately when the gate is off (local dev) or already
-  // unlocked this browser session.
-  const [unlocked, setUnlocked] = useState(() => !gateConfigured || alreadyUnlocked());
+  const [phase, setPhase] = useState<Phase>("resuming");
   const [pw, setPw] = useState("");
   const [status, setStatus] = useState<Status>("idle");
 
-  if (unlocked) return <>{children}</>;
+  useEffect(() => {
+    let live = true;
+    resumeSession()
+      .then((data) => {
+        if (!live) return;
+        if (data) { applyPrivateData(data); setPhase("unlocked"); }
+        else setPhase("locked");
+      })
+      .catch(() => { if (live) setPhase("locked"); });
+    return () => { live = false; };
+  }, []);
+
+  if (phase === "unlocked") return <>{children}</>;
+  if (phase === "resuming") return null; // the index.html splash covers this beat
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!pw.trim() || status === "checking") return;
     setStatus("checking");
     try {
-      const ok = await checkAccess(pw.trim());
-      if (ok) {
-        try { sessionStorage.setItem(UNLOCK_KEY, "1"); } catch { /* private mode: stay unlocked in memory only */ }
-        setUnlocked(true);
+      const data = await unlock(pw.trim());
+      if (data) {
+        applyPrivateData(data);
+        setPhase("unlocked");
       } else {
         setStatus("wrong");
       }
-    } catch {
-      setStatus("error");
+    } catch (err) {
+      setStatus(err instanceof AccessError && err.kind === "rate-limited" ? "rate-limited" : "error");
     }
   };
 
-  const invalid = status === "wrong" || status === "error";
-  const invalidText = status === "error"
-    ? "Could not check the password. Check your connection and try again."
+  const invalid = status === "wrong" || status === "error" || status === "rate-limited";
+  const invalidText =
+    status === "rate-limited" ? "Too many attempts. Wait 15 minutes and try again."
+    : status === "error" ? "Could not check the password. Check your connection and try again."
     : "That password is not correct. Try again.";
 
   return (

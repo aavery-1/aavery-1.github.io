@@ -1,5 +1,5 @@
 // Reconcile the tool's charter classification against the authoritative Florida
-// DOE charter directory (SchoolList.xls in the project root), so the "Charter"
+// DOE charter directory (scripts/sources/charters/SchoolList.xls), so the "Charter"
 // filter is trustworthy.
 //
 // Run:  node scripts/reconcile-charters.mjs      (from the project root)
@@ -37,7 +37,7 @@ import XLSX from "xlsx";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
-const SCHOOL_LIST = resolve(ROOT, "SchoolList.xls");
+const SCHOOL_LIST = resolve(ROOT, "scripts", "sources", "charters", "SchoolList.xls");
 const SCHOOLS_GEOJSON = resolve(ROOT, "public/data/schools.sample.geojson");
 const OUT_DIR = resolve(__dirname, "out");
 const LOG_FILE = resolve(OUT_DIR, "charter-reconciliation.log.txt");
