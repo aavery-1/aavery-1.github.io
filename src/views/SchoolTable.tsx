@@ -23,21 +23,20 @@ import {
 import { Search as SearchIcon, Location as MyLocationIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Close as CloseIcon, ArrowUp as ArrowUpIcon, ArrowDown as ArrowDownIcon, Filter as FilterIcon } from "@carbon/icons-react";
 import { alpha } from "@mui/material/styles";
 import { useData } from "../data/DataContext";
-import { useStore, utilizationBucket, emptyPermanentSeats, MAX_COMPARE } from "../store";
+import { useStore, utilizationStyle, emptyPermanentSeats, MAX_COMPARE, type UtilKey } from "../store";
+import { Tag } from "@carbon/react";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { useActiveFilters } from "../status/useActiveFilters";
+import { incomeVsCounty } from "../data/countyIncome";
 import { ACCENT_TEXT, TEAL } from "../muiTheme";
 import { schoolTypeLabel, titleILabel, levelLabel, type SchoolFeature } from "../data/types";
 import "./SchoolTable.carbon.css";
 
-const RED_STRONG = "#B71C1C";  // PLP
-const CO_LOC_BLUE = "#1D4ED8";  // co-location target
-const TITLE_I_PURPLE = "#7C3AED"; // economic-disadvantage proxy (Title I)
 
 type Order = "asc" | "desc";
-type SortKey = "name" | "type" | "county" | "level" | "titleI" | "frl" | "black" | "enrollment" | "capacity" | "emptySeats" | "utilization";
+type SortKey = "name" | "siting" | "plpNear" | "titleI" | "frl" | "incomeDelta" | "enrollment" | "emptySeats" | "utilization";
 
 interface Row {
   feature: SchoolFeature;
@@ -49,18 +48,27 @@ interface Row {
   grade: string;
   titleI: string;
   frl: number | null; // free/reduced-price lunch rate (0-1), null when not reported
-  black: number | null; // % Black students (0-100), FL DOE membership by race; null when not reported
+  incomeDelta: number | null;  // 5-mile median household income vs county median, as a fraction (-0.18)
+  incomeNearby: number | null; // the 5-mile median itself, for the second line
   enrollment: number | null;
   capacity: number | null;
   emptySeats: number | null; // empty permanent seats: permanent stations minus headcount enrollment; null when either is missing
   utilization: number | null;
-  bucket: "over" | "target" | "under" | "unknown";
+  utilLabel: string | null;   // statutory tier word ("Meets facility test" ...)
+  utilKey: UtilKey;
+  meta: string;               // "District · Middle (6-8) · Broward"
   isPlp: boolean;
   isCoLocation: boolean;
+  inSiting: boolean;          // School of Hope may open here (siting area + Title I)
+  siting: number;             // sort rank: 2 co-location candidate, 1 siting area, 0 neither
+  plpNear: number;            // persistently low-performing schools within 5 miles
 }
 
 function compareRows(a: Row, b: Row, key: SortKey, order: Order): number {
   const dir = order === "asc" ? 1 : -1;
+  // Siting status ties break on room (most empty seats first), so the top of the
+  // default view is the best-supplied co-location candidates.
+  if (key === "siting" && a.siting === b.siting) return ((b.emptySeats ?? -1) - (a.emptySeats ?? -1));
   const av = a[key];
   const bv = b[key];
   if (av == null && bv == null) return 0;
@@ -75,7 +83,7 @@ function compareRows(a: Row, b: Row, key: SortKey, order: Order): number {
 // "schools in view" dock hands off), so the List view can show exactly what was
 // on screen without duplicating the map's browser.
 export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean; scope?: "all" | "inView" }) {
-  const { schools } = useData();
+  const { schools, schoolDemographics } = useData();
   const fs = useFilteredSchools();
   const ctx = fs.ctx;
   const features = scope === "inView" ? fs.inViewFeatures : fs.features;
@@ -94,7 +102,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   const activeFilters = useActiveFilters();
   const openFilters = () => { setPanelCollapsed(false); setMobileRailOpen(true); };
 
-  const [orderBy, setOrderBy] = useState<SortKey>("utilization");
+  const [orderBy, setOrderBy] = useState<SortKey>("siting");
   const [order, setOrder] = useState<Order>("desc");
   const [query, setQuery] = useState("");
 
@@ -115,8 +123,11 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   // Width tiers so the table fits its container without horizontal scroll: full
   // columns on a wide list, drop the low-priority ones as space tightens, and
   // fall back to the five essentials when an inspector squeezes it.
-  const compact = availWidth < 980;      // drop Type / Level / Capacity
-  const ultraCompact = availWidth < 780; // also drop County / Enrollment
+  // Fixed columns total 888px at full width; School needs ~260px of its own, so
+  // columns drop right-to-left in priority order as the table narrows.
+  const compact = availWidth < 1150;     // drop F/R lunch / Income vs county / Title I (-364)
+  const ultraCompact = availWidth < 1000; // also drop Enrollment (-112)
+  const tiny = availWidth < 860;          // also drop Nearby PLP (-112)
   // Phone tier: the 280px name column plus utilization + actions overflows a
   // ~375px screen, cutting off the utilization bar and hiding the row actions.
   // Here the name column goes flexible (absorbs the remainder) and utilization +
@@ -131,15 +142,12 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
     if (phone) return c.key === "name" || c.key === "actions";
     if (c.tier === "full") return !compact;
     if (c.tier === "mid") return !ultraCompact;
+    if (c.tier === "low") return !tiny;
     return true;
   });
-  const colWidth = (c: (typeof COLUMNS)[number]): number | undefined => {
-    if (!phone) return c.width;
-    if (c.key === "name") return undefined;      // flexible: absorb remaining width
-    if (c.key === "utilization") return 118;
-    if (c.key === "actions") return 76;
-    return c.width;
-  };
+  // Every column but School has a fixed width; School has none, so it alone
+  // absorbs the leftover space and the others sit exactly over their data.
+  const colWidth = (c: (typeof COLUMNS)[number]): number | undefined => (c.key === "name" ? undefined : c.width);
 
   const rows: Row[] = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -155,7 +163,12 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
       })
       .map((f) => {
         const p = f.properties;
-        const util = p.enrollment != null && p.capacity != null && p.capacity > 0 ? p.enrollment / p.capacity : null;
+        // The STATUTORY rate and tier, the same figure the school card, the map
+        // legend, and the filter use (utilizationStyle), so no surface disagrees.
+        const us = utilizationStyle(p.enrollment, p.capacity, p.cofte, p.fish_surplus);
+        const util = us.pct != null ? us.pct / 100 : null;
+        const isCo = ctx.coLocationMsids.has(p.msid);
+        const inSiting = ctx.sohEligibleMsids.has(p.msid);
         return {
           feature: f,
           msid: p.msid,
@@ -166,17 +179,25 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
           grade: p.current_grade,
           titleI: p.title_i_schoolwide ? "Schoolwide" : titleILabel(p.title_i),
           frl: p.frl_rate ?? null,
-          black: p.pct_black ?? null,
+          ...(() => {
+            const iv = incomeVsCounty(schoolDemographics?.schools[p.msid], p.county);
+            return { incomeDelta: iv?.delta ?? null, incomeNearby: iv?.nearby ?? null };
+          })(),
           enrollment: p.enrollment,
           capacity: p.capacity,
           emptySeats: emptyPermanentSeats(p.enrollment, p.permanent_capacity, p.capacity).seats,
           utilization: util,
-          bucket: utilizationBucket(p.enrollment, p.capacity),
+          utilLabel: us.key === "unknown" ? null : us.label,
+          utilKey: us.key,
+          meta: [schoolTypeLabel(p.type), levelLabel(p), p.county].filter(Boolean).join(" · "),
           isPlp: ctx.plp.has(p.msid),
-          isCoLocation: ctx.coLocationMsids.has(p.msid),
+          isCoLocation: isCo,
+          inSiting,
+          siting: isCo ? 2 : inSiting ? 1 : 0,
+          plpNear: ctx.nearbyPlps.get(p.msid)?.length ?? 0,
         };
       });
-  }, [features, ctx, query]);
+  }, [features, ctx, query, schoolDemographics]);
 
   const sorted = useMemo(() => [...rows].sort((a, b) => compareRows(a, b, orderBy, order)), [rows, orderBy, order]);
 
@@ -184,7 +205,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   // "most" first. Shared by the column headers and the phone sort control.
   const applySort = (key: SortKey) => {
     setOrderBy(key);
-    setOrder(key === "name" || key === "type" || key === "county" || key === "level" || key === "titleI" ? "asc" : "desc");
+    setOrder(key === "name" || key === "titleI" ? "asc" : "desc");
   };
   const handleSort = (key: SortKey) => {
     if (orderBy === key) setOrder(order === "asc" ? "desc" : "asc");
@@ -337,17 +358,15 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
             aria-label="Sort schools by"
             sx={{ flex: 1, fontSize: 13, bgcolor: "background.paper" }}
           >
-            <MenuItem value="utilization" sx={{ fontSize: 13 }}>Utilization</MenuItem>
-            <MenuItem value="name" sx={{ fontSize: 13 }}>Name</MenuItem>
-            <MenuItem value="county" sx={{ fontSize: 13 }}>County</MenuItem>
-            <MenuItem value="titleI" sx={{ fontSize: 13 }}>Title I</MenuItem>
-            <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
-            <MenuItem value="black" sx={{ fontSize: 13 }}>% Black</MenuItem>
-            <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
-            <MenuItem value="capacity" sx={{ fontSize: 13 }}>Capacity</MenuItem>
+            <MenuItem value="siting" sx={{ fontSize: 13 }}>Siting status</MenuItem>
             <MenuItem value="emptySeats" sx={{ fontSize: 13 }}>Empty seats</MenuItem>
-            <MenuItem value="level" sx={{ fontSize: 13 }}>Level</MenuItem>
-            <MenuItem value="type" sx={{ fontSize: 13 }}>Type</MenuItem>
+            <MenuItem value="utilization" sx={{ fontSize: 13 }}>Utilization</MenuItem>
+            <MenuItem value="plpNear" sx={{ fontSize: 13 }}>PLP within 5 mi</MenuItem>
+            <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
+            <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
+            <MenuItem value="incomeDelta" sx={{ fontSize: 13 }}>Income vs county</MenuItem>
+            <MenuItem value="titleI" sx={{ fontSize: 13 }}>Title I</MenuItem>
+            <MenuItem value="name" sx={{ fontSize: 13 }}>Name</MenuItem>
           </Select>
           <Tooltip title={order === "asc" ? "Ascending" : "Descending"}>
             <IconButton size="small" onClick={() => setOrder((o) => (o === "asc" ? "desc" : "asc"))} aria-label={`Sort direction ${order === "asc" ? "ascending" : "descending"}, toggle`}>
@@ -358,7 +377,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
       )}
 
       <TableContainer ref={containerRef} component={Paper} elevation={0} square sx={{ flex: 1, overflow: "auto", overflowX: "hidden", minHeight: 0 }}>
-        <Table stickyHeader size="small" sx={{ tableLayout: "fixed", width: "100%", "& .MuiTableCell-root": { px: 1.25 } }}>
+        <Table stickyHeader size="small" className="tbl" sx={{ tableLayout: "fixed", width: "100%" }}>
           <TableHead>
             {!phone && (
               <TableRow>
@@ -367,10 +386,11 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                     key={c.key}
                     align={c.numeric ? "right" : "left"}
                     title={c.help}
-                    sortDirection={c.key !== "actions" && c.key !== "flags" && orderBy === c.key ? order : false}
-                    sx={{ width: colWidth(c), fontWeight: 700, fontSize: 12, textTransform: "none", letterSpacing: 0.16, color: "text.secondary", bgcolor: "background.paper", py: 1.25, whiteSpace: "nowrap", cursor: c.help ? "help" : undefined }}
+                    sortDirection={c.key !== "actions" && orderBy === c.key ? order : false}
+                    className={`tbl-th${c.numeric ? " tbl-th--num" : ""}`}
+                    sx={{ width: colWidth(c), cursor: c.help ? "help" : undefined }}
                   >
-                    {c.key === "actions" || c.key === "flags" ? (
+                    {c.key === "actions" ? (
                       c.label
                     ) : (
                       <TableSortLabel
@@ -453,10 +473,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             >
                               {r.name}
                             </button>
-                            <div className="school-card__meta">
-                              {[r.county, r.level, schoolTypeLabel(r.type)].filter(Boolean).join(" · ")}
-                              <span className="school-card__msid">{r.msid}</span>
-                            </div>
+                            <div className="school-card__meta">{r.meta}</div>
                           </div>
                           <div className="school-card__actions">
                             <Tooltip title="Show on map" placement="top">
@@ -480,136 +497,70 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             </Tooltip>
                           </div>
                         </div>
-                        {(r.isPlp || r.isCoLocation) && (
-                          <div className="school-card__flags">
-                            {r.isPlp && <FlagChip label="PLP" color={RED_STRONG} title="Persistently low-performing (F.S. 1002.333). A hope operator may open to serve this school's students." />}
-                            {r.isCoLocation && <FlagChip label="Co-loc" color={CO_LOC_BLUE} title="Co-location candidate: an underused district building in a School of Hope siting area. The building-age rule is checked in a school's details." />}
-                          </div>
-                        )}
+                        <div className="school-card__flags"><SitingCell r={r} /></div>
                         <div className="school-card__facts">
                           <div className="school-card__fact">
                             <span className="school-card__fact-label">Utilization</span>
-                            <span className="school-card__fact-value"><UtilizationCell util={r.utilization} bucket={r.bucket} dense={false} fill /></span>
+                            <span className="school-card__fact-value"><UtilCell r={r} /></span>
                           </div>
                           <div className="school-card__fact">
-                            <span className="school-card__fact-label">Title I</span>
-                            <span className="school-card__fact-value"><TitleICell value={r.titleI} /></span>
+                            <span className="school-card__fact-label">Empty seats</span>
+                            <span className="school-card__fact-value"><EmptySeatsCell value={r.emptySeats} /></span>
+                          </div>
+                          <div className="school-card__fact">
+                            <span className="school-card__fact-label">Nearby PLP</span>
+                            <span className="school-card__fact-value"><PlpNearCell n={r.plpNear} /></span>
                           </div>
                           <div className="school-card__fact">
                             <span className="school-card__fact-label">F/R lunch</span>
                             <span className="school-card__fact-value"><FrlCell rate={r.frl} /></span>
                           </div>
                           <div className="school-card__fact">
-                            <span className="school-card__fact-label">Empty seats</span>
-                            <span className="school-card__fact-value"><EmptySeatsCell value={r.emptySeats} /></span>
+                            <span className="school-card__fact-label">Income vs county</span>
+                            <span className="school-card__fact-value"><IncomeCell delta={r.incomeDelta} nearby={r.incomeNearby} /></span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
                   ) : (
                   <>
-                  {/* School: grade badge + name + MSID + decision flags. */}
-                  <TableCell sx={{ verticalAlign: undefined, py: undefined }}>
-                    <Stack direction="row" spacing={1.25} alignItems={phone ? "flex-start" : "center"}>
-                      <Box
+                  {/* School: grade + name, then ONE muted line with type, level,
+                      and county (three columns' worth of context, read in passing). */}
+                  <TableCell>
+                    <div className="tbl-school">
+                      <span
+                        className="tbl-grade"
                         title={gs.description}
-                        sx={{
-                          width: 30, height: 30, borderRadius: 1, flex: "none",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 13, fontWeight: 800,
-                          bgcolor: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor),
-                          border: `1.25px ${gs.dashed ? "dashed" : "solid"} ${rgbaToCss(gs.stroke)}`,
-                        }}
+                        style={{ background: rgbaToCss(gs.fill), color: rgbaToCss(gs.letterColor), borderColor: rgbaToCss(gs.stroke), borderStyle: gs.dashed ? "dashed" : "solid" }}
                       >
                         {gs.letter}
-                      </Box>
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
-                        {/* The name is the row's primary control: a real button, so
-                            keyboard users tab name -> show-on-map -> shortlist per
-                            row (no interactive controls nested inside a button row).
-                            On phone it wraps to two lines instead of truncating. */}
-                        <Box
-                          component="button"
+                      </span>
+                      <div className="tbl-school__text">
+                        <button
                           type="button"
-                          title={r.name}
+                          className="tbl-school__name"
+                          title={`${r.name} (${r.msid})`}
                           aria-label={`Open details for ${r.name}`}
                           onClick={(e) => { e.stopPropagation(); openSchool(r); }}
-                          sx={{
-                            appearance: "none", border: "none", background: "none", p: 0, m: 0, font: "inherit",
-                            width: "100%", minWidth: 0, textAlign: "left", cursor: "pointer",
-                            fontWeight: 600, lineHeight: 1.3, color: "text.primary", overflow: "hidden",
-                            ...(phone
-                              ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", whiteSpace: "normal" }
-                              : { display: "block", whiteSpace: "nowrap", textOverflow: "ellipsis" }),
-                            "&:hover": { textDecoration: "underline" },
-                            "&:focus-visible": { outline: `2px solid ${ACCENT_TEXT}`, outlineOffset: 2, borderRadius: 1 },
-                          }}
                         >
                           {r.name}
-                        </Box>
-                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.25, flexWrap: "wrap", rowGap: 0.25 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: "var(--font-mono)" }}>{r.msid}</Typography>
-                          {r.isPlp && <FlagChip label="PLP" color={RED_STRONG} title="Persistently low-performing (F.S. 1002.333). A hope operator may open to serve this school's students." />}
-                          {r.isCoLocation && <FlagChip label="Co-loc" color={CO_LOC_BLUE} title="Co-location candidate: an underused district building (utilization at or below 75%, or 400+ surplus stations) in a School of Hope siting area. Rent-free co-location is possible under Rule 6A-1.0998271; the rule's exclusion of buildings under 4 years old is not checked here." />}
-                        </Stack>
-                        {phone && (
-                          <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 0.75 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ flex: "0 0 auto", width: 62 }}>Utilization</Typography>
-                              <Box sx={{ flex: 1, minWidth: 0 }}>
-                                <UtilizationCell util={r.utilization} bucket={r.bucket} dense={false} fill />
-                              </Box>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ flex: "0 0 auto", width: 62 }}>Title I</Typography>
-                              <TitleICell value={r.titleI} />
-                            </Box>
-                            <Typography variant="caption" color="text.secondary">{[r.county, r.level, schoolTypeLabel(r.type)].filter(Boolean).join(" · ")}</Typography>
-                          </Box>
-                        )}
-                      </Box>
-                    </Stack>
+                        </button>
+                        <span className="tbl-school__meta">{r.meta}</span>
+                      </div>
+                    </div>
                   </TableCell>
-                  {!ultraCompact && (
-                    <TableCell><Typography variant="body2" noWrap>{r.county}</Typography></TableCell>
-                  )}
-                  {!compact && (
-                    <TableCell><Typography variant="body2" color="text.secondary" noWrap>{r.level}</Typography></TableCell>
-                  )}
-                  {!compact && (
-                    <TableCell><Typography variant="body2" noWrap>{schoolTypeLabel(r.type)}</Typography></TableCell>
-                  )}
-                  {!ultraCompact && (
-                    <TableCell><TitleICell value={r.titleI} /></TableCell>
-                  )}
-                  {!compact && (
-                    <TableCell align="right"><FrlCell rate={r.frl} /></TableCell>
-                  )}
-                  {!compact && (
-                    <TableCell align="right"><BlackCell pct={r.black} /></TableCell>
-                  )}
-                  {!phone && (
-                    <TableCell align="right">
-                      <UtilizationCell util={r.utilization} bucket={r.bucket} dense={compact} />
-                    </TableCell>
-                  )}
+                  <TableCell><SitingCell r={r} /></TableCell>
+                  {!tiny && <TableCell align="right"><PlpNearCell n={r.plpNear} /></TableCell>}
+                  <TableCell align="right"><UtilCell r={r} /></TableCell>
+                  <TableCell align="right"><EmptySeatsCell value={r.emptySeats} /></TableCell>
                   {!ultraCompact && (
                     <TableCell align="right">
-                      <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-                        {r.enrollment != null ? r.enrollment.toLocaleString("en-US") : "-"}
-                      </Typography>
+                      <span className="tbl-num">{r.enrollment != null ? r.enrollment.toLocaleString("en-US") : <span className="tbl-na">n/a</span>}</span>
                     </TableCell>
                   )}
-                  {!compact && (
-                    <TableCell align="right">
-                      <Typography variant="body2" color="text.secondary" sx={{ fontVariantNumeric: "tabular-nums" }}>
-                        {r.capacity != null ? r.capacity.toLocaleString("en-US") : "-"}
-                      </Typography>
-                    </TableCell>
-                  )}
-                  {!compact && (
-                    <TableCell align="right"><EmptySeatsCell value={r.emptySeats} /></TableCell>
-                  )}
+                  {!compact && <TableCell align="right"><FrlCell rate={r.frl} /></TableCell>}
+                  {!compact && <TableCell align="right"><IncomeCell delta={r.incomeDelta} nearby={r.incomeNearby} /></TableCell>}
+                  {!compact && <TableCell><TitleICell value={r.titleI} /></TableCell>}
                   {/* On phone the actions stack and use a 44px touch target (Fluent
                       minimum); on desktop they stay compact inline icons. */}
                   <TableCell align="right" sx={{ whiteSpace: "nowrap", verticalAlign: phone ? "top" : undefined, py: phone ? 1.25 : undefined }}>
@@ -678,109 +629,79 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
   );
 }
 
-function FlagChip({ label, color, title }: { label: string; color: string; title?: string }) {
-  const chip = (
-    <Chip
-      size="small"
-      label={label}
-      sx={{
-        height: 20, fontSize: 11, fontWeight: 700, letterSpacing: 0.3,
-        bgcolor: alpha(color, 0.12), color, border: `1px solid ${alpha(color, 0.35)}`,
-        "& .MuiChip-label": { px: 0.75 },
-        cursor: title ? "help" : "default",
-      }}
-    />
+// Siting status as Carbon tags, strongest first: a co-location candidate (the
+// answer this tool exists for), else "May open here" (in a siting area and
+// Title I), plus "PLP" when the school is itself persistently low-performing.
+function SitingCell({ r }: { r: Row }) {
+  if (!r.isCoLocation && !r.inSiting && !r.isPlp) return <span className="tbl-na">Not a siting area</span>;
+  return (
+    <span className="tbl-tags">
+      {r.isCoLocation
+        ? <Tag type="teal" size="sm" title="Co-location candidate: a district building that meets the facility test (75% or less, or 400+ surplus stations) inside a School of Hope siting area. Building age is not checked.">Co-location candidate</Tag>
+        : r.inSiting ? <Tag type="green" size="sm" title="Inside a School of Hope siting area and Title I eligible.">May open here</Tag> : null}
+      {r.isPlp && <Tag type="red" size="sm" title="Persistently low-performing (F.S. 1002.333).">PLP</Tag>}
+    </span>
   );
-  return title ? <Tooltip title={title} placement="top" arrow>{chip}</Tooltip> : chip;
 }
 
-// Title I is the available economic-disadvantage proxy (a true free/reduced-price
-// rate is a planned data addition). A filled dot marks an eligible school so the
-// column scans quickly; "No"/"Unknown" stay muted.
+function PlpNearCell({ n }: { n: number }) {
+  return <span className={n > 0 ? "tbl-num" : "tbl-num tbl-na"}>{n}</span>;
+}
+
+// Title I: plain text; eligible schools in primary text, the rest muted.
 function TitleICell({ value }: { value: string }) {
   const eligible = value === "Schoolwide" || value === "Yes";
-  return (
-    <Stack direction="row" spacing={0.6} alignItems="center">
-      <Box sx={{ width: 7, height: 7, borderRadius: "50%", flex: "none", bgcolor: eligible ? TITLE_I_PURPLE : "transparent", border: eligible ? "none" : "1px solid", borderColor: "divider" }} />
-      <Typography variant="body2" color={eligible ? "text.primary" : "text.secondary"} noWrap>{value}</Typography>
-    </Stack>
-  );
+  return <span className={eligible ? "tbl-text" : "tbl-text tbl-na"}>{value}</span>;
 }
 
-// Free/reduced-price lunch rate. A right-aligned percent; null (suppressed or not
-// in the FL DOE report) reads as a muted "n/a", never a fake 0%.
 function FrlCell({ rate }: { rate: number | null }) {
-  if (rate == null) return <Typography variant="body2" color="text.secondary">n/a</Typography>;
+  return rate == null ? <span className="tbl-na">n/a</span> : <span className="tbl-num">{Math.round(rate * 100)}%</span>;
+}
+
+// Neighborhood income vs the county: the signed gap as the headline (a minus
+// sign, never color alone, carries the direction), the 5-mile median beneath.
+function IncomeCell({ delta, nearby }: { delta: number | null; nearby: number | null }) {
+  if (delta == null || nearby == null) return <span className="tbl-na">n/a</span>;
+  const pct = Math.round(delta * 100);
   return (
-    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>{Math.round(rate * 100)}%</Typography>
+    <span className="tbl-util">
+      <span className="tbl-num">{pct > 0 ? `+${pct}%` : pct < 0 ? `\u2212${Math.abs(pct)}%` : "0%"}</span>
+      <span className="tbl-util__tier">${Math.round(nearby / 1000)}k nearby</span>
+    </span>
   );
 }
 
-// % Black enrolled students (0-100). A right-aligned percent; null (suppressed or
-// not in the FL DOE race report) reads as a muted "n/a", never a fake 0%.
-function BlackCell({ pct }: { pct: number | null }) {
-  if (pct == null) return <Typography variant="body2" color="text.secondary">n/a</Typography>;
-  return (
-    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>{Math.round(pct)}%</Typography>
-  );
-}
-
-// Empty permanent seats: permanent stations minus headcount enrollment, floored
-// at 0. A right-aligned count; null (either figure missing) reads as a muted "-".
-// Not tinted at 400: that threshold belongs to the statutory surplus, a
-// different figure (see emptyPermanentSeats in store.ts).
+// Empty permanent seats: permanent stations minus headcount, floored at 0.
 function EmptySeatsCell({ value }: { value: number | null }) {
-  if (value == null) return <Typography variant="body2" color="text.secondary">-</Typography>;
+  return value == null ? <span className="tbl-na">n/a</span> : <span className="tbl-num">{value.toLocaleString("en-US")}</span>;
+}
+
+// Statutory utilization: the rate, with its tier word beneath (both right-
+// aligned to the column edge, so the number column reads as one clean edge).
+function UtilCell({ r }: { r: Row }) {
+  if (r.utilization == null) return <span className="tbl-na">n/a</span>;
   return (
-    <Typography variant="body2" sx={{ fontVariantNumeric: "tabular-nums" }}>
-      {value.toLocaleString("en-US")}
-    </Typography>
+    <span className="tbl-util">
+      <span className="tbl-num">{Math.round(r.utilization * 100)}%</span>
+      {r.utilLabel && <span className={`tbl-util__tier tbl-util__tier--${r.utilKey}`}>{r.utilLabel}</span>}
+    </span>
   );
 }
 
-// `fill` (phone card) makes the bar flex to fill its container instead of a fixed
-// right-aligned width, so it never overflows a tight row and collides with a label.
-function UtilizationCell({ util, bucket, dense, fill }: { util: number | null; bucket: Row["bucket"]; dense: boolean; fill?: boolean }) {
-  if (util == null) return <Typography variant="body2" color="text.secondary">n/a</Typography>;
-  const pct = Math.round(util * 100);
-  const mark = bucket === "over" ? "▲" : bucket === "under" ? "▼" : "";
-  const color = "#334155";
-  // The track represents 100% of capacity; the fill is the exact utilization
-  // fraction, capped at a full track (over-capacity is flagged by the ▲ mark and
-  // the % label). A hair of width is kept for a non-zero rate so it stays visible,
-  // but never enough to overstate a low utilization. Enrollment and capacity have
-  // their own columns, so this cell shows just the rate and its bar.
-  const fillPct = util > 0 ? Math.max(2, Math.min(100, util * 100)) : 0;
-  return (
-    <Stack direction="row" alignItems="center" spacing={1} justifyContent={fill ? "flex-start" : "flex-end"} sx={fill ? { width: "100%" } : undefined}>
-      <Box sx={{ width: fill ? "auto" : dense ? 56 : 88, flex: fill ? 1 : "none", minWidth: fill ? 40 : undefined, height: 6, bgcolor: "action.hover", borderRadius: 3, overflow: "hidden" }}>
-        <Box sx={{ width: `${fillPct}%`, height: "100%", bgcolor: color, borderRadius: 3 }} />
-      </Box>
-      <Typography variant="body2" sx={{ fontWeight: 700, color, fontVariantNumeric: "tabular-nums", minWidth: 46, textAlign: "right", flex: "0 0 auto" }}>
-        {mark ? `${mark} ` : ""}{pct}%
-      </Typography>
-    </Stack>
-  );
-}
-
-// Column priority tiers. "full" columns show only on a wide table; "mid" columns
-// drop when the table is squeezed (inspector open); the rest always
-// show. Keeps the essentials (name, grade, flags, utilization, actions) visible
-// at every width without horizontal scroll.
-// `width` feeds a fixed table layout so columns fill the container exactly and
-// never force horizontal scroll; the name column has no width and absorbs the
-// remainder, truncating with an ellipsis.
-const COLUMNS: { key: SortKey | "flags" | "actions"; label: string; numeric?: boolean; tier?: "full" | "mid"; width?: number; help?: string }[] = [
-  { key: "name", label: "School", width: 280 },
-  { key: "county", label: "County", tier: "mid", width: 100 },
-  { key: "level", label: "Level", tier: "full", width: 136 },
-  { key: "type", label: "Type", tier: "full", width: 92 },
-  { key: "titleI", label: "Title I", tier: "mid", width: 108, help: "Title I eligibility (FL DOE Title I Part A list, 2025-26)." },
-  { key: "frl", label: "F/R lunch", numeric: true, tier: "full", width: 92, help: "Share of students on free or reduced-price meals, the school-level poverty measure (FL DOE Fall Survey 2, 2025-26)." },
-  { key: "black", label: "% Black", numeric: true, tier: "full", width: 84, help: "Share of enrolled students who are Black (FL DOE Membership by Race, Survey 2 2024-25). For KIPP, the network figure across its campuses." },
-  { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Enrollment ÷ capacity (FISH student stations). The inspector shows the statutory COFTE-based rate." },
-  { key: "enrollment", label: "Enroll.", numeric: true, tier: "mid", width: 82, help: "FL DOE membership enrollment, with its year: Final Survey 2 (October), except Broward SY2026-27, which is the district's Tenth Day count." },
-  { key: "capacity", label: "Capacity", numeric: true, tier: "full", width: 84, help: "Total FISH student stations (permanent plus portable), the statutory measure. The inspector also shows the permanent-only figure." },
-  { key: "emptySeats", label: "Empty seats", numeric: true, tier: "full", width: 98, help: "Empty permanent seats: permanent student stations minus current enrollment (headcount), the districts' own room measure. Portables are not counted. The statutory surplus for the 400-station test (total stations minus funded FTE) is in each school's details." },
-  { key: "actions", label: "", numeric: true, width: 86 },
+// Column set, in the order a siting decision is made: who (School), can a
+// School of Hope go here (Siting, PLP nearby), is there room (Utilization,
+// Empty seats, Enrollment), who it serves (F/R lunch, % Black, Title I).
+// Tiers drop the right-hand columns first as the table narrows. Every column
+// except School has a fixed width; School absorbs the rest.
+const COLUMNS: { key: SortKey | "actions"; label: string; numeric?: boolean; tier?: "full" | "mid" | "low"; width?: number; help?: string }[] = [
+  { key: "name", label: "School" },
+  { key: "siting", label: "Siting", width: 176, help: "Co-location candidate, or in a School of Hope siting area (\"May open here\"); PLP marks a persistently low-performing school." },
+  { key: "plpNear", label: "Nearby PLP", numeric: true, tier: "low", width: 112, help: "Persistently low-performing schools within 5 miles, same county (FL DOE 2025-26 list)." },
+  { key: "utilization", label: "Utilization", numeric: true, width: 148, help: "Facility Utilization Rate, the statute's measure (funded FTE / all student stations), with its tier: Meets facility test (75% or less, or 400+ surplus), Not fully used, Fully used (90%+)." },
+  { key: "emptySeats", label: "Empty seats", numeric: true, width: 112, help: "Empty permanent seats: permanent student stations minus current enrollment. Portables are not counted." },
+  { key: "enrollment", label: "Enrollment", numeric: true, tier: "mid", width: 112, help: "FL DOE membership enrollment (Broward SY2026-27 is the Tenth Day count)." },
+  { key: "frl", label: "F/R lunch", numeric: true, tier: "full", width: 104, help: "Share of students on free or reduced-price meals (FL DOE Fall Survey 2, 2025-26)." },
+  { key: "incomeDelta", label: "Income vs county", numeric: true, tier: "full", width: 148, help: "Median household income within 5 miles of the school, compared with its county's median (Census ACS 2019-2023; county medians: Miami-Dade $68,694, Broward $74,534, Orange $77,011). Negative means a lower-income area." },
+  { key: "titleI", label: "Title I", tier: "full", width: 112, help: "Title I eligibility (FL DOE Title I Part A list, 2025-26)." },
+  { key: "actions", label: "", numeric: true, width: 80 },
 ];

@@ -285,23 +285,40 @@ function repLabel(r: Representative | undefined): string {
 function StudentDemographics({ p }: { p: SchoolProps }) {
   if (p.pct_black == null && p.pct_hispanic == null && p.pct_white == null) return null;
   const network = p.race_scope === "network";
-  const rows: Array<[string, number | null | undefined]> = [
-    ["Black", p.pct_black],
-    ["Hispanic", p.pct_hispanic],
-    ["White", p.pct_white],
+  // One 100% stacked bar (parts of a whole read best along a single line), in
+  // Carbon's categorical order: Black = Purple 70, Hispanic = Cyan 50; "Other"
+  // (everyone else, White included) is the residual, so it takes neutral gray.
+  // Palette validated (CVD and normal-vision separation, chroma, 3:1 contrast).
+  // A 2px white gap separates segments; the legend names every segment with its
+  // value, so identity never rests on color alone.
+  const black = Math.max(0, Math.min(100, p.pct_black ?? 0));
+  const hisp = Math.max(0, Math.min(100 - black, p.pct_hispanic ?? 0));
+  const other = Math.max(0, 100 - black - hisp);
+  const parts = [
+    { key: "black", label: "Black", v: black, color: "#6929c4" },
+    { key: "hisp", label: "Hispanic", v: hisp, color: "#1192e8" },
+    { key: "other", label: "Other", v: other, color: "#8d8d8d" },
   ];
   return (
     <>
-
-      <div className="insp-race">
-        {rows.map(([label, v]) => (
-          <div key={label} className="insp-race__row">
-            <span className="insp-race__label">{label}</span>
-            <span className="insp-race__track"><span className="insp-race__fill" style={{ width: `${Math.max(0, Math.min(100, v ?? 0))}%` }} /></span>
-            <span className="insp-race__val">{Math.round(v ?? 0)}%</span>
-          </div>
+      <div
+        className="insp-stack"
+        role="img"
+        aria-label={`Enrolled students: ${parts.map((x) => `${x.label} ${Math.round(x.v)}%`).join(", ")}`}
+      >
+        {parts.filter((x) => x.v > 0).map((x) => (
+          <span key={x.key} className="insp-stack__seg" style={{ flexGrow: x.v, background: x.color }} title={`${x.label}: ${Math.round(x.v)}%`} />
         ))}
       </div>
+      <ul className="insp-stack__legend">
+        {parts.map((x) => (
+          <li key={x.key}>
+            <span className="insp-stack__swatch" style={{ background: x.color }} aria-hidden="true" />
+            <span className="insp-stack__label">{x.label}</span>
+            <span className="insp-stack__val">{Math.round(x.v)}%</span>
+          </li>
+        ))}
+      </ul>
       {p.race_total != null && (
         <p className="insp-race__note" title={network ? "KIPP Miami's campuses report to FL DOE as one school (13-2332)." : "Groups under 10 students are suppressed at the source."}>
           {network ? `KIPP Miami network, ${p.race_total.toLocaleString("en-US")} students` : `${p.race_total.toLocaleString("en-US")} students`} · FL DOE {p.race_year}

@@ -137,3 +137,60 @@
   font-size: 13px;
   color: var(--text-primary);
 }
+
+/* =====================================================================
+   Desktop table, Nov 2026 (Carbon DataTable conventions on the MUI shell):
+   48px gray header (layer-accent) in 14px/600; 16px cell padding; text
+   columns left, number columns right, header aligned with its data; the
+   sort arrow is positioned outside the label so it never shifts it; every
+   number in tabular figures; one muted style for missing values.
+   ===================================================================== */
+.tbl .MuiTableCell-root { padding: 8px 16px; font-family: inherit; border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
+.tbl .MuiTableCell-head.tbl-th {
+  height: 48px; padding-block: 0; background: var(--cds-layer-accent-01, #e0e0e0);
+  font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.16px;
+  color: var(--cds-text-primary, #161616); white-space: nowrap;
+}
+.tbl .tbl-th .MuiTableSortLabel-root { position: relative; color: inherit; max-width: 100%; }
+.tbl .tbl-th .MuiTableSortLabel-root:hover, .tbl .tbl-th .MuiTableSortLabel-root.Mui-active { color: inherit; }
+.tbl .tbl-th .MuiTableSortLabel-icon { position: absolute; margin: 0; width: 16px; height: 16px; color: var(--cds-icon-primary, #161616) !important; }
+.tbl .tbl-th:not(.tbl-th--num) .MuiTableSortLabel-icon { right: -18px; }
+.tbl .tbl-th--num .MuiTableSortLabel-root { flex-direction: row; }
+.tbl .tbl-th--num .MuiTableSortLabel-icon { left: -18px; }
+.tbl .MuiTableBody-root .MuiTableRow-root:hover { background: var(--cds-layer-hover-01, #e8e8e8); }
+
+.tbl-school { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.tbl-grade {
+  flex: none; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid; font-size: 14px; font-weight: 600;
+}
+.tbl-school__text { display: flex; flex-direction: column; min-width: 0; }
+.tbl-school__name {
+  appearance: none; border: 0; background: none; padding: 0; margin: 0; font: inherit; cursor: pointer; text-align: left;
+  font-size: 14px; line-height: 18px; font-weight: 600; color: var(--cds-text-primary, #161616);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.tbl-school__name:hover { text-decoration: underline; }
+.tbl-school__name:focus-visible { outline: 2px solid var(--cds-focus, #001e62); outline-offset: 2px; }
+.tbl-school__meta {
+  margin-top: 2px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.tbl-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.tbl-tags .cds--tag { margin: 0; }
+.tbl-num { font-size: 14px; line-height: 18px; color: var(--cds-text-primary, #161616); font-variant-numeric: tabular-nums; }
+.tbl-text { font-size: 14px; line-height: 18px; color: var(--cds-text-primary, #161616); }
+.tbl-na { font-size: 14px; line-height: 18px; color: var(--cds-text-helper, #6f6f6f); }
+.tbl-util { display: inline-flex; flex-direction: column; align-items: flex-end; }
+.tbl-util__tier { margin-top: 2px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--cds-text-secondary, #525252); white-space: nowrap; }
+.tbl-util__tier--under { color: #0f766e; }
+.tbl-util__tier--full { color: #a2191f; }
+/* Virtualizer spacer rows: no padding or rule, or they read as a blank row. */
+.tbl tr[aria-hidden] > td.MuiTableCell-root { padding: 0; border: 0; }
+/* Phone card facts: one left edge for labels, one for values; the
+   utilization tier stacks under its number on the same left edge. */
+.school-card__fact { align-items: flex-start; gap: 16px; }
+.school-card__fact-label { width: 88px; padding-top: 1px; }
+.school-card__fact-value .tbl-util { align-items: flex-start; }
+.school-card__flags .tbl-tags { margin-top: 0; }
