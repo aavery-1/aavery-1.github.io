@@ -3,27 +3,44 @@
 // requirement). Fail soft on runtime problems.
 
 import { Component, type ReactNode } from "react";
+import { isStaleBuildError, reloadForNewVersion } from "./staleBuild";
 
 interface Props {
   children: ReactNode;
 }
 interface State {
   error: Error | null;
+  updating: boolean; // a new version was deployed under this tab; reloading into it
 }
 
 export class RootErrorBoundary extends Component<Props, State> {
-  state: State = { error: null };
+  state: State = { error: null, updating: false };
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { error };
   }
 
   componentDidCatch(error: Error) {
+    // A stale chunk after a deploy is not a real error: load the new version.
+    if (isStaleBuildError(error) && reloadForNewVersion()) {
+      this.setState({ updating: true });
+      return;
+    }
     // eslint-disable-next-line no-console
     console.error("Root error boundary caught:", error);
   }
 
   render() {
+    if (this.state.updating) {
+      return (
+        <div className="recovery">
+          <div className="card recovery-card">
+            <h1>Loading the latest version</h1>
+            <p>The tool was updated while this tab was open.</p>
+          </div>
+        </div>
+      );
+    }
     if (this.state.error) {
       return (
         <div className="recovery">
