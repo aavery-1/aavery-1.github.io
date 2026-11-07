@@ -1,9 +1,9 @@
 // Composition root. Responsive three-column layout:
 //   - Desktop/tablet: TopNav + LeftRail + main + inspector as columns
-//   - Mobile (< md): LeftRail becomes a temporary MUI Drawer opened from the
-//     app-bar menu button; the inspector becomes a bottom sheet.
+//   - Phone (< 600px): LeftRail becomes a modal drawer opened from the map's
+//     Filters button; the inspector becomes a bottom sheet.
+// Shell styles live in App.carbon.css. No em dashes in this file.
 
-import { Box, CircularProgress, Drawer, useMediaQuery, useTheme } from "@mui/material";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { MapErrorBoundary } from "./map/MapErrorBoundary";
 import { Toolbar, MapToolButtons } from "./tools/Toolbar";
@@ -26,8 +26,11 @@ import { MapLayersControl } from "./map/MapLayersControl";
 import { MapQuickActions } from "./map/MapQuickActions";
 import { useMapPersistence } from "./map/useMapPersistence";
 import { useStore } from "./store";
+import { MobileDrawer } from "./shell/MobileDrawer";
+import { useMediaQuery, usePhone } from "./ui/useMediaQuery";
 import { Bookmark as BookmarkIcon } from "@carbon/icons-react";
-import { Tooltip } from "@carbon/react";
+import { Loading, Tooltip } from "@carbon/react";
+import "./App.carbon.css";
 
 // The shortlist ("compare") opener lives ON THE MAP, in the top-right control
 // cluster, so the app bar stays to the essentials (brand, search, view switch).
@@ -93,21 +96,14 @@ function FloatingInspector() {
   return (
     <>
       {!onMap && (
-        <Box
-          className="inspector-scrim"
-          onClick={() => selectSchool(null)}
-          sx={{ position: "absolute", inset: 0, zIndex: 30, bgcolor: "rgba(15,23,42,0.32)", animation: "scrimFade 180ms ease-out" }}
-        />
+        <div className="inspector-scrim" onClick={() => selectSchool(null)} />
       )}
-      <Box
+      <div
         className={`insp-float${onMap ? " insp-float--map" : " insp-float--list"}${closing ? " insp-float--closing" : ""}`}
         onAnimationEnd={(e) => { if (e.target === e.currentTarget && closing) done(); }}
-        sx={onMap
-          ? { position: "absolute", top: 12, right: 64, zIndex: 31, maxWidth: "calc(100% - 76px)" }
-          : { position: "absolute", top: 0, right: 0, height: "100%", zIndex: 31 }}
       >
         <RightColumn compact={onMap} overrideMsid={renderMsid} />
-      </Box>
+      </div>
     </>
   );
 }
@@ -117,19 +113,18 @@ function FloatingInspector() {
 // blank or a layout jump.
 function ViewFallback() {
   return (
-    <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default" }}>
-      <CircularProgress size={28} thickness={4} />
-    </Box>
+    <div className="view-fallback">
+      <Loading small withOverlay={false} description="Loading view" />
+    </div>
   );
 }
 
 export default function App() {
   useMapPersistence();
-  const theme = useTheme();
   // The full-bleed dashboard layout (thin rail overlay + bottom dock + right
-  // inspector column) applies from the "sm" breakpoint up; below that we fall
-  // back to the drawer/bottom-sheet mobile layout.
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  // inspector column) applies from the 600px phone breakpoint up; below that we
+  // fall back to the drawer/bottom-sheet mobile layout.
+  const isMobile = usePhone();
   const viewMode = useStore((s) => s.viewMode);
   const selectSchool = useStore((s) => s.selectSchool);
   const selectedSchoolMsid = useStore((s) => s.selectedSchoolMsid);
@@ -196,17 +191,17 @@ export default function App() {
   let mainSurface;
   if (viewMode === "list") {
     mainSurface = (
-      <Box sx={{ flex: 1, position: "relative", minWidth: 0 }}>
+      <div className="app-main">
         <Suspense fallback={<ViewFallback />}>
           <SchoolListView />
         </Suspense>
-      </Box>
+      </div>
     );
   } else {
     mainSurface = (
-      <Box sx={{ flex: 1, position: "relative", minWidth: 0 }}>
+      <div className="app-main">
         {mapBlock}
-      </Box>
+      </div>
     );
   }
 
@@ -214,34 +209,35 @@ export default function App() {
   // programmatic scrollIntoView (from the list, say) can never drag the whole app
   // sideways when a child like the app bar overflows at a narrow width.
   return (
-    <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "clip" }}>
+    <div className="app-shell">
       <TopNav onOpenAttribution={() => setAttributionOpen(true)} />
-      <Box sx={{ flex: 1, display: "flex", minHeight: 0, position: "relative", pl: { sm: "64px" } }}>
+      <div className="app-body">
         {/* Desktop rail: a thin icon rail that OVERLAYS the map when expanded
             (rather than pushing it), matching the full-bleed dashboard layout.
-            The 56px left padding above reserves room for the collapsed rail.
+            The 64px left padding (App.carbon.css) reserves room for the
+            collapsed rail.
             A transparent scrim closes the expanded panel on any outside click
             (race-free, unlike ClickAwayListener wrapping the toggle). */}
         {!isMobile && !panelCollapsed && (
-          <Box onClick={() => setPanelCollapsed(true)} sx={{ position: "absolute", inset: 0, zIndex: 15 }} />
+          <div className="app-rail-scrim" onClick={() => setPanelCollapsed(true)} />
         )}
         {!isMobile && (
-          <Box sx={{ position: "absolute", top: 0, left: 0, height: "100%", zIndex: 20, display: "flex", boxShadow: panelCollapsed ? "none" : "8px 0 24px rgba(15,23,42,0.10)" }}>
+          <div className={`app-rail${panelCollapsed ? "" : " app-rail--open"}`}>
             <LeftRail onOpenAttribution={() => setAttributionOpen(true)} />
-          </Box>
+          </div>
         )}
 
         {/* Mobile rail: temporary drawer */}
         {isMobile && (
-          <Drawer
+          <MobileDrawer
             anchor="left"
+            label="Filters"
             open={mobileRailOpen}
             onClose={() => setMobileRailOpen(false)}
-            ModalProps={{ keepMounted: true }}
-            slotProps={{ paper: { sx: { width: 320 } } }}
+            keepMounted
           >
             <LeftRail onNavigate={() => setMobileRailOpen(false)} />
-          </Drawer>
+          </MobileDrawer>
         )}
 
         {mainSurface}
@@ -266,16 +262,16 @@ export default function App() {
 
         {/* Mobile inspector: bottom sheet, only when a school is selected */}
         {isMobile && (
-          <Drawer
+          <MobileDrawer
             anchor="bottom"
+            label="School details"
             open={Boolean(selectedSchoolMsid)}
             onClose={() => selectSchool(null)}
-            slotProps={{ paper: { sx: { height: "80dvh", borderTopLeftRadius: 20, borderTopRightRadius: 20 } } }}
           >
             <RightColumn />
-          </Drawer>
+          </MobileDrawer>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

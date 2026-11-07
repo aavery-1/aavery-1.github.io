@@ -1,0 +1,778 @@
+/* Left filter rail + panel (LeftRail.tsx), in Carbon g10 tokens with no MUI.
+   Plain elements styled here; @carbon/react supplies ComboBox, Toggle, Select,
+   TextInput, Tooltip, IconButton and the applied-filter tags. The metrics
+   (20px panel gutter, 14px facet padding, 13px rows) are the panel's
+   established ones. Data swatches are set inline from their sources. No em
+   dashes in this file. */
+
+.rail {
+  display: flex;
+  height: 100%;
+}
+
+/* ---- Collapsed icon rail (desktop) ---- */
+.rail-bar {
+  width: 64px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 8px 0;
+  z-index: 1;
+  background: var(--cds-layer-01, #ffffff);
+  border-right: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.rail-bar__spacer { flex: 1; }
+.rail-bar__account {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+
+.rail-btn {
+  position: relative;
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  padding: 9px 0;
+  border: none;
+  background: transparent;
+  color: var(--cds-text-secondary, #525252);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.rail-btn svg { fill: currentColor; }
+.rail-btn:hover {
+  background: color-mix(in srgb, var(--cds-text-primary, #161616) 6%, transparent);
+  color: var(--cds-text-primary, #161616);
+}
+.rail-btn--active {
+  color: var(--focus, #001e62);
+  background: color-mix(in srgb, var(--focus, #001e62) 10%, transparent);
+}
+.rail-btn--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--focus, #001e62);
+}
+.rail-btn--active:hover {
+  color: var(--focus, #001e62);
+  background: color-mix(in srgb, var(--focus, #001e62) 14%, transparent);
+}
+.rail-btn:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: -2px;
+}
+.rail-btn__icon {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+/* Count badge on the icon's top-right shoulder. */
+.rail-btn__badge {
+  position: absolute;
+  top: 14%;
+  right: 14%;
+  transform: translate(50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 14px;
+  min-width: 14px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: var(--focus, #001e62);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.rail-btn__label {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.rail-btn--active .rail-btn__label { font-weight: 600; }
+
+/* ---- Expanding panel (desktop): width animates 0 <-> 340px ---- */
+.rail-collapse {
+  height: 100%;
+  width: 0;
+  overflow: hidden;
+  visibility: hidden;
+  transition: width 260ms cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 260ms;
+}
+.rail-collapse--open {
+  width: 340px;
+  visibility: visible;
+  transition: width 260ms cubic-bezier(0.4, 0, 0.2, 1), visibility 0s;
+}
+.rail-panel {
+  width: 340px;
+  min-width: 340px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--cds-layer-01, #ffffff);
+  border-right: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+/* Phone drawer body: fills the drawer. */
+.rail-drawer-body {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--cds-layer-01, #ffffff);
+}
+
+/* ---- Panel header ---- */
+.rail-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--cds-layer-01, #ffffff);
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.rail-head__text { min-width: 0; }
+.rail-head__title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--cds-text-primary, #161616);
+}
+.rail-head__sub {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+  font-variant-numeric: tabular-nums;
+}
+.rail-head__sub--empty { color: var(--cds-text-error, #da1e28); }
+.rail-head__actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rail-head__close.cds--btn--ghost svg { fill: var(--cds-text-secondary, #525252); }
+.rail-head__close--drawer.cds--btn--ghost svg { fill: var(--cds-text-primary, #161616); }
+
+/* Quiet text buttons: "Clear all" (header) and the per-facet "Clear"/"Reset". */
+.rail-textbtn,
+.rail-link {
+  appearance: none;
+  flex: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.75;
+  letter-spacing: 0.16px;
+  color: var(--focus, #001e62);
+  cursor: pointer;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rail-textbtn {
+  padding: 4px 8px;
+  font-size: 13px;
+}
+.rail-link {
+  padding: 0;
+  font-size: 12px;
+}
+.rail-textbtn:hover,
+.rail-link:hover {
+  background: color-mix(in srgb, var(--focus, #001e62) 4%, transparent);
+}
+.rail-textbtn:disabled {
+  color: var(--cds-text-secondary, #525252);
+  background: transparent;
+  cursor: default;
+}
+.rail-textbtn:focus-visible,
+.rail-link:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: 1px;
+}
+
+/* ---- Phone drawer footer: sticky apply-and-return ---- */
+.rail-done {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  padding: 12px 20px;
+  background: var(--cds-layer-01, #ffffff);
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.rail-done__btn {
+  appearance: none;
+  width: 100%;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--focus, #001e62);
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.75;
+  letter-spacing: 0.16px;
+  cursor: pointer;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rail-done__btn:hover { background: #001541; }
+.rail-done__btn:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: 2px;
+}
+.rail-done__btn:disabled {
+  background: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.26);
+  cursor: default;
+}
+
+/* ---- Applied filters ---- */
+.rail-applied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+
+/* ---- Shared facet pieces ---- */
+.rail-facet { padding: 14px 20px; }
+.rail-facet__body { margin-top: 4px; }
+.rail-stack {
+  display: flex;
+  flex-direction: column;
+}
+.rail-divider {
+  flex-shrink: 0;
+  margin: 0 20px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--cds-text-primary, #161616) 6%, transparent);
+}
+.rail-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.rail-icon {
+  display: flex;
+  flex: none;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-icon svg { fill: currentColor; }
+.rail-chevron { margin-right: -2px; }
+.rail-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--cds-text-primary, #161616);
+}
+.rail-hint {
+  font-weight: 400;
+  color: var(--cds-text-secondary, #525252);
+}
+
+.rail-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.rail-label--section { margin-bottom: 4px; }
+.rail-label__toggle {
+  appearance: none;
+  font: inherit;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--cds-text-primary, #161616);
+}
+.rail-label__toggle:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: 2px;
+}
+.rail-info {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  cursor: help;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-info svg { fill: currentColor; }
+.rail-info:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: 1px;
+}
+
+/* Active-count pill beside a facet title. */
+.rail-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--focus, #001e62) 14%, transparent);
+  color: #001541;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* Height-animating disclosure body. */
+.rail-collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 200ms;
+}
+.rail-collapsible--open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1), visibility 0s;
+}
+.rail-collapsible__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- Checkbox facet row ---- */
+.rail-check {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 2px;
+  color: var(--cds-text-primary, #161616);
+}
+.rail-check:hover { background: color-mix(in srgb, var(--cds-text-primary, #161616) 4%, transparent); }
+.rail-check:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: -2px;
+}
+/* The checkbox glyph: a Carbon checkbox square inside the old 38 x 26 hit area. */
+.rail-check__box {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 26px;
+}
+.rail-check__box::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 1px solid var(--cds-icon-primary, #161616);
+  border-radius: 2px;
+  background: transparent;
+}
+.rail-check--on .rail-check__box::before {
+  border-color: var(--focus, #001e62);
+  background: var(--focus, #001e62);
+}
+/* Checkmark: two borders of a rotated box, Carbon's own technique. */
+.rail-check--on .rail-check__box::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 5px;
+  margin: -4px 0 0 -4.5px;
+  border-left: 1.5px solid #ffffff;
+  border-bottom: 1.5px solid #ffffff;
+  transform: rotate(-45deg);
+}
+.rail-check__label {
+  flex: 1;
+  min-width: 0;
+  margin-left: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-check__label--swatch { margin-left: 6px; }
+.rail-check--on .rail-check__label { font-weight: 600; }
+.rail-check__count {
+  flex: none;
+  padding-left: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Swatches beside a row label. */
+.rail-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.rail-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+.rail-swatch--dot { border-radius: 50%; }
+.rail-grade {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ---- Pick schools ---- */
+.rail-pick {
+  padding: 14px 20px;
+  background: color-mix(in srgb, var(--focus, #001e62) 4.5%, transparent);
+}
+.rail-pick__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.rail-pick__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+.rail-pick__toggle-label {
+  flex: 1;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--cds-text-primary, #161616);
+}
+.rail-pick__toggle-label--on { font-weight: 600; }
+/* Brand-navy "on" state (Carbon's default toggle is green). */
+.rail-toggle .cds--toggle__switch--checked { background-color: var(--focus, #001e62); }
+.rail-toggle .cds--toggle__label { margin: 0; }
+.rail-toggle .cds--toggle__label-text,
+.rail-toggle .cds--toggle__text { display: none; }
+.rail-pick__help {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-pick__help--warn { color: var(--cds-text-error, #da1e28); }
+.rail-pick__search { position: relative; }
+.rail-pick__search-icon {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 12px;
+  margin-top: -7px;
+  display: flex;
+  pointer-events: none;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-pick__search-icon svg { fill: currentColor; }
+.rail-pick__combo .cds--text-input {
+  padding-left: 34px;
+  font-size: 13px;
+}
+.rail-pick__combo .cds--list-box__menu:not(:has(.cds--list-box__menu-item)) { display: none; }
+.rail-pick__nomatch {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-pick__list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+.rail-pick__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 0;
+}
+.rail-pick__goto {
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 2px;
+  font: inherit;
+  cursor: pointer;
+  color: var(--cds-text-primary, #161616);
+}
+.rail-pick__goto:hover { background: color-mix(in srgb, var(--cds-text-primary, #161616) 4%, transparent); }
+.rail-pick__goto:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: -2px;
+}
+.rail-pick__name,
+.rail-pick__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-pick__name {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.rail-pick__sub {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+}
+/* Small round icon button (remove a pick). */
+.rail-roundbtn {
+  appearance: none;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cds-text-secondary, #525252);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.rail-roundbtn svg { fill: currentColor; }
+.rail-roundbtn:hover { background: rgba(0, 0, 0, 0.04); }
+.rail-roundbtn--danger:hover { color: var(--cds-text-error, #da1e28); }
+.rail-roundbtn:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: -2px;
+}
+
+/* ---- County rows (checkbox + zoom-to) ---- */
+.rail-county {
+  display: flex;
+  align-items: center;
+}
+.rail-county__row {
+  flex: 1;
+  min-width: 0;
+}
+.rail-zoom.cds--btn--ghost { margin-left: 4px; }
+.rail-zoom.cds--btn--ghost svg { fill: var(--cds-text-secondary, #525252); }
+.rail-zoom.cds--btn--ghost:hover svg { fill: var(--focus, #001e62); }
+.rail-alert {
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cds-text-error, #da1e28);
+  background: color-mix(in srgb, #da1e28 6%, transparent);
+  border: 1px solid color-mix(in srgb, #da1e28 25%, transparent);
+}
+
+/* ---- Custom % range fields ---- */
+.rail-range { padding-left: 2px; }
+.rail-range--spaced { margin-top: 8px; }
+.rail-range__label {
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-range__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rail-range__to {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-pct {
+  position: relative;
+  width: 92px;
+  flex: none;
+}
+.rail-pct .cds--text-input {
+  padding-right: 26px;
+  font-size: 13px;
+  /* Native number spinners crowd a 92px field; the value is typed. */
+  -moz-appearance: textfield;
+}
+.rail-pct .cds--text-input::-webkit-outer-spin-button,
+.rail-pct .cds--text-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.rail-pct__unit {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--cds-text-secondary, #525252);
+  pointer-events: none;
+}
+
+/* ---- Board & legislative districts ---- */
+.rail-disclosure {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.75;
+  letter-spacing: 0;
+  color: var(--cds-text-primary, #161616);
+  cursor: pointer;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rail-disclosure svg { fill: currentColor; }
+.rail-disclosure:hover { background: color-mix(in srgb, var(--focus, #001e62) 4%, transparent); }
+.rail-disclosure:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: -2px;
+}
+.rail-disclosure__label {
+  flex: 1;
+  text-align: left;
+}
+.rail-district { padding-top: 8px; }
+.rail-seg {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.rail-seg__btn {
+  appearance: none;
+  padding: 4px 7px;
+  border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.75;
+  letter-spacing: 0.16px;
+  color: var(--cds-text-secondary, #525252);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.rail-seg__btn:hover { background: color-mix(in srgb, var(--cds-text-primary, #161616) 4%, transparent); }
+.rail-seg__btn--on,
+.rail-seg__btn--on:hover {
+  background: color-mix(in srgb, var(--focus, #001e62) 14%, transparent);
+  color: #001541;
+}
+.rail-seg__btn:focus-visible {
+  outline: 2px solid var(--focus, #001e62);
+  outline-offset: -2px;
+}
+.rail-district__empty {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-select .cds--select-input { font-size: 13px; }
+
+/* ---- Map layers ---- */
+.rail-layers {
+  margin-top: 8px;
+  padding: 16px 20px 24px;
+  border-top: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+}
+.rail-layers--drawer { padding-bottom: 16px; }
+.rail-layer-groups { margin-top: 8px; }
+.rail-layer-group { margin-bottom: 12px; }
+.rail-layer-group__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+  color: var(--cds-text-secondary, #525252);
+}
+.rail-layer-group__head svg { fill: currentColor; }
+.rail-layer-group__name {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.16px;
+}
+/* Carbon wraps a tooltip trigger in an inline-block; a layer row is full width. */
+.rail-tip-block.cds--popover-container { display: block; }
+.rail-layer--off { opacity: 0.5; }

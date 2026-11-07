@@ -59,7 +59,6 @@ export default defineConfig({
           // chunk and creating a cross-chunk circular init (a TDZ "cannot access X
           // before initialization" crash at load). Anchor on node_modules/<pkg>/.
           if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/") || id.includes("node_modules/scheduler/")) return "vendor-react";
-          if (id.includes("@mui") || id.includes("@emotion")) return "vendor-mui";
           // Keep Carbon together with the UI runtime deps it imports (floating-ui,
           // downshift, flatpickr) so they initialize in one chunk, not across a cycle.
           if (id.includes("@carbon") || id.includes("@floating-ui") || id.includes("downshift") || id.includes("flatpickr") || id.includes("@ibm/plex")) return "vendor-carbon";

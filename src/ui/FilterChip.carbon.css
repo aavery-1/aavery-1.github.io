@@ -1,0 +1,42 @@
+/* Applied-filter chip (FilterChip.tsx): a compact pill on a light tint of its
+   section color, 12px semibold label, a quiet dismiss x that firms up on hover.
+   No em dashes in this file. */
+
+.filter-chip.cds--tag {
+  height: 24px;
+  min-height: 24px;
+  max-width: 100%;
+  margin: 0;
+  padding-inline: 8px 2px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--focus, #001e62) 30%, transparent);
+  background: color-mix(in srgb, var(--focus, #001e62) 10%, transparent);
+  color: #001541;
+}
+.filter-chip .cds--tag__label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.16px;
+  color: inherit;
+}
+.filter-chip .cds--tag__close-icon {
+  width: 20px;
+  height: 20px;
+  margin-inline-start: 2px;
+  border-radius: 50%;
+  opacity: 0.7;
+}
+.filter-chip .cds--tag__close-icon svg {
+  fill: currentColor;
+}
+.filter-chip .cds--tag__close-icon:hover {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.filter-chip--geo.cds--tag {
+  border-color: color-mix(in srgb, #7e57c2 30%, transparent);
+  background: color-mix(in srgb, #7e57c2 10%, transparent);
+  color: #5b21b6;
+}
