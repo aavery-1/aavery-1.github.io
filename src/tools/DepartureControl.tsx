@@ -1,49 +1,28 @@
-// Departure picker for drive times: day of week + time of day, as two Carbon
-// inline dropdowns. "Leaving Tue 7:30am" reads as one phrase, and either half
-// changes in one click. Times run 5:00am to 9:00pm in 15-minute steps (covers
-// school drop-off, dismissal, and evening events). Shared by the map's drive-time
-// bar and the school card so the two can never disagree.
+// Time-of-day choice for drive times: school drop-off (home to campus, 8am) or pickup (campus to home, 4pm), the two
+// times the shared rules define (GEO_RULESET.md rule 8), so a school's areas match Grove's for the same choice. One
+// Carbon inline dropdown, shared by the map's drive-time bar and the school card so the two can never disagree.
 
 import { Dropdown } from "@carbon/react";
-import { useDriveTimes, DAY_NAMES, clockLabel } from "../geo/driveTime";
+import { useDriveTimes, WINDOW_OPTIONS, windowLabel, type DriveWindow } from "../geo/driveTime";
 import "./DepartureControl.css";
 
-const DAYS = [1, 2, 3, 4, 5, 6, 0]; // Monday first, the way a work week reads
-const TIMES: number[] = [];
-for (let m = 5 * 60; m <= 21 * 60; m += 15) TIMES.push(m);
-
 export function DepartureControl({ id, compact = false }: { id: string; compact?: boolean }) {
-  const depart = useDriveTimes((s) => s.depart);
-  const setDepart = useDriveTimes((s) => s.setDepart);
+  const window = useDriveTimes((s) => s.window);
+  const setWindow = useDriveTimes((s) => s.setWindow);
   return (
-    <div className={`departure${compact ? " departure--compact" : ""}`} role="group" aria-label="Departure time for drive times">
-      <span className="departure__lead">Leaving</span>
+    <div className={`departure${compact ? " departure--compact" : ""}`} role="group" aria-label="Time of day for drive times">
       <Dropdown
-        id={`${id}-day`}
+        id={`${id}-window`}
         type="inline"
         size="sm"
-        titleText="Day"
+        titleText="Time of day"
         hideLabel
-        label="Day"
-        items={DAYS}
-        itemToString={(d: number | null) => (d == null ? "" : compact ? DAY_NAMES[d].slice(0, 3) : DAY_NAMES[d])}
-        selectedItem={depart.day}
-        onChange={({ selectedItem }: { selectedItem: number | null }) => {
-          if (selectedItem != null) setDepart({ ...depart, day: selectedItem });
-        }}
-      />
-      <Dropdown
-        id={`${id}-time`}
-        type="inline"
-        size="sm"
-        titleText="Time"
-        hideLabel
-        label="Time"
-        items={TIMES}
-        itemToString={(m: number | null) => (m == null ? "" : clockLabel(m))}
-        selectedItem={depart.minutes}
-        onChange={({ selectedItem }: { selectedItem: number | null }) => {
-          if (selectedItem != null) setDepart({ ...depart, minutes: selectedItem });
+        label="Time of day"
+        items={WINDOW_OPTIONS}
+        itemToString={(w: DriveWindow | null) => (w == null ? "" : windowLabel(w))}
+        selectedItem={window}
+        onChange={({ selectedItem }: { selectedItem: DriveWindow | null }) => {
+          if (selectedItem != null) setWindow(selectedItem);
         }}
       />
     </div>

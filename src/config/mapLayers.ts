@@ -102,7 +102,7 @@ export const MAP_LAYERS: MapLayerDef[] = [
     id: "drive_time_reach",
     label: "Drive times (selected school)",
     group: "Context",
-    description: "5, 10, and 15 minute drive-time areas around the selected school in typical traffic for a departure you choose (default Tuesday 7:30am), checked against Google. While on, selecting any school computes its areas.",
+    description: "5, 10, and 15 minute drive-time areas around the selected school at drop-off (8am) or pickup (4pm), the same areas Grove shows. While on, selecting any school computes its areas.",
     swatch: { kind: "outline", color: "#20275d" },
     needs: null,
   },

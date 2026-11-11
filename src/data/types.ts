@@ -138,20 +138,21 @@ export type IncomeCollection = FeatureCollection<Polygon, IncomeProps> & { vinta
 
 // Precomputed neighborhood demographics for each school, one row per radius ring.
 // Built offline by scripts/build-school-demographics.mjs via dasymetric
-// aggregation (ACS 2019-2023 block groups distributed to 2020 Census blocks).
-// counts carry a 90% ACS margin of error; percentages carry a derived MOE;
-// median income is a household-weighted approximation. coverage_pct is the share
-// of the ring's populated-land area that falls within the loaded county set.
+// aggregation (census tract figures from Grove's census file, ACS 2020-2024 with
+// children scaled to July 2025, distributed to 2020 Census blocks; GEO_RULESET.md).
+// Counts carry a 90% ACS margin of error; percentages carry a derived MOE;
+// median income is interpolated from summed income brackets (no published MOE).
+// coverage_pct is the share of the ring's 2020 population that has census figures.
 export interface DemographicsRing {
   r: number; // radius in miles
   blocks: number; // populated 2020 blocks inside the ring
   total_pop: number;
   total_pop_moe: number;
-  k8_pop: number; // ages 5-14
+  k8_pop: number; // ages 5-13 (grade g = age g + 5)
   k8_pop_moe: number;
-  pct_black: number | null;
+  pct_black: number | null; // of children ages 5-14
   pct_black_moe: number | null;
-  pct_hispanic: number | null;
+  pct_hispanic: number | null; // of children ages 5-14
   pct_hispanic_moe: number | null;
   median_income: number | null;
   median_income_moe: number | null;

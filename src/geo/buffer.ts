@@ -8,13 +8,12 @@
 // eligibility decision are the identical ground geometry (no sphere-vs-ellipsoid
 // mismatch at the ring edge).
 
-import { area as turfArea } from "@turf/turf";
+import { ringAreaSqMi } from "../shared-geo/sharedGeo";
 import type { Feature, Polygon } from "geojson";
 import type { LngLat } from "./measure";
 import { milesToMeters } from "./measure";
 import { ellipsoidalDestination } from "./geodesic";
 
-const SQ_METERS_PER_SQ_MILE = 2589988.110336;
 
 // A true ellipsoidal geodesic circle of the given radius in miles, as a GeoJSON
 // polygon. steps controls vertex count; 128 keeps the area within a hair of the
@@ -29,8 +28,9 @@ export function geodesicBufferMiles(center: LngLat, miles: number, steps = 128):
   return { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [ring] } };
 }
 
-// Ground area of a polygon in square miles. turf.area returns square meters on
-// the WGS84 ellipsoid, which is the true ground area, not a Mercator area.
+// Ground area of a polygon in square miles: the shared engine's formula (turf.area's
+// spherical formula, mean Earth radius), so Grove reports the same area. Holes subtract.
 export function areaSquareMiles(feature: Feature<Polygon>): number {
-  return turfArea(feature) / SQ_METERS_PER_SQ_MILE;
+  const [outer, ...holes] = feature.geometry.coordinates;
+  return holes.reduce((a, h) => a - ringAreaSqMi(h), ringAreaSqMi(outer));
 }

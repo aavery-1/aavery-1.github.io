@@ -330,10 +330,11 @@ function StudentDemographics({ p }: { p: SchoolProps }) {
 
 // Neighborhood demographics: the population living around this school within
 // each radius ring, from the precomputed dasymetric aggregation (2020 Census
-// blocks weighting ACS 2019-2023 block-group estimates). Every value is an
-// estimate; counts carry an ACS 90% margin of error (shown as a muted second
-// line), median income is a household-weighted approximation, and "K-8 age" is
-// the ACS 5-14 bracket. Nulls read as an honest "n/a", never a fabricated zero.
+// blocks weighting census tract estimates, ACS 2020-2024 with children scaled
+// to July 2025; GEO_RULESET.md). Every value is an estimate; counts carry an ACS
+// 90% margin of error (shown as a muted second line), median income is
+// interpolated from income brackets, "K-8 age" is ages 5-13, and % Black and %
+// Hispanic are of children ages 5-14. Nulls read as an honest "n/a", never a fabricated zero.
 const intFmt = (n: number) => n.toLocaleString("en-US");
 const moeFmt = (n: number) => `±${n.toLocaleString("en-US")}`;
 
@@ -373,7 +374,7 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
               {rings.map((r) => cell(r, (x) => ({ value: intFmt(x.total_pop), moe: x.total_pop > 0 ? moeFmt(x.total_pop_moe) : null })))}
             </tr>
             <tr>
-              <th scope="row" className="insp-demo__rowhead">K-8 age <span className="insp-demo__hint">(5-14)</span></th>
+              <th scope="row" className="insp-demo__rowhead">K-8 age <span className="insp-demo__hint">(5-13)</span></th>
               {rings.map((r) => cell(r, (x) => ({ value: intFmt(x.k8_pop), moe: x.k8_pop > 0 ? moeFmt(x.k8_pop_moe) : null })))}
             </tr>
             <tr>
@@ -383,13 +384,13 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
                 : { value: `$${intFmt(x.median_income)}`, moe: x.median_income_moe != null ? moeFmt(x.median_income_moe) : null }))}
             </tr>
             <tr>
-              <th scope="row" className="insp-demo__rowhead">% Black</th>
+              <th scope="row" className="insp-demo__rowhead">% Black <span className="insp-demo__hint">(ages 5-14)</span></th>
               {rings.map((r) => cell(r, (x) => x.pct_black == null
                 ? { value: <span className="insp-demo__na">n/a</span>, moe: null }
                 : { value: `${x.pct_black.toFixed(1)}%`, moe: x.pct_black_moe != null ? `±${x.pct_black_moe.toFixed(1)}` : null }))}
             </tr>
             <tr>
-              <th scope="row" className="insp-demo__rowhead">% Hispanic</th>
+              <th scope="row" className="insp-demo__rowhead">% Hispanic <span className="insp-demo__hint">(ages 5-14)</span></th>
               {rings.map((r) => cell(r, (x) => x.pct_hispanic == null
                 ? { value: <span className="insp-demo__na">n/a</span>, moe: null }
                 : { value: `${x.pct_hispanic.toFixed(1)}%`, moe: x.pct_hispanic_moe != null ? `±${x.pct_hispanic_moe.toFixed(1)}` : null }))}
@@ -402,7 +403,7 @@ function NeighborhoodDemographics({ entry, meta }: { entry: SchoolDemographicsEn
           Some rings reach beyond the mapped county data; those totals are partial and understated.
         </p>
       )}
-      <p className="insp-demo__foot" title={`Source: ${meta.source}`}>Census ACS 2019-23 estimates; ± is the margin of error.</p>
+      <p className="insp-demo__foot" title={`Source: ${meta.source}`}>Census ACS 2020-24 estimates, children as of July 2025; race is of children 5-14; ± is the margin of error.</p>
     </div>
   );
 }
@@ -617,10 +618,10 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
       const tag = `within ${r.r} mi`;
       exportRows.push(
         [`Total population (${tag})`, `${r.total_pop}${r.total_pop > 0 ? ` (MOE +/-${r.total_pop_moe})` : ""}`],
-        [`K-8 age population, ages 5-14 (${tag})`, `${r.k8_pop}${r.k8_pop > 0 ? ` (MOE +/-${r.k8_pop_moe})` : ""}`],
+        [`K-8 age children, ages 5-13 (${tag})`, `${r.k8_pop}${r.k8_pop > 0 ? ` (MOE +/-${r.k8_pop_moe})` : ""}`],
         [`Median household income (${tag})`, r.median_income != null ? `${r.median_income}${r.median_income_moe != null ? ` (MOE +/-${r.median_income_moe})` : ""}` : "n/a"],
-        [`Percent Black (${tag})`, r.pct_black != null ? `${r.pct_black}${r.pct_black_moe != null ? ` (MOE +/-${r.pct_black_moe})` : ""}` : "n/a"],
-        [`Percent Hispanic (${tag})`, r.pct_hispanic != null ? `${r.pct_hispanic}${r.pct_hispanic_moe != null ? ` (MOE +/-${r.pct_hispanic_moe})` : ""}` : "n/a"],
+        [`Percent Black, children 5-14 (${tag})`, r.pct_black != null ? `${r.pct_black}${r.pct_black_moe != null ? ` (MOE +/-${r.pct_black_moe})` : ""}` : "n/a"],
+        [`Percent Hispanic, children 5-14 (${tag})`, r.pct_hispanic != null ? `${r.pct_hispanic}${r.pct_hispanic_moe != null ? ` (MOE +/-${r.pct_hispanic_moe})` : ""}` : "n/a"],
       );
     }
   }

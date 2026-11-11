@@ -1,0 +1,22 @@
+{
+  "master": "Grove platform/ (scripts/sync-shared-geo.mjs)",
+  "syncedAt": "2026-11-11T15:42:43.085Z",
+  "files": {
+    "src/shared-geo/sharedGeo.ts": {
+      "from": "lib/shared-geo/sharedGeo.ts",
+      "sha256": "0e9ed83ef89ba21458f5297e2453ac7c4d4b02700314921c8ad80ca17590760d"
+    },
+    "public/data/drive/": {
+      "from": "data/drive/",
+      "tree_sha256": "07381093325507ae1875cb2ea1ce34fb57bf276ef100753b52cfefeacad8bab7"
+    },
+    "src/config/drive_time_calibration.json": {
+      "from": "data/drive_time_calibration.json",
+      "sha256": "9497fbb36aab6dbc3f77127f841f1bc621b7cc981f278ac07c9a1a3abe17d998"
+    },
+    "GEO_RULESET.md": {
+      "from": "docs/methods/geo-ruleset.md",
+      "sha256": "62dc20f5c069fd4409fb6cb5d06cffeb340ebaf7c0bedd3a3ee4c3015adc1017"
+    }
+  }
+}

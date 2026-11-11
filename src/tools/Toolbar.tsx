@@ -205,7 +205,7 @@ function RadiusControls() {
 // Drive-time mode bar: ONE 48px Carbon line at the top of the map while drive
 // times are on. It answers only what someone reading the map needs: which school
 // the areas come from, what each shade means, and the traffic assumption, plus
-// a way out. How the areas were computed (Mapbox, the Google check, the factor)
+// a way out. How the areas were computed (measured or estimated, the Google check)
 // lives in the school card's Drive-time section, not here. While the mode is on,
 // selecting ANY school computes its areas.
 function DriveTimeBar() {
@@ -240,11 +240,9 @@ function DriveTimeBar() {
           )}
           {(!entry || entry.status === "loading") && <InlineLoading className="drive-bar__loading" description="Computing" />}
           {entry?.status === "error" && <span className="drive-bar__ctx drive-bar__ctx--err" title={entry.message}>Unavailable</span>}
-          {/* The traffic assumption, now a choice: day + time of departure. With
-              no traffic data (no Mapbox token) there is nothing to choose. */}
-          {ready?.engine === "valhalla"
-            ? <span className="drive-bar__ctx" title={driveMethodNote(ready)}>No traffic</span>
-            : <span className="drive-bar__depart" title={ready ? driveMethodNote(ready) : undefined}><DepartureControl id="bar-depart" compact /></span>}
+          {/* Time of day: drop-off or pickup. "Estimate" marks a school whose drive times haven't been measured. */}
+          {ready?.status === "estimate" && <span className="drive-bar__ctx" title={driveMethodNote(ready)}>Estimate</span>}
+          <span className="drive-bar__depart" title={ready ? driveMethodNote(ready) : undefined}><DepartureControl id="bar-depart" compact /></span>
         </>
       )}
       <IconButton label="Turn off drive times" kind="ghost" size="md" align="bottom-right" className="drive-bar__close" onClick={() => toggleLayer(DRIVE_LAYER_ID)}>

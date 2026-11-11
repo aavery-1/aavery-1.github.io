@@ -504,6 +504,7 @@ thead .insp-demo__rowhead { border-bottom: 1px solid var(--cds-border-subtle-01,
 .insp-demo__table .insp-demo__rowhead { white-space: normal; width: 30%; }
 .insp-demo__val { font-size: 12px; white-space: normal; }
 .insp-demo__moe { white-space: normal; }
+.insp-demo__range { white-space: normal; }
 
 /* Grade timeline inside the card: wrap the years into rows (newest first,
    reading left to right) instead of a sideways-scrolling strip, and lift the
@@ -646,8 +647,9 @@ thead .insp-demo__rowhead { border-bottom: 1px solid var(--cds-border-subtle-01,
 .insp-race__val { width: 40px; font-size: 14px; line-height: 20px; }
 .insp-race__note { font-size: 12px; line-height: 16px; margin-top: 12px; color: var(--cds-text-secondary, #525252); }
 
-/* Demographic tables: margins of error at the 12px floor. */
+/* Demographic tables: margins of error and drive-time ranges at the 12px floor. */
 .insp-demo__moe { font-size: 12px; line-height: 16px; }
+.insp-demo__range { display: block; font-size: 12px; line-height: 16px; color: var(--cds-text-helper, #6f6f6f); font-style: italic; }
 .insp-demo__colhead, .insp-demo__rowhead { font-size: 12px; line-height: 16px; }
 
 /* Keys and badges: square (Carbon), 600 max weight. */

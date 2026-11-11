@@ -1,0 +1,168 @@
+{
+  "method": "docs/methods/drive-time.md",
+  "engine": "Valhalla, auto costing, on the FOSSGIS public server. These settings are for live estimates only (pins with no saved result); saved results come from our routing server (data/drive/).",
+  "benchmark": "Google Maps predicted school-day drive times (30 homes per measured site, data/drive_measurements.json), fit to the public server's times for the same homes. Each region's cut-off is the median of its measured sites; the range spans all of them.",
+  "windows": {
+    "dropoff": {
+      "label": "Drop-off",
+      "time": "8am",
+      "direction": "home to campus",
+      "reverse": true
+    },
+    "pickup": {
+      "label": "Pickup",
+      "time": "4pm",
+      "direction": "campus to home",
+      "reverse": false
+    }
+  },
+  "regions": {
+    "florida": {
+      "name": "Miami",
+      "dropoff": {
+        "5": {
+          "contour": 4.324,
+          "contourLow": 3.636,
+          "contourHigh": 5.652,
+          "status": "measured-sites",
+          "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "10": {
+          "contour": 7.643,
+          "contourLow": 7.002,
+          "contourHigh": 10.043,
+          "status": "measured-sites",
+          "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "15": {
+          "contour": 10.75,
+          "contourLow": 10.368,
+          "contourHigh": 14.434,
+          "status": "measured-sites",
+          "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+        }
+      },
+      "pickup": {
+        "5": {
+          "contour": 4.342,
+          "contourLow": 2.765,
+          "contourHigh": 5.528,
+          "status": "measured-sites",
+          "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "10": {
+          "contour": 7.986,
+          "contourLow": 6.155,
+          "contourHigh": 9.678,
+          "status": "measured-sites",
+          "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "15": {
+          "contour": 11.484,
+          "contourLow": 9.415,
+          "contourHigh": 14.175,
+          "status": "measured-sites",
+          "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+        }
+      }
+    },
+    "newark": {
+      "name": "Newark and Paterson",
+      "dropoff": {
+        "5": {
+          "contour": 2.622,
+          "contourLow": 1.827,
+          "contourHigh": 4.738,
+          "status": "measured-sites",
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "10": {
+          "contour": 6.514,
+          "contourLow": 5.397,
+          "contourHigh": 7.995,
+          "status": "measured-sites",
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "15": {
+          "contour": 10.105,
+          "contourLow": 8.968,
+          "contourHigh": 11.948,
+          "status": "measured-sites",
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+        }
+      },
+      "pickup": {
+        "5": {
+          "contour": 2.849,
+          "contourLow": 1.117,
+          "contourHigh": 5.033,
+          "status": "measured-sites",
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "10": {
+          "contour": 6.908,
+          "contourLow": 5.072,
+          "contourHigh": 8.34,
+          "status": "measured-sites",
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "15": {
+          "contour": 11.228,
+          "contourLow": 9.028,
+          "contourHigh": 12.041,
+          "status": "measured-sites",
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+        }
+      }
+    },
+    "camden": {
+      "name": "Camden",
+      "dropoff": {
+        "5": {
+          "contour": 4.23,
+          "contourLow": 3.431,
+          "contourHigh": 4.679,
+          "status": "measured-sites",
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "10": {
+          "contour": 7.785,
+          "contourLow": 6.868,
+          "contourHigh": 8.68,
+          "status": "measured-sites",
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "15": {
+          "contour": 11.34,
+          "contourLow": 10.305,
+          "contourHigh": 12.68,
+          "status": "measured-sites",
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+        }
+      },
+      "pickup": {
+        "5": {
+          "contour": 4.431,
+          "contourLow": 4.049,
+          "contourHigh": 4.639,
+          "status": "measured-sites",
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "10": {
+          "contour": 7.293,
+          "contourLow": 7.104,
+          "contourHigh": 7.918,
+          "status": "measured-sites",
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+        },
+        "15": {
+          "contour": 10.362,
+          "contourLow": 9.745,
+          "contourHigh": 11.196,
+          "status": "measured-sites",
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+        }
+      }
+    }
+  }
+}

@@ -1,12 +1,10 @@
-// The in-browser aggregator (used for drive-time polygons) must reproduce the
-// precomputed radius-ring demographics when handed the same disk. If these
-// drift, a 15-minute figure and a 2-mile figure would no longer be comparable.
-
+// The ring build and the browser run the same shared functions on the same file, so the same disk must give the
+// same figures exactly, not approximately.
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { decodePoints, aggregateDecoded, pointInPolygon, type PointsFile } from "../populationPoints";
-import { geodesicBufferMiles } from "../buffer";
+import { decodePoints, demographicsFor, pointInPolygon, type PointsFile } from "../populationPoints";
+import { distanceMi, weightsFromBlocks } from "../../shared-geo/sharedGeo";
 import type { SchoolDemographicsFile } from "../../data/types";
 
 const DATA = join(__dirname, "..", "..", "..", "public", "data");
@@ -18,16 +16,14 @@ describe("population points aggregation", () => {
     ["06-1701", 2], // Lauderdale Lakes Middle, Broward
     ["06-1071", 1], // William Dandy Middle
     ["13-1681", 5], // Lillie C. Evans K-8, Miami-Dade
-  ])("matches the precomputed %s ring at %i mi", (msid, miles) => {
+  ])("reproduces the precomputed %s ring at %i mi exactly", (msid, miles) => {
     const entry = demo.schools[msid];
     const ring = entry.rings.find((r) => r.r === miles)!;
-    const disk = geodesicBufferMiles([entry.lon, entry.lat], miles, 512).geometry;
-    const got = aggregateDecoded(points, disk);
-    // A polygonal disk vs an exact geodesic distance test differ only for the
-    // odd block sitting on the edge, so totals agree to well under 1%.
-    expect(Math.abs(got.total_pop - ring.total_pop) / ring.total_pop).toBeLessThan(0.01);
-    expect(Math.abs(got.k8_pop - ring.k8_pop) / ring.k8_pop).toBeLessThan(0.01);
-    expect(Math.abs((got.pct_black ?? 0) - (ring.pct_black ?? 0))).toBeLessThan(0.5);
+    const b = points.blocks, idx: number[] = [];
+    for (let i = 0; i < b.lon.length; i++) if (distanceMi([entry.lon, entry.lat], [b.lon[i], b.lat[i]]) <= miles) idx.push(i);
+    const got = demographicsFor(points, weightsFromBlocks(b, idx));
+    const { r: _r, ...want } = ring;
+    expect(got).toEqual(want);
   });
 
   it("treats polygon holes as outside", () => {

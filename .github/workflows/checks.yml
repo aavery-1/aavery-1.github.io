@@ -1,0 +1,29 @@
+# Code checks on every pull request and every push to a branch other than main (main runs lint and tests in
+# deploy.yml before it publishes). Lint, type checks and tests, including the test that the shared geo engine and
+# its data are unedited copies of Grove's (src/shared-geo/__tests__/manifest.test.ts).
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
