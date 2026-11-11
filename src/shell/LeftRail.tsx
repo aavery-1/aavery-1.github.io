@@ -14,13 +14,13 @@
 // The bespoke grade-button grid and the dual-range utilization slider were
 // removed in favour of this uniform pattern; facility use is now the three
 // statutory tiers as checkboxes (store `facilityUseSelection`).
+//
+// Real Carbon: ComboBox, Toggle, Select, Tooltip, IconButton and DismissibleTag
+// from @carbon/react; everything else is plain elements styled in
+// LeftRail.carbon.css with Carbon tokens. No em dashes in this file.
 
-import {
-  Box, Typography, Divider, Button, Tooltip, Chip, Collapse, IconButton, Stack,
-  Checkbox, Badge, Select, MenuItem, ToggleButton, ToggleButtonGroup, TextField, InputAdornment,
-  Autocomplete, Switch,
-} from "@mui/material";
-import { useMemo, useRef, useState, type RefObject } from "react";
+import { ComboBox, IconButton, Select, SelectItem, TextInput, Toggle, Tooltip } from "@carbon/react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import {
   Close as CloseIcon, Location as LocationIcon, Star as StarIcon,
   Building as BuildingIcon, Money as MoneyIcon, Categories as CategoriesIcon,
@@ -28,14 +28,14 @@ import {
   ZoomIn as ZoomToIcon, Filter as FilterFunnelIcon, Reset as ResetIcon,
   Restaurant as MealIcon, View as PickIcon, Add as AddIcon,
 } from "@carbon/icons-react";
-import { alpha } from "@mui/material/styles";
 import { useStore, ALL_COUNTIES, FACILITY_USE_TIERS, utilizationStyle, type FacilityUseKey, type LatLng } from "../store";
 import { DEFAULT_ACTIVE_LAYER_IDS } from "../config/mapLayers";
 import { COUNTY_BBOX } from "../geo/countyBounds";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss, type Grade } from "../map/gradeEncoding";
 import { mapLayersByGroup, type MapLayerDef, type MapLayerGroup } from "../config/mapLayers";
-import { TEAL, ACCENT, ACCENT_TEXT, SHELL_BG, SHELL_ON, SHELL_DIM, SHELL_HAIRLINE, STATUS } from "../muiTheme";
+import { tint } from "../ui/tokens";
+import { FilterChip } from "../ui/FilterChip";
 import { Icon } from "../ui/icons";
 import { useData } from "../data/DataContext";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
@@ -47,16 +47,16 @@ import {
   SCHOOL_LEVELS, SCHOOL_TYPES, TITLE_I_STATES, schoolTypeLabel, titleILabel, levelFacetLabel,
   type CountyName, type SchoolLevel, type SchoolType, type TitleIState, type SchoolFeature,
 } from "../data/types";
+import "./LeftRail.carbon.css";
 
-const RAIL_COLLAPSED = 64;
-const PANEL_WIDTH = 340;
+// Rail geometry (64px collapsed rail, 340px panel) lives in LeftRail.carbon.css.
 
 // Letter grades exposed as facet rows (four-plus-F, then the non-standard codes
 // grouped as "Not rated").
 const RATING_GRADES: Grade[] = ["A", "B", "C", "D", "F"];
 const OTHER_GRADES: Grade[] = ["I", "NR", "NG"];
 
-const LAYER_GROUP_ICON: Record<MapLayerGroup, React.ReactNode> = {
+const LAYER_GROUP_ICON: Record<MapLayerGroup, ReactNode> = {
   Schools: <Icon.Schools size={14} />,
   Boundaries: <Icon.Boundaries size={14} />,
   Context: <Icon.Context size={14} />,
@@ -152,7 +152,7 @@ export function LeftRail({ onNavigate, onOpenAttribution }: { onNavigate?: () =>
 
       {/* Map layers: display overlays, kept visually apart from the filters
           above by a heavier separator and its own reset. */}
-      <Box ref={layersRef} sx={{ borderTop: `1px solid ${SHELL_HAIRLINE}`, mt: 1, px: 2.5, pt: 2, pb: inDrawer ? 2 : 3 }}>
+      <div ref={layersRef} className={`rail-layers${inDrawer ? " rail-layers--drawer" : ""}`}>
         <SectionHeader
           title="Map layers"
           activeCount={activeLayerCount}
@@ -161,7 +161,7 @@ export function LeftRail({ onNavigate, onOpenAttribution }: { onNavigate?: () =>
             : undefined}
         />
         <MapLayersSection />
-      </Box>
+      </div>
 
       {/* In the phone drawer, a sticky primary action doubles as the obvious exit:
           apply-and-return to the map. Filters already apply live, so this simply
@@ -171,12 +171,9 @@ export function LeftRail({ onNavigate, onOpenAttribution }: { onNavigate?: () =>
   );
 
   return (
-    <Box sx={{ display: "flex", height: "100%" }}>
+    <div className="rail">
       {!inDrawer && (
-        <Box sx={{
-          width: RAIL_COLLAPSED, flex: "none", bgcolor: SHELL_BG, borderRight: `1px solid ${SHELL_HAIRLINE}`,
-          display: "flex", flexDirection: "column", alignItems: "stretch", py: 1, zIndex: 1,
-        }}>
+        <nav className="rail-bar" aria-label="Filters and map layers">
           {/* Two entries only: Filters (the whole filter panel) and Map layers.
               The Filters button is also the panel's open/close toggle, so there is
               no separate, redundant collapse control. Reset lives in the panel as
@@ -196,7 +193,7 @@ export function LeftRail({ onNavigate, onOpenAttribution }: { onNavigate?: () =>
             active={activeLayerCount > 0}
             badge={activeLayerCount}
           />
-          <Box sx={{ flex: 1 }} />
+          <div className="rail-bar__spacer" />
           {/* Reset lives at the foot of the rail: one click restores the filters
               AND the map layers to their defaults (store.resetAll), a clean slate
               without moving the map. Enabled only when something differs. */}
@@ -209,34 +206,30 @@ export function LeftRail({ onNavigate, onOpenAttribution }: { onNavigate?: () =>
           {/* Account is a low-frequency global utility, parked at the foot of the
               rail so the header stays uncluttered. */}
           {onOpenAttribution && (
-            <Box sx={{ borderTop: `1px solid ${SHELL_HAIRLINE}`, mt: 0.5, pt: 0.5, display: "flex", justifyContent: "center" }}>
+            <div className="rail-bar__account">
               <AccountMenu variant="rail" onOpenAttribution={onOpenAttribution} />
-            </Box>
+            </div>
           )}
-        </Box>
+        </nav>
       )}
 
       {/* In the phone drawer the content fills the drawer at 100% width. On the
-          desktop rail it is wrapped in a horizontal Collapse for the expand
-          animation; that Collapse must NOT wrap the drawer content, because a
-          horizontal Collapse sizes to the content's intrinsic width and would
+          desktop rail it is wrapped in a width-animating collapse for the expand
+          animation; that collapse must NOT wrap the drawer content, because it
+          is sized to the panel's fixed width and would
           overflow the fixed-width drawer. */}
       {inDrawer ? (
-        <Box sx={{ width: "100%", minWidth: 0, height: "100%", overflowY: "auto", bgcolor: SHELL_BG, display: "flex", flexDirection: "column" }}>
+        <div className="rail-drawer-body">
           {panelContent}
-        </Box>
+        </div>
       ) : (
-        <Collapse in={!collapsed} orientation="horizontal" timeout={260} easing="cubic-bezier(0.4, 0, 0.2, 1)" sx={{ height: "100%" }}>
-          <Box sx={{
-            width: PANEL_WIDTH, minWidth: PANEL_WIDTH,
-            height: "100%", overflowY: "auto", bgcolor: SHELL_BG,
-            borderRight: `1px solid ${SHELL_HAIRLINE}`,
-          }}>
+        <div className={`rail-collapse${collapsed ? "" : " rail-collapse--open"}`} aria-hidden={collapsed || undefined}>
+          <div className="rail-panel">
             {panelContent}
-          </Box>
-        </Collapse>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -248,35 +241,33 @@ function PanelHeader({ inDrawer, onClose }: { inDrawer: boolean; onClose?: () =>
   const active = useActiveFilters();
   const setCollapsed = useStore((s) => s.setPanelCollapsed);
   return (
-    <Box sx={{
-      position: "sticky", top: 0, zIndex: 3, bgcolor: SHELL_BG,
-      px: 2.5, py: 1.75, display: "flex", alignItems: "center", justifyContent: "space-between",
-      borderBottom: `1px solid ${SHELL_HAIRLINE}`,
-    }}>
-      <Box sx={{ minWidth: 0 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 600, color: SHELL_ON, lineHeight: 1.2 }}>Filters</Typography>
-        <Typography sx={{ fontSize: 13, color: total === 0 ? STATUS.error : SHELL_DIM, fontWeight: 400, mt: 0.25, fontVariantNumeric: "tabular-nums" }}>
+    <div className="rail-head">
+      <div className="rail-head__text">
+        <div className="rail-head__title">Filters</div>
+        <div className={`rail-head__sub${total === 0 ? " rail-head__sub--empty" : ""}`}>
           {total.toLocaleString("en-US")} school{total === 1 ? "" : "s"}{active.length ? ` · ${active.length} filter${active.length === 1 ? "" : "s"}` : ""}
-        </Typography>
-      </Box>
-      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flex: "none" }}>
-        <Button size="small" disabled={active.length === 0} onClick={() => useStore.getState().clearAllFilters()} sx={{ color: TEAL, textTransform: "none", fontWeight: 600, minWidth: 0, px: 1, "&.Mui-disabled": { color: SHELL_DIM } }}>
+        </div>
+      </div>
+      <div className="rail-head__actions">
+        <button type="button" className="rail-textbtn" disabled={active.length === 0} onClick={() => useStore.getState().clearAllFilters()}>
           Clear all
-        </Button>
+        </button>
         {/* One close control: the drawer gets an X, the desktop panel closes from
             the same rail Filters button that opened it (so no redundant chevron). */}
-        {inDrawer && onClose && (
-          <IconButton size="small" onClick={onClose} aria-label="Close filters" sx={{ color: SHELL_ON }}>
-            <CloseIcon size={20} />
+        {(!inDrawer || onClose) && (
+          <IconButton
+            kind="ghost"
+            size="sm"
+            align="bottom-end"
+            label="Close filters"
+            className={`rail-head__close${inDrawer ? " rail-head__close--drawer" : ""}`}
+            onClick={inDrawer ? onClose : () => setCollapsed(true)}
+          >
+            <CloseIcon size={inDrawer ? 20 : 18} />
           </IconButton>
         )}
-        {!inDrawer && (
-          <IconButton size="small" onClick={() => setCollapsed(true)} aria-label="Close filters" sx={{ color: SHELL_DIM }}>
-            <CloseIcon size={18} />
-          </IconButton>
-        )}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 }
 
@@ -285,18 +276,11 @@ function PanelHeader({ inDrawer, onClose }: { inDrawer: boolean; onClose?: () =>
 function DrawerDone({ onDone }: { onDone?: () => void }) {
   const { total } = useFilteredSchools();
   return (
-    <Box sx={{
-      position: "sticky", bottom: 0, zIndex: 4, bgcolor: SHELL_BG,
-      borderTop: `1px solid ${SHELL_HAIRLINE}`, px: 2.5, py: 1.5,
-    }}>
-      <Button
-        fullWidth variant="contained" onClick={onDone} disableElevation
-        disabled={total === 0}
-        sx={{ textTransform: "none", fontWeight: 700, py: 1.15, fontSize: 14 }}
-      >
+    <div className="rail-done">
+      <button type="button" className="rail-done__btn" onClick={onDone} disabled={total === 0}>
         Show {total.toLocaleString("en-US")} school{total === 1 ? "" : "s"}
-      </Button>
-    </Box>
+      </button>
+    </div>
   );
 }
 
@@ -306,25 +290,11 @@ function AppliedFilters() {
   const filters = useActiveFilters();
   if (filters.length === 0) return null;
   return (
-    <Box sx={{ px: 2.5, py: 1.5, borderBottom: `1px solid ${SHELL_HAIRLINE}`, display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+    <div className="rail-applied">
       {filters.map((f) => (
-        <Chip
-          key={f.key}
-          label={f.label}
-          size="small"
-          onDelete={f.onClear}
-          deleteIcon={<Box component="span" sx={{ fontSize: 14, lineHeight: 1, pr: 0.25 }}>×</Box>}
-          sx={{
-            height: 24, fontSize: 12, fontWeight: 600, maxWidth: "100%",
-            color: f.section === "Geography" ? "#5B21B6" : ACCENT_TEXT,
-            bgcolor: f.section === "Geography" ? alpha("#7E57C2", 0.1) : alpha(TEAL, 0.1),
-            border: `1px solid ${f.section === "Geography" ? alpha("#7E57C2", 0.3) : alpha(TEAL, 0.3)}`,
-            "& .MuiChip-label": { px: 1 },
-            "& .MuiChip-deleteIcon": { color: "inherit", opacity: 0.7, "&:hover": { opacity: 1 } },
-          }}
-        />
+        <FilterChip key={f.key} label={f.label} onClear={f.onClear} geography={f.section === "Geography"} />
       ))}
-    </Box>
+    </div>
   );
 }
 
@@ -369,9 +339,18 @@ function PickSchoolsFacet() {
 
   const all = useMemo(() => schools?.features ?? [], [schools]);
   const [query, setQuery] = useState("");
+  // Carbon's ComboBox writes the chosen school's name into its field; a pick
+  // should leave the field empty and focused, ready for the next school. A new
+  // key remounts the field clean, and the effect below puts focus back in it.
+  const [pickRound, setPickRound] = useState(0);
+  const comboRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    if (pickRound > 0) comboRef.current?.focus();
+  }, [pickRound]);
   const options = useMemo(() => matchPickOptions(all, query, pickedMsids), [all, query, pickedMsids]);
   const pickedList = useMemo(() => all.filter((f) => pickedMsids.has(f.properties.msid)), [all, pickedMsids]);
   const count = pickedMsids.size;
+  const toggleId = `rail-isolate-${useId().replace(/:/g, "")}`;
 
   const goTo = (f: SchoolFeature) => {
     const [lng, lat] = f.geometry.coordinates as [number, number];
@@ -381,89 +360,103 @@ function PickSchoolsFacet() {
   };
 
   return (
-    <Box sx={{ px: 2.5, py: 1.75, bgcolor: alpha(TEAL, 0.045) }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
-        <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
-          <Box sx={{ color: SHELL_DIM, display: "flex" }}><PickIcon size={15} /></Box>
-          <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, letterSpacing: 0 }}>Pick schools</Typography>
-          {count ? <Chip label={count} size="small" sx={{ height: 16, fontSize: 11, fontWeight: 600, bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT, "& .MuiChip-label": { px: 0.75 } }} /> : null}
-        </Stack>
+    <div className="rail-pick">
+      <div className="rail-pick__head">
+        <div className="rail-row">
+          <span className="rail-icon"><PickIcon size={15} /></span>
+          <span className="rail-title">Pick schools</span>
+          {count ? <CountPill n={count} /> : null}
+        </div>
         {count ? (
-          <Button size="small" onClick={clearPicked} sx={{ color: TEAL, minWidth: 0, p: 0, fontSize: 12, textTransform: "none", fontWeight: 600 }}>Clear</Button>
+          <button type="button" className="rail-link" onClick={clearPicked}>Clear</button>
         ) : null}
-      </Stack>
+      </div>
 
       {/* The isolate toggle: on = map/list/counts show ONLY the picks. Allowed with
           zero picks (that is the "clear the map" state), with a helper line below. */}
-      <Box component="label" sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", py: 0.25 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: isolatePicked ? 600 : 500, color: SHELL_ON }}>
+      <div className="rail-pick__toggle">
+        <label htmlFor={toggleId} className={`rail-pick__toggle-label${isolatePicked ? " rail-pick__toggle-label--on" : ""}`}>
           Show only picked schools
-        </Typography>
-        <Switch
-          size="small"
-          checked={isolatePicked}
-          onChange={(e) => setIsolatePicked(e.target.checked)}
-          sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: TEAL }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: TEAL } }}
+        </label>
+        <Toggle
+          id={toggleId}
+          size="sm"
+          hideLabel
+          labelText="Show only picked schools"
+          toggled={isolatePicked}
+          onToggle={(on) => setIsolatePicked(on)}
+          className="rail-toggle"
         />
-      </Box>
-      <Typography sx={{ fontSize: 12, color: isolatePicked && count === 0 ? STATUS.error : SHELL_DIM, lineHeight: 1.5, mb: 1 }}>
+      </div>
+      <p className={`rail-pick__help${isolatePicked && count === 0 ? " rail-pick__help--warn" : ""}`}>
         {isolatePicked
           ? (count === 0
               ? "The map is cleared. Add schools below, or click any marker and choose “Add to my map.”"
               : "Showing only your picks. Other filters are paused while this is on.")
           : "Add schools to build a list, then turn this on to show only them."}
-      </Typography>
+      </p>
 
-      <Autocomplete
-        size="small"
-        options={options}
-        value={null}
-        inputValue={query}
-        onInputChange={(_, v, reason) => { if (reason !== "reset") setQuery(v); }}
-        filterOptions={(x) => x}
-        getOptionLabel={(o) => o.properties.name}
-        isOptionEqualToValue={(a, b) => a.properties.msid === b.properties.msid}
-        noOptionsText={query.trim() ? "No matches" : "Type a school name or MSID"}
-        onChange={(_, v) => { if (v) { addPicked(v.properties.msid); setQuery(""); } }}
-        renderOption={(props, o) => (
-          <li {...props} key={o.properties.msid}>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.properties.name}</Typography>
-              <Typography sx={{ fontSize: 11, color: SHELL_DIM }}>{o.properties.county}, {o.properties.level}, <Box component="span" className="mono">{o.properties.msid}</Box></Typography>
-            </Box>
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            placeholder="Add a school by name or MSID"
-            InputProps={{ ...params.InputProps, startAdornment: <InputAdornment position="start" sx={{ color: SHELL_DIM }}><AddIcon size={14} /></InputAdornment> }}
-            inputProps={{ ...params.inputProps, style: { fontSize: 13 } }}
-          />
-        )}
-      />
+      <div className="rail-pick__search">
+        <span className="rail-pick__search-icon" aria-hidden><AddIcon size={14} /></span>
+        <ComboBox<SchoolFeature>
+          key={pickRound}
+          ref={comboRef}
+          id={`${toggleId}-search`}
+          size="sm"
+          className="rail-pick__combo"
+          aria-label="Add a school by name or MSID"
+          placeholder="Add a school by name or MSID"
+          items={options}
+          selectedItem={null}
+          shouldFilterItem={() => true}
+          onInputChange={(v) => setQuery(v ?? "")}
+          onChange={({ selectedItem }) => {
+            if (!selectedItem) return;
+            addPicked(selectedItem.properties.msid);
+            setQuery("");
+            setPickRound((n) => n + 1);
+          }}
+          itemToString={(o) => (o ? o.properties.name : "")}
+          itemToElement={(o) =>
+            o ? (
+              <span className="school-option">
+                <span className="school-option__text">
+                  <span className="school-option__name">{o.properties.name}</span>
+                  <span className="school-option__sub">{o.properties.county}, {o.properties.level}, <span className="mono">{o.properties.msid}</span></span>
+                </span>
+              </span>
+            ) : <span />
+          }
+        />
+      </div>
+      {query.trim() && options.length === 0 && <p className="rail-pick__nomatch" role="status">No matches</p>}
 
       {pickedList.length > 0 && (
-        <Stack sx={{ mt: 1 }}>
+        <div className="rail-pick__list">
           {pickedList.map((f) => (
-            <Box key={f.properties.msid} sx={{ display: "flex", alignItems: "center", gap: 0.5, py: 0.15 }}>
-              <Box
-                component="button"
+            <div key={f.properties.msid} className="rail-pick__item">
+              <button
+                type="button"
+                className="rail-pick__goto"
                 onClick={() => goTo(f)}
                 title={`Zoom to ${f.properties.name}`}
-                sx={{ flex: 1, minWidth: 0, textAlign: "left", appearance: "none", border: "none", bgcolor: "transparent", cursor: "pointer", p: 0.25, borderRadius: 1, color: SHELL_ON, "&:hover": { bgcolor: alpha(SHELL_ON, 0.04) } }}
               >
-                <Typography sx={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.properties.name}</Typography>
-                <Typography sx={{ fontSize: 11, color: SHELL_DIM, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.properties.county}, {f.properties.level}</Typography>
-              </Box>
-              <IconButton size="small" aria-label={`Remove ${f.properties.name}`} onClick={() => removePicked(f.properties.msid)} sx={{ color: SHELL_DIM, flex: "none", "&:hover": { color: STATUS.error } }}>
+                <span className="rail-pick__name">{f.properties.name}</span>
+                <span className="rail-pick__sub">{f.properties.county}, {f.properties.level}</span>
+              </button>
+              <button
+                type="button"
+                className="rail-roundbtn rail-roundbtn--danger"
+                aria-label={`Remove ${f.properties.name}`}
+                onClick={() => removePicked(f.properties.msid)}
+              >
                 <CloseIcon size={16} />
-              </IconButton>
-            </Box>
+              </button>
+            </div>
           ))}
-        </Stack>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 
@@ -492,29 +485,27 @@ function GeographyFacet({ onNavigate }: { onNavigate?: () => void }) {
       onClear={allSelected ? undefined : () => setCounties(ALL_COUNTIES)}
       clearLabel="All"
     >
-      <Stack>
+      <div className="rail-stack">
         {ALL_COUNTIES.map((c) => (
-          <Box key={c} sx={{ display: "flex", alignItems: "center" }}>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+          <div key={c} className="rail-county">
+            <div className="rail-county__row">
               <CheckboxRow
                 label={c}
                 checked={countySelection.has(c)}
                 count={counts[c] ?? 0}
                 onToggle={() => toggleCounty(c)}
               />
-            </Box>
-            <Tooltip title={`Zoom to ${c}`} placement="left">
-              <IconButton size="small" onClick={() => focus(c)} aria-label={`Zoom to ${c}`} sx={{ color: SHELL_DIM, ml: 0.5, "&:hover": { color: TEAL } }}>
-                <ZoomToIcon size={15} />
-              </IconButton>
-            </Tooltip>
-          </Box>
+            </div>
+            <IconButton kind="ghost" size="xs" align="left" label={`Zoom to ${c}`} className="rail-zoom" onClick={() => focus(c)}>
+              <ZoomToIcon size={15} />
+            </IconButton>
+          </div>
         ))}
-      </Stack>
+      </div>
       {countySelection.size === 0 && (
-        <Typography sx={{ fontSize: 12, color: STATUS.error, bgcolor: alpha(STATUS.error, 0.06), border: `1px solid ${alpha(STATUS.error, 0.25)}`, borderRadius: 1, px: 1, py: 0.75, mt: 1, lineHeight: 1.5 }}>
+        <p className="rail-alert">
           No counties selected, so the map is empty. Pick at least one county.
-        </Typography>
+        </p>
       )}
     </FacetSection>
   );
@@ -606,35 +597,31 @@ function SchoolFacets() {
         {FACILITY_USE_TIERS.map((tier) => (
           <CheckboxRow
             key={tier.key}
-            label={<Box component="span">{tier.label} <Box component="span" sx={{ color: SHELL_DIM, fontWeight: 400 }}>· {tier.hint}</Box></Box>}
+            label={<span>{tier.label} <span className="rail-hint">· {tier.hint}</span></span>}
             checked={facilityUseSelection.has(tier.key)}
             count={counts.facility[tier.key] ?? 0}
             onToggle={() => toggleFacilityUse(tier.key)}
             swatch={<Dot color={tier.color} />}
           />
         ))}
-        <Box sx={{ mt: 1, pl: 0.25 }}>
-          <Typography sx={{ fontSize: 12, color: SHELL_DIM, mb: 0.5 }}>Custom range (% of capacity)</Typography>
-          <Stack direction="row" spacing={0.75} alignItems="center">
-            <TextField
-              size="small" type="number" placeholder="Min"
-              value={utilMin ?? ""}
-              onChange={(e) => { const v = e.target.value; setUtilRange(v === "" ? null : Math.max(0, Number(v)), utilMax); }}
-              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
-              inputProps={{ min: 0, "aria-label": "Minimum utilization percent", style: { fontSize: 13, padding: "6px 8px" } }}
-              sx={{ width: 92 }}
+        <div className="rail-range rail-range--spaced">
+          <div className="rail-range__label">Custom range (% of capacity)</div>
+          <div className="rail-range__row">
+            <PercentInput
+              placeholder="Min"
+              label="Minimum utilization percent"
+              value={utilMin}
+              onChange={(v) => setUtilRange(v == null ? null : Math.max(0, v), utilMax)}
             />
-            <Typography sx={{ fontSize: 13, color: SHELL_DIM }}>to</Typography>
-            <TextField
-              size="small" type="number" placeholder="Max"
-              value={utilMax ?? ""}
-              onChange={(e) => { const v = e.target.value; setUtilRange(utilMin, v === "" ? null : Math.max(0, Number(v))); }}
-              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
-              inputProps={{ min: 0, "aria-label": "Maximum utilization percent", style: { fontSize: 13, padding: "6px 8px" } }}
-              sx={{ width: 92 }}
+            <span className="rail-range__to">to</span>
+            <PercentInput
+              placeholder="Max"
+              label="Maximum utilization percent"
+              value={utilMax}
+              onChange={(v) => setUtilRange(utilMin, v == null ? null : Math.max(0, v))}
             />
-          </Stack>
-        </Box>
+          </div>
+        </div>
       </FacetSection>
 
       <FacetDivider />
@@ -664,28 +651,26 @@ function SchoolFacets() {
         activeCount={frlRangeActive ? 1 : 0}
         onClear={frlRangeActive ? () => setFrlRange(null, null) : undefined}
       >
-        <Box sx={{ pl: 0.25 }}>
-          <Typography sx={{ fontSize: 12, color: SHELL_DIM, mb: 0.5 }}>Custom range (% of students)</Typography>
-          <Stack direction="row" spacing={0.75} alignItems="center">
-            <TextField
-              size="small" type="number" placeholder="Min"
-              value={frlMin ?? ""}
-              onChange={(e) => { const v = e.target.value; setFrlRange(v === "" ? null : Math.min(100, Math.max(0, Number(v))), frlMax); }}
-              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
-              inputProps={{ min: 0, max: 100, "aria-label": "Minimum free/reduced-price lunch percent", style: { fontSize: 13, padding: "6px 8px" } }}
-              sx={{ width: 92 }}
+        <div className="rail-range">
+          <div className="rail-range__label">Custom range (% of students)</div>
+          <div className="rail-range__row">
+            <PercentInput
+              placeholder="Min"
+              label="Minimum free/reduced-price lunch percent"
+              max={100}
+              value={frlMin}
+              onChange={(v) => setFrlRange(v == null ? null : Math.min(100, Math.max(0, v)), frlMax)}
             />
-            <Typography sx={{ fontSize: 13, color: SHELL_DIM }}>to</Typography>
-            <TextField
-              size="small" type="number" placeholder="Max"
-              value={frlMax ?? ""}
-              onChange={(e) => { const v = e.target.value; setFrlRange(frlMin, v === "" ? null : Math.min(100, Math.max(0, Number(v)))); }}
-              InputProps={{ endAdornment: <InputAdornment position="end" sx={{ "& p": { fontSize: 12 } }}>%</InputAdornment> }}
-              inputProps={{ min: 0, max: 100, "aria-label": "Maximum free/reduced-price lunch percent", style: { fontSize: 13, padding: "6px 8px" } }}
-              sx={{ width: 92 }}
+            <span className="rail-range__to">to</span>
+            <PercentInput
+              placeholder="Max"
+              label="Maximum free/reduced-price lunch percent"
+              max={100}
+              value={frlMax}
+              onChange={(v) => setFrlRange(frlMin, v == null ? null : Math.min(100, Math.max(0, v)))}
             />
-          </Stack>
-        </Box>
+          </div>
+        </div>
       </FacetSection>
 
       <FacetDivider />
@@ -752,7 +737,7 @@ function SchoolFacets() {
 }
 
 // The board / legislative district picker: a large, hierarchical facet, so it
-// keeps a segmented kind selector + a searchable dropdown, disclosed on demand.
+// keeps a segmented kind selector + a district dropdown, disclosed on demand.
 function DistrictFacet() {
   const { schoolDistricts } = useData();
   const districtFilter = useStore((s) => s.districtFilter);
@@ -761,55 +746,59 @@ function DistrictFacet() {
   const [open, setOpen] = useState(Boolean(districtFilter));
   const districtOptions = schoolDistricts.options[districtKind];
   const districtValue = districtFilter && districtFilter.kind === districtKind ? districtFilter.value : "";
+  const selectId = `rail-district-${useId().replace(/:/g, "")}`;
+
+  const pickKind = (v: DistrictKind) => {
+    if (v === districtKind) return; // exclusive: re-clicking the active kind is a no-op
+    setDistrictKind(v);
+    if (districtFilter && districtFilter.kind !== v) setDistrictFilter(null);
+  };
 
   return (
-    <Box sx={{ px: 2.5, py: 1.75 }}>
-      <Button
-        fullWidth
-        onClick={() => setOpen((v) => !v)}
-        sx={{ justifyContent: "flex-start", textTransform: "none", fontWeight: 600, fontSize: 13, color: SHELL_ON, px: 0.25, py: 0.25, letterSpacing: 0, gap: 0.75, "& .MuiButton-startIcon": { m: 0 } }}
-        startIcon={<Box sx={{ color: SHELL_DIM, display: "flex" }}><MapBoundaryIcon size={15} /></Box>}
-      >
-        <Box component="span" sx={{ flex: 1, textAlign: "left" }}>Board &amp; legislative districts{districtFilter ? " (1)" : ""}</Box>
+    <div className="rail-facet">
+      <button type="button" className="rail-disclosure" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <span className="rail-icon"><MapBoundaryIcon size={15} /></span>
+        <span className="rail-disclosure__label">Board &amp; legislative districts{districtFilter ? " (1)" : ""}</span>
         {open ? <Icon.ChevronDown size={16} /> : <Icon.ChevronRight size={16} />}
-      </Button>
-      <Collapse in={open}>
-        <Box sx={{ pt: 1 }}>
-          <ToggleButtonGroup
-            exclusive size="small" value={districtKind}
-            onChange={(_, v: DistrictKind | null) => { if (v) { setDistrictKind(v); if (districtFilter && districtFilter.kind !== v) setDistrictFilter(null); } }}
-            sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 0.5, width: "100%", mb: 1 }}
-          >
+      </button>
+      <Collapsible open={open}>
+        <div className="rail-district">
+          <div className="rail-seg" role="group" aria-label="District type">
             {DISTRICT_KINDS.map((k) => (
-              <ToggleButton key={k.kind} value={k.kind}
-                sx={{ border: `1px solid ${SHELL_HAIRLINE} !important`, borderRadius: "0 !important", py: 0.5, fontSize: 11, fontWeight: 600, textTransform: "none", color: SHELL_DIM, "&.Mui-selected": { bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT } }}
+              <button
+                key={k.kind}
+                type="button"
+                className={`rail-seg__btn${districtKind === k.kind ? " rail-seg__btn--on" : ""}`}
+                aria-pressed={districtKind === k.kind}
+                onClick={() => pickKind(k.kind)}
               >
                 {k.short}
-              </ToggleButton>
+              </button>
             ))}
-          </ToggleButtonGroup>
+          </div>
           {districtOptions.length === 0 ? (
-            <Typography sx={{ fontSize: 11, color: SHELL_DIM, fontStyle: "italic" }}>
+            <p className="rail-district__empty">
               No {DISTRICT_KINDS.find((k) => k.kind === districtKind)?.label.toLowerCase()} district data for the loaded schools.
-            </Typography>
+            </p>
           ) : (
             <Select
-              fullWidth size="small" displayEmpty value={districtValue}
-              onChange={(e) => { const v = e.target.value as string; setDistrictFilter(v ? { kind: districtKind, value: v } : null); }}
-              sx={{ fontSize: 13, ".MuiSelect-select": { py: 0.85 } }}
-              MenuProps={{ PaperProps: { sx: { maxHeight: 320 } } }}
+              id={selectId}
+              size="sm"
+              hideLabel
+              labelText="District"
+              className="rail-select"
+              value={districtValue}
+              onChange={(e) => { const v = e.target.value; setDistrictFilter(v ? { kind: districtKind, value: v } : null); }}
             >
-              <MenuItem value=""><em>All districts</em></MenuItem>
+              <SelectItem value="" text="All districts" />
               {districtOptions.map((o) => (
-                <MenuItem key={o.value} value={o.value} sx={{ fontSize: 13 }}>
-                  {o.label} <Box component="span" sx={{ color: SHELL_DIM, ml: 0.5 }}>({o.count})</Box>
-                </MenuItem>
+                <SelectItem key={o.value} value={o.value} text={`${o.label} (${o.count})`} />
               ))}
             </Select>
           )}
-        </Box>
-      </Collapse>
-    </Box>
+        </div>
+      </Collapsible>
+    </div>
   );
 }
 
@@ -827,94 +816,129 @@ function MapLayersSection() {
   };
 
   return (
-    <Box sx={{ mt: 1 }}>
+    <div className="rail-layer-groups">
       {mapLayersByGroup().map(({ group, layers }) => (
-        <Box key={group} sx={{ mb: 1.5 }}>
-          <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mb: 0.25, color: SHELL_DIM }}>
+        <div key={group} className="rail-layer-group">
+          <div className="rail-layer-group__head">
             {LAYER_GROUP_ICON[group]}
-            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: "none", letterSpacing: 0.16 }}>{group}</Typography>
-          </Stack>
-          <Stack>
+            <span className="rail-layer-group__name">{group}</span>
+          </div>
+          <div className="rail-stack">
             {layers.map((l) => {
               const on = activeLayerIds.has(l.id);
               const ready = dataReady(l);
               return (
-                <Tooltip key={l.id} title={ready ? l.description : `${l.description} (data unavailable in this build)`} placement="right">
-                  <Box sx={{ opacity: ready ? 1 : 0.5 }}>
+                <Tooltip
+                  key={l.id}
+                  description={ready ? l.description : `${l.description} (data unavailable in this build)`}
+                  align="right"
+                  autoAlign
+                  className="rail-tip-block"
+                >
+                  <div className={`rail-layer${ready ? "" : " rail-layer--off"}`}>
                     <CheckboxRow
                       label={l.label}
                       checked={on && ready}
                       onToggle={() => { if (ready) toggleLayer(l.id); }}
                       swatch={<Swatch def={l} />}
                     />
-                  </Box>
+                  </div>
                 </Tooltip>
               );
             })}
-          </Stack>
-        </Box>
+          </div>
+        </div>
       ))}
-    </Box>
+    </div>
   );
 }
 
 function Swatch({ def }: { def: MapLayerDef }) {
   const { kind, color } = def.swatch;
-  if (kind === "dot") return <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: color, flex: "none" }} />;
-  if (kind === "outline") return <Box sx={{ width: 12, height: 12, borderRadius: 0.5, border: `2px solid ${color}`, flex: "none" }} />;
-  return <Box sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: alpha(color, 0.85), flex: "none" }} />;
+  if (kind === "dot") return <span className="rail-swatch rail-swatch--dot" style={{ background: color }} />;
+  if (kind === "outline") return <span className="rail-swatch" style={{ border: `2px solid ${color}` }} />;
+  return <span className="rail-swatch" style={{ background: tint(color, 0.85) }} />;
 }
 
 // ---------------------------------------------------------------------------
 // Shared building blocks
 // ---------------------------------------------------------------------------
 
+// A height-animating disclosure body (the facet and district bodies). Closed, it
+// collapses to zero height and leaves the tab order; open, it grows to fit.
+function Collapsible({ open, children }: { open: boolean; children: ReactNode }) {
+  return (
+    <div className={`rail-collapsible${open ? " rail-collapsible--open" : ""}`} aria-hidden={!open || undefined}>
+      <div className="rail-collapsible__inner">{children}</div>
+    </div>
+  );
+}
+
+// A small active-count pill beside a facet title.
+function CountPill({ n }: { n: number }) {
+  return <span className="rail-count">{n}</span>;
+}
+
+// A compact number field with a trailing "%" (the custom range bounds). Empty
+// means "no bound" (null).
+function PercentInput({ value, onChange, placeholder, label, max }: {
+  value: number | null; onChange: (v: number | null) => void; placeholder: string; label: string; max?: number;
+}) {
+  const id = `rail-pct-${useId().replace(/:/g, "")}`;
+  return (
+    <div className="rail-pct">
+      <TextInput
+        id={id}
+        size="sm"
+        type="number"
+        hideLabel
+        labelText={label}
+        placeholder={placeholder}
+        min={0}
+        max={max}
+        value={value ?? ""}
+        onChange={(e) => { const v = e.target.value; onChange(v === "" ? null : Number(v)); }}
+      />
+      <span className="rail-pct__unit" aria-hidden>%</span>
+    </div>
+  );
+}
+
 // One checkbox facet row: the whole row is the toggle; the checkbox is a visual
 // affordance; an optional leading swatch and a right-aligned result count.
 function CheckboxRow({ label, checked, count, onToggle, swatch }: {
-  label: React.ReactNode; checked: boolean; count?: number; onToggle: () => void; swatch?: React.ReactNode;
+  label: ReactNode; checked: boolean; count?: number; onToggle: () => void; swatch?: ReactNode;
 }) {
   return (
-    <Box
-      component="button"
-      onClick={onToggle}
-      aria-pressed={checked}
-      sx={{
-        appearance: "none", font: "inherit", textAlign: "left", width: "100%", border: "none",
-        bgcolor: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 0.25,
-        px: 0.25, py: 0.15, borderRadius: 1, color: SHELL_ON,
-        "&:hover": { bgcolor: alpha(SHELL_ON, 0.04) },
-        "&:focus-visible": { outline: `2px solid ${TEAL}`, outlineOffset: -2 },
-      }}
-    >
-      <Checkbox size="small" checked={checked} tabIndex={-1} disableRipple sx={{ py: 0.35, color: SHELL_DIM, "&.Mui-checked": { color: TEAL } }} />
+    <button type="button" className={`rail-check${checked ? " rail-check--on" : ""}`} onClick={onToggle} aria-pressed={checked}>
+      <span className="rail-check__box" aria-hidden />
       {swatch}
-      <Typography component="span" sx={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: checked ? 600 : 500, lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ml: swatch ? 0.75 : 0.25 }}>
-        {label}
-      </Typography>
-      {count != null && (
-        <Typography component="span" sx={{ fontSize: 12, color: SHELL_DIM, fontVariantNumeric: "tabular-nums", pl: 0.75, flex: "none" }}>
-          {count.toLocaleString("en-US")}
-        </Typography>
-      )}
-    </Box>
+      <span className={`rail-check__label${swatch ? " rail-check__label--swatch" : ""}`}>{label}</span>
+      {count != null && <span className="rail-check__count">{count.toLocaleString("en-US")}</span>}
+    </button>
   );
 }
 
 function Dot({ color, hollow }: { color: string; hollow?: boolean }) {
-  return <Box sx={{ width: 9, height: 9, borderRadius: "50%", flex: "none", border: hollow ? `2px solid ${color}` : "none", bgcolor: hollow ? alpha(color, 0.15) : color }} />;
+  const style: CSSProperties = hollow
+    ? { border: `2px solid ${color}`, background: tint(color, 0.15) }
+    : { background: color };
+  return <span className="rail-dot" style={style} />;
 }
 
 function GradeSwatch({ grade }: { grade: Grade }) {
   const st = resolveGradeStyle(grade);
   return (
-    <Box sx={{
-      width: 20, height: 20, borderRadius: 0.5, flex: "none",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 11, fontWeight: 800,
-      bgcolor: rgbaToCss(st.fill), color: rgbaToCss(st.letterColor),
-      border: `1.25px ${st.dashed ? "dashed" : "solid"} ${rgbaToCss(st.stroke)}`,
-    }}>{st.letter}</Box>
+    <span
+      className="rail-grade"
+      style={{
+        background: rgbaToCss(st.fill),
+        color: rgbaToCss(st.letterColor),
+        border: `1.25px ${st.dashed ? "dashed" : "solid"} ${rgbaToCss(st.stroke)}`,
+      }}
+    >
+      {st.letter}
+    </span>
   );
 }
 
@@ -923,123 +947,103 @@ function GradeSwatch({ grade }: { grade: Grade }) {
 // active facet stays visibly counted in its header even when collapsed. Defaults
 // to open. `onClear` and the info tooltip are independent of the toggle.
 function FacetSection({ title, icon, info, activeCount, onClear, clearLabel, children, defaultOpen = true }: {
-  title: string; icon?: React.ReactNode; info?: string; activeCount?: number; onClear?: () => void; clearLabel?: string; children: React.ReactNode; defaultOpen?: boolean;
+  title: string; icon?: ReactNode; info?: string; activeCount?: number; onClear?: () => void; clearLabel?: string; children: ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <Box sx={{ px: 2.5, py: 1.75 }}>
+    <div className="rail-facet">
       <FilterLabel title={title} icon={icon} info={info} activeCount={activeCount} onClear={onClear} clearLabel={clearLabel} open={open} onToggle={() => setOpen((v) => !v)} />
-      <Collapse in={open} timeout={200}>
-        <Stack sx={{ mt: 0.5 }}>{children}</Stack>
-      </Collapse>
-    </Box>
+      <Collapsible open={open}>
+        <div className="rail-stack rail-facet__body">{children}</div>
+      </Collapsible>
+    </div>
   );
 }
 
 function FacetDivider() {
-  return <Divider sx={{ borderColor: alpha(SHELL_ON, 0.06), mx: 2.5 }} />;
+  return <hr className="rail-divider" />;
 }
 
 // A section header for a filter facet. Hierarchy comes from weight + color (a
-// SHELL_ON 600 title over SHELL_ON 400 rows), not font-size games; the leading
+// primary-text 600 title over 400/500 rows), not font-size games; the leading
 // icon aids scanning. See 07_CONTENT_STYLE.md.
 function FilterLabel({ title, icon, onClear, activeCount, info, clearLabel = "Clear", open, onToggle }: {
-  title: string; icon?: React.ReactNode; onClear?: () => void; activeCount?: number; info?: string; clearLabel?: string; open?: boolean; onToggle?: () => void;
+  title: string; icon?: ReactNode; onClear?: () => void; activeCount?: number; info?: string; clearLabel?: string; open?: boolean; onToggle?: () => void;
 }) {
   const collapsible = Boolean(onToggle);
   const head = (
     <>
       {collapsible && (
-        <Box sx={{ color: SHELL_DIM, display: "flex", flex: "none", mr: -0.25 }}>
+        <span className="rail-icon rail-chevron">
           {open ? <Icon.ChevronDown size={16} /> : <Icon.ChevronRight size={16} />}
-        </Box>
+        </span>
       )}
-      {icon && <Box sx={{ color: SHELL_DIM, display: "flex", flex: "none" }}>{icon}</Box>}
-      <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, letterSpacing: 0 }}>
-        {title}
-      </Typography>
+      {icon && <span className="rail-icon">{icon}</span>}
+      <span className="rail-title">{title}</span>
     </>
   );
   return (
-    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.25 }}>
-      <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+    <div className="rail-label">
+      <div className="rail-row">
         {collapsible ? (
-          <Box component="button" type="button" onClick={onToggle} aria-expanded={open}
-            sx={{ appearance: "none", font: "inherit", border: "none", bgcolor: "transparent", p: 0, cursor: "pointer",
-              display: "flex", alignItems: "center", gap: 0.75, minWidth: 0, color: SHELL_ON,
-              "&:focus-visible": { outline: `2px solid ${TEAL}`, outlineOffset: 2 } }}>
+          <button type="button" className="rail-label__toggle" onClick={onToggle} aria-expanded={open}>
             {head}
-          </Box>
+          </button>
         ) : head}
         {info && (
-          <Tooltip title={info} placement="right">
-            <Box sx={{ color: SHELL_DIM, display: "flex", cursor: "help" }}><Icon.Info size={13} /></Box>
+          <Tooltip description={info} align="right" autoAlign>
+            <button type="button" className="rail-info" aria-label={`About ${title}`}>
+              <Icon.Info size={13} />
+            </button>
           </Tooltip>
         )}
-        {activeCount ? <Chip label={activeCount} size="small" sx={{ height: 16, fontSize: 11, fontWeight: 600, bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT, "& .MuiChip-label": { px: 0.75 } }} /> : null}
-      </Stack>
+        {activeCount ? <CountPill n={activeCount} /> : null}
+      </div>
       {onClear && (
-        <Button size="small" onClick={onClear} sx={{ color: TEAL, minWidth: 0, p: 0, fontSize: 12, textTransform: "none", fontWeight: 600, flex: "none" }}>
+        <button type="button" className="rail-link" onClick={onClear}>
           {clearLabel}
-        </Button>
+        </button>
       )}
-    </Stack>
+    </div>
   );
 }
 
 function SectionHeader({ title, activeCount, onReset }: { title: string; activeCount?: number; onReset?: () => void }) {
   return (
-    <Box sx={{ mb: 0.5 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Stack direction="row" alignItems="center" spacing={0.75}>
-          <Box sx={{ color: SHELL_DIM, display: "flex" }}><Icon.Layers size={15} /></Box>
-          <Typography sx={{ fontSize: 13, fontWeight: 600, color: SHELL_ON, letterSpacing: 0 }}>
-            {title}
-          </Typography>
-          {/* Count as the same small chip every facet header uses, so the map-layers
-              tally reads consistently with Designation, Facility use, etc. */}
-          {activeCount ? <Chip label={activeCount} size="small" sx={{ height: 16, fontSize: 11, fontWeight: 600, bgcolor: alpha(TEAL, 0.14), color: ACCENT_TEXT, "& .MuiChip-label": { px: 0.75 } }} /> : null}
-        </Stack>
-        {onReset && (
-          <Button size="small" onClick={onReset} sx={{ color: TEAL, minWidth: 0, p: 0, fontSize: 12, textTransform: "none", fontWeight: 600 }}>
-            Reset
-          </Button>
-        )}
-      </Stack>
-    </Box>
+    <div className="rail-label rail-label--section">
+      <div className="rail-row">
+        <span className="rail-icon"><Icon.Layers size={15} /></span>
+        <span className="rail-title">{title}</span>
+        {/* Count as the same small pill every facet header uses, so the map-layers
+            tally reads consistently with Designation, Facility use, etc. */}
+        {activeCount ? <CountPill n={activeCount} /> : null}
+      </div>
+      {onReset && (
+        <button type="button" className="rail-link" onClick={onReset}>
+          Reset
+        </button>
+      )}
+    </div>
   );
 }
 
 // A Carbon-style side-nav rail item: icon over a short label, with a left accent
 // bar and tinted surface when active.
-function RailIcon({ label, icon, onClick, active, badge, expanded }: { label: string; icon: React.ReactNode; onClick: () => void; active?: boolean; badge?: number; expanded?: boolean }) {
+function RailIcon({ label, icon, onClick, active, badge, expanded }: { label: string; icon: ReactNode; onClick: () => void; active?: boolean; badge?: number; expanded?: boolean }) {
   return (
-    <Box
-      component="button"
+    <button
+      type="button"
+      className={`rail-btn${active ? " rail-btn--active" : ""}`}
       onClick={onClick}
       aria-label={label}
       aria-current={active ? "true" : undefined}
       aria-expanded={expanded}
-      sx={{
-        position: "relative", appearance: "none", font: "inherit", cursor: "pointer",
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 0.4,
-        width: "100%", py: 1.1, border: "none",
-        color: active ? ACCENT : SHELL_DIM,
-        bgcolor: active ? alpha(ACCENT, 0.1) : "transparent",
-        "&::before": active
-          ? { content: '""', position: "absolute", left: 0, top: 0, bottom: 0, width: 3, bgcolor: ACCENT }
-          : {},
-        "&:hover": { bgcolor: active ? alpha(ACCENT, 0.14) : alpha(SHELL_ON, 0.06), color: active ? ACCENT : SHELL_ON },
-        "&:focus-visible": { outline: `2px solid ${ACCENT}`, outlineOffset: -2 },
-      }}
     >
-      <Badge badgeContent={badge && badge > 0 ? badge : 0} color="primary" overlap="circular"
-        sx={{ "& .MuiBadge-badge": { fontSize: 9, height: 14, minWidth: 14, display: badge && badge > 0 ? "flex" : "none" } }}>
+      <span className="rail-btn__icon">
         {icon}
-      </Badge>
-      <Typography sx={{ fontSize: 10, fontWeight: active ? 600 : 400, lineHeight: 1.1, letterSpacing: 0 }}>
-        {label}
-      </Typography>
-    </Box>
+        {badge != null && badge > 0 ? <span className="rail-btn__badge" aria-hidden>{badge}</span> : null}
+      </span>
+      <span className="rail-btn__label">{label}</span>
+    </button>
   );
 }

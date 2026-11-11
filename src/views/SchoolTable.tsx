@@ -16,21 +16,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
-  Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  TableSortLabel, Chip, Typography, TextField, InputAdornment, Stack, Skeleton,
-  IconButton, Tooltip, Button, Select, MenuItem,
-} from "@mui/material";
-import { Search as SearchIcon, Location as MyLocationIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, Close as CloseIcon, ArrowUp as ArrowUpIcon, ArrowDown as ArrowDownIcon, Filter as FilterIcon } from "@carbon/icons-react";
-import { alpha } from "@mui/material/styles";
+  IconButton, Search, Select, SelectItem, SkeletonText, Tag,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@carbon/react";
+import { Search as SearchIcon, Location as MyLocationIcon, Bookmark as BookmarkIcon, BookmarkFilled as BookmarkFilledIcon, ArrowUp as ArrowUpIcon, ArrowDown as ArrowDownIcon, Filter as FilterIcon } from "@carbon/icons-react";
 import { useData } from "../data/DataContext";
 import { useStore, utilizationStyle, emptyPermanentSeats, MAX_COMPARE, type UtilKey } from "../store";
-import { Tag } from "@carbon/react";
 import { panMapTo } from "../map/mapController";
 import { resolveGradeStyle, rgbaToCss } from "../map/gradeEncoding";
 import { useFilteredSchools } from "../data/derive/useFilteredSchools";
 import { useActiveFilters } from "../status/useActiveFilters";
 import { incomeVsCounty } from "../data/countyIncome";
-import { ACCENT_TEXT, TEAL } from "../muiTheme";
+import { FilterChip } from "../ui/FilterChip";
 import { schoolTypeLabel, titleILabel, levelLabel, type SchoolFeature } from "../data/types";
 import "./SchoolTable.carbon.css";
 
@@ -255,157 +252,167 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
     panMapTo({ lat, lng }, 15);
   };
 
-  return (
-    <Box ref={rootRef} sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: "background.default", minHeight: 0, minWidth: 0 }}>
-      {/* Header: count, search-by field selector, search box */}
-      <Box
-        sx={{
-          px: dense ? 2 : 2.5, py: dense ? 1.25 : 1.75, display: "flex", alignItems: "center",
-          justifyContent: "space-between", gap: 2, borderBottom: 1, borderColor: "divider", bgcolor: "background.paper",
-          flexWrap: "wrap", rowGap: 1,
-        }}
+  // The pin action never uses the native disabled attribute, so its tooltip can
+  // still explain why when the shortlist is full.
+  const pinLabel = (pinned: boolean) =>
+    pinned ? "Remove from shortlist" : comparePinned.length >= MAX_COMPARE ? `Shortlist is full (max ${MAX_COMPARE})` : "Add to shortlist";
+  const pinFull = (pinned: boolean) => !pinned && comparePinned.length >= MAX_COMPARE;
+  const rowActions = (r: Row, pinned: boolean, touch: boolean) => (
+    <>
+      <IconButton
+        kind="ghost"
+        size={touch ? "lg" : "xs"}
+        align="top"
+        label="Show on map"
+        aria-label={`Show ${r.name} on the map`}
+        className="tbl-action"
+        onClick={(e: React.MouseEvent) => showOnMap(e, r)}
       >
-        <Box>
-          <Typography variant={dense ? "subtitle2" : "h6"} sx={{ fontWeight: 700 }}>
-            {schools == null ? <Skeleton width={120} /> : `${sorted.length.toLocaleString("en-US")} ${sorted.length === 1 ? "school" : "schools"}`}
-          </Typography>
-          {!dense && schools == null && (
-            <Typography variant="caption" color="text.secondary">
-              Loading schools...
-            </Typography>
-          )}
-        </Box>
-        <Stack direction="row" spacing={1.25} alignItems="center" sx={{ flex: "1 1 auto", minWidth: 0, justifyContent: "flex-end", flexWrap: "wrap", rowGap: 1 }}>
+        <MyLocationIcon size={16} />
+      </IconButton>
+      <IconButton
+        kind="ghost"
+        size={touch ? "lg" : "xs"}
+        align="top"
+        label={pinLabel(pinned)}
+        aria-label={pinned ? `Remove ${r.name} from your shortlist` : `Add ${r.name} to your shortlist`}
+        aria-pressed={pinned}
+        aria-disabled={pinFull(pinned) || undefined}
+        className={`tbl-action${pinned ? " tbl-action--on" : ""}${pinFull(pinned) ? " tbl-action--off" : ""}`}
+        onClick={(e: React.MouseEvent) => { e.stopPropagation(); if (!pinFull(pinned)) toggleComparePin(r.msid); }}
+      >
+        {pinned ? <BookmarkFilledIcon size={16} /> : <BookmarkIcon size={16} />}
+      </IconButton>
+    </>
+  );
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
+  return (
+    <div ref={rootRef} className="tbl-root">
+      {/* Header: count, filters + shortlist entry points, search box */}
+      <div className={`tbl-header${dense ? " tbl-header--dense" : ""}`}>
+        <div>
+          <div className={dense ? "tbl-count tbl-count--dense" : "tbl-count"}>
+            {schools == null ? <SkeletonText width="120px" className="tbl-count__skeleton" /> : `${sorted.length.toLocaleString("en-US")} ${sorted.length === 1 ? "school" : "schools"}`}
+          </div>
+          {!dense && schools == null && <div className="tbl-caption">Loading schools...</div>}
+        </div>
+        <div className="tbl-header__actions">
           {/* Compound filtering (county, grade, type, Title I, utilization, ...) lives
               in the left drawer; this opens it and shows how many are active. */}
-          <Button
-            size="small"
-            variant={activeFilters.length > 0 ? "contained" : "outlined"}
-            disableElevation
-            startIcon={<FilterIcon size={16} />}
+          <button
+            type="button"
+            className={`tbl-btn${activeFilters.length > 0 ? " tbl-btn--primary" : ""}`}
             onClick={openFilters}
-            sx={{ textTransform: "none", fontWeight: 600, flex: "0 0 auto", whiteSpace: "nowrap" }}
           >
+            <FilterIcon size={16} className="tbl-btn__icon" />
             Filters{activeFilters.length > 0 ? ` (${activeFilters.length})` : ""}
-          </Button>
+          </button>
           {/* Reach the shortlist from the list (it otherwise lives only on the map),
               so pinned sites are never a dead end. */}
           {comparePinned.length > 0 && (
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<BookmarkIcon size={16} />}
+            <button
+              type="button"
+              className="tbl-btn"
               onClick={() => { setViewMode("map"); setShortlistOpen(true); }}
-              sx={{ textTransform: "none", fontWeight: 600, flex: "0 0 auto", whiteSpace: "nowrap" }}
             >
+              <BookmarkIcon size={16} className="tbl-btn__icon" />
               Shortlist ({comparePinned.length})
-            </Button>
+            </button>
           )}
           {/* One keyword box (name or MSID); structured filters live in the left
               drawer. Clearable, with a visible label per search-UX guidance. */}
-          <TextField
-            size="small"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+          <Search
+            size="md"
+            className={`tbl-search${dense ? " tbl-search--dense" : ""}`}
+            labelText="Search schools by name or MSID"
             placeholder="Search by name or MSID"
-            inputProps={{ "aria-label": "Search schools by name or MSID" }}
-            InputProps={{
-              startAdornment: <InputAdornment position="start"><SearchIcon size={16} /></InputAdornment>,
-              endAdornment: query ? (
-                <InputAdornment position="end">
-                  <IconButton size="small" aria-label="Clear search" onClick={() => setQuery("")} edge="end">
-                    <CloseIcon size={14} />
-                  </IconButton>
-                </InputAdornment>
-              ) : undefined,
-            }}
-            sx={{ flex: "1 1 220px", minWidth: 160, maxWidth: dense ? 260 : 320 }}
+            closeButtonLabelText="Clear search"
+            value={query}
+            onChange={(e) => setQuery(typeof e === "string" ? e : e.target.value)}
+            onClear={() => setQuery("")}
           />
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
       {/* Applied filters, visible on the List so the current compound query is never
           hidden in the drawer. Each chip removes its own facet; "Clear all" resets. */}
       {activeFilters.length > 0 && (
-        <Box sx={{ px: dense ? 2 : 2.5, py: 1, display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap", rowGap: 0.75, borderBottom: 1, borderColor: "divider", bgcolor: "background.paper" }}>
+        <div className={`tbl-chips${dense ? " tbl-chips--dense" : ""}`}>
           {activeFilters.map((f) => (
-            <Chip
-              key={f.key}
-              size="small"
-              label={f.label}
-              onDelete={f.onClear}
-              deleteIcon={<Box component="span" sx={{ fontSize: 14, lineHeight: 1, pr: 0.25 }}>×</Box>}
-              sx={{
-                height: 24, fontSize: 12, fontWeight: 600, maxWidth: "100%",
-                color: ACCENT_TEXT, bgcolor: alpha(TEAL, 0.1), border: `1px solid ${alpha(TEAL, 0.3)}`,
-                "& .MuiChip-label": { px: 1 },
-                "& .MuiChip-deleteIcon": { color: "inherit", opacity: 0.7, "&:hover": { opacity: 1 } },
-              }}
-            />
+            <FilterChip key={f.key} label={f.label} onClear={f.onClear} />
           ))}
-          <Button size="small" onClick={() => useStore.getState().clearAllFilters()} sx={{ textTransform: "none", fontWeight: 600, minWidth: 0, px: 1, ml: 0.5 }}>
+          <button type="button" className="tbl-textbtn tbl-chips__clear" onClick={() => useStore.getState().clearAllFilters()}>
             Clear all
-          </Button>
-        </Box>
+          </button>
+        </div>
       )}
 
       {/* Phone: card mode has no sortable column headers, so surface sorting here. */}
       {phone && schools != null && (
-        <Box sx={{ px: 2, py: 1, display: "flex", alignItems: "center", gap: 1, borderBottom: 1, borderColor: "divider", bgcolor: "background.paper" }}>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary", flex: "0 0 auto" }}>Sort</Typography>
+        <div className="tbl-phone-sort">
+          <span className="tbl-phone-sort__label">Sort</span>
           <Select
-            size="small"
+            id="tbl-phone-sort"
+            size="md"
+            labelText="Sort schools by"
+            hideLabel
+            className="tbl-phone-sort__select"
             value={orderBy}
             onChange={(e) => applySort(e.target.value as SortKey)}
-            aria-label="Sort schools by"
-            sx={{ flex: 1, fontSize: 13, bgcolor: "background.paper" }}
           >
-            <MenuItem value="siting" sx={{ fontSize: 13 }}>Siting status</MenuItem>
-            <MenuItem value="emptySeats" sx={{ fontSize: 13 }}>Empty seats</MenuItem>
-            <MenuItem value="utilization" sx={{ fontSize: 13 }}>Utilization</MenuItem>
-            <MenuItem value="plpNear" sx={{ fontSize: 13 }}>PLP within 5 mi</MenuItem>
-            <MenuItem value="capacity" sx={{ fontSize: 13 }}>Student stations</MenuItem>
-            <MenuItem value="enrollment" sx={{ fontSize: 13 }}>Enrollment</MenuItem>
-            <MenuItem value="frl" sx={{ fontSize: 13 }}>F/R lunch</MenuItem>
-            <MenuItem value="incomeDelta" sx={{ fontSize: 13 }}>Income vs county</MenuItem>
-            <MenuItem value="titleI" sx={{ fontSize: 13 }}>Title I</MenuItem>
-            <MenuItem value="name" sx={{ fontSize: 13 }}>Name</MenuItem>
+            <SelectItem value="siting" text="Siting status" />
+            <SelectItem value="emptySeats" text="Empty seats" />
+            <SelectItem value="utilization" text="Utilization" />
+            <SelectItem value="plpNear" text="PLP within 5 mi" />
+            <SelectItem value="capacity" text="Student stations" />
+            <SelectItem value="enrollment" text="Enrollment" />
+            <SelectItem value="frl" text="F/R lunch" />
+            <SelectItem value="incomeDelta" text="Income vs county" />
+            <SelectItem value="titleI" text="Title I" />
+            <SelectItem value="name" text="Name" />
           </Select>
-          <Tooltip title={order === "asc" ? "Ascending" : "Descending"}>
-            <IconButton size="small" onClick={() => setOrder((o) => (o === "asc" ? "desc" : "asc"))} aria-label={`Sort direction ${order === "asc" ? "ascending" : "descending"}, toggle`}>
-              {order === "asc" ? <ArrowUpIcon size={16} /> : <ArrowDownIcon size={16} />}
-            </IconButton>
-          </Tooltip>
-        </Box>
+          <IconButton
+            kind="ghost"
+            size="sm"
+            align="left"
+            label={order === "asc" ? "Ascending" : "Descending"}
+            aria-label={`Sort direction ${order === "asc" ? "ascending" : "descending"}, toggle`}
+            onClick={() => setOrder((o) => (o === "asc" ? "desc" : "asc"))}
+          >
+            {order === "asc" ? <ArrowUpIcon size={16} /> : <ArrowDownIcon size={16} />}
+          </IconButton>
+        </div>
       )}
 
-      <TableContainer ref={containerRef} component={Paper} elevation={0} square sx={{ flex: 1, overflow: "auto", overflowX: "hidden", minHeight: 0 }}>
-        <Table stickyHeader size="small" className="tbl" sx={{ tableLayout: "fixed", width: "100%" }}>
+      {/* The scroll container the virtualizer measures. The header row sticks to
+          its top (Carbon Table primitives; widths come from the colgroup). */}
+      <div ref={containerRef} className="tbl-scroll">
+        <Table size={dense ? "sm" : "md"} className={`tbl${phone ? " tbl--phone" : ""}`}>
+          <colgroup>
+            {columns.map((c) => <col key={c.key} style={{ width: colWidth(c) }} />)}
+          </colgroup>
           <TableHead>
             {!phone && (
               <TableRow>
-                {columns.map((c) => (
-                  <TableCell
-                    key={c.key}
-                    align={c.numeric ? "right" : "left"}
-                    title={c.help}
-                    sortDirection={c.key !== "actions" && orderBy === c.key ? order : false}
-                    className={`tbl-th${c.numeric ? " tbl-th--num" : ""}`}
-                    sx={{ width: colWidth(c), cursor: c.help ? "help" : undefined }}
-                  >
-                    {c.key === "actions" ? (
-                      c.label
-                    ) : (
-                      <TableSortLabel
-                        active={orderBy === c.key}
-                        direction={orderBy === c.key ? order : "asc"}
-                        onClick={() => handleSort(c.key as SortKey)}
-                      >
-                        {c.label}
-                      </TableSortLabel>
-                    )}
-                  </TableCell>
-                ))}
+                {columns.map((c) =>
+                  c.key === "actions" ? (
+                    <TableHeader key={c.key} className="tbl-th tbl-th--num">{c.label}</TableHeader>
+                  ) : (
+                    <TableHeader
+                      key={c.key}
+                      className={`tbl-th${c.numeric ? " tbl-th--num" : ""}`}
+                      title={c.help}
+                      isSortable
+                      isSortHeader={orderBy === c.key}
+                      sortDirection={orderBy === c.key ? (order === "asc" ? "ASC" : "DESC") : "NONE"}
+                      onClick={() => handleSort(c.key as SortKey)}
+                    >
+                      {c.label}
+                    </TableHeader>
+                  ),
+                )}
               </TableRow>
             )}
           </TableHead>
@@ -414,18 +421,20 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
               Array.from({ length: dense ? 6 : 8 }).map((_, i) => (
                 <TableRow key={`sk-${i}`}>
                   {columns.map((c) => (
-                    <TableCell key={c.key} align={c.numeric ? "right" : "left"}>
-                      <Skeleton variant="text" width={c.key === "name" ? "70%" : "50%"} sx={{ ml: c.numeric ? "auto" : 0 }} />
+                    <TableCell key={c.key} className={c.numeric ? "tbl-td--num" : undefined}>
+                      <div className={c.numeric ? "tbl-skel tbl-skel--num" : "tbl-skel"}>
+                        <SkeletonText width={c.key === "name" ? "70%" : "50%"} />
+                      </div>
                     </TableCell>
                   ))}
                 </TableRow>
               ))}
-            {schools != null && sorted.length > 0 && rowVirtualizer.getVirtualItems().length > 0 && (
-              <TableRow aria-hidden style={{ height: rowVirtualizer.getVirtualItems()[0].start }}>
-                <TableCell colSpan={columns.length} sx={{ p: 0, border: 0 }} />
-              </TableRow>
+            {schools != null && sorted.length > 0 && virtualItems.length > 0 && (
+              <tr aria-hidden className="tbl-spacer" style={{ height: virtualItems[0].start }}>
+                <td colSpan={columns.length} />
+              </tr>
             )}
-            {schools != null && rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            {schools != null && virtualItems.map((virtualRow) => {
               const r = sorted[virtualRow.index];
               const gs = resolveGradeStyle(r.grade);
               const selected = r.msid === selectedMsid;
@@ -434,22 +443,10 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                 <TableRow
                   key={r.msid}
                   data-index={virtualRow.index}
-                  ref={(el) => rowVirtualizer.measureElement(el)}
-                  hover={!phone}
-                  selected={selected}
+                  ref={(el: HTMLTableRowElement | null) => rowVirtualizer.measureElement(el)}
+                  isSelected={selected}
+                  className={`tbl-row${phone ? " tbl-row--card" : ""}${selected ? " tbl-row--selected" : ""}`}
                   onClick={() => openSchool(r)}
-                  sx={{
-                    cursor: "pointer",
-                    // On phone the card carries its own selected treatment, so the
-                    // row itself stays transparent (a tinted row behind the card,
-                    // showing through the gap, looked broken).
-                    ...(phone
-                      ? { "&.Mui-selected": { bgcolor: "transparent" }, "&:hover": { bgcolor: "transparent" } }
-                      : {
-                          "&.Mui-selected": { bgcolor: alpha("#2563EB", 0.08) },
-                          "&.Mui-selected:hover": { bgcolor: alpha("#2563EB", 0.14) },
-                        }),
-                  }}
                 >
                   {phone ? (
                     /* Phone: the entire row is a single distinct CARD. Header line
@@ -478,27 +475,7 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                             </button>
                             <div className="school-card__meta">{r.meta}</div>
                           </div>
-                          <div className="school-card__actions">
-                            <Tooltip title="Show on map" placement="top">
-                              <IconButton size="medium" onClick={(e) => showOnMap(e, r)} aria-label={`Show ${r.name} on the map`} sx={{ p: "14px" }}>
-                                <MyLocationIcon size={16} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title={pinned ? "Remove from shortlist" : comparePinned.length >= MAX_COMPARE ? `Shortlist is full (max ${MAX_COMPARE})` : "Add to shortlist"} placement="top">
-                              <span>
-                                <IconButton
-                                  size="medium"
-                                  onClick={(e) => { e.stopPropagation(); toggleComparePin(r.msid); }}
-                                  disabled={!pinned && comparePinned.length >= MAX_COMPARE}
-                                  aria-label={pinned ? `Remove ${r.name} from your shortlist` : `Add ${r.name} to your shortlist`}
-                                  aria-pressed={pinned}
-                                  sx={{ p: "14px", color: pinned ? ACCENT_TEXT : undefined }}
-                                >
-                                  {pinned ? <BookmarkFilledIcon size={16} /> : <BookmarkIcon size={16} />}
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                          </div>
+                          <div className="school-card__actions">{rowActions(r, pinned, true)}</div>
                         </div>
                         <div className="school-card__flags"><SitingCell r={r} /></div>
                         <div className="school-card__facts">
@@ -557,83 +534,61 @@ export function SchoolTable({ dense = false, scope = "all" }: { dense?: boolean;
                     </div>
                   </TableCell>
                   <TableCell><SitingCell r={r} /></TableCell>
-                  {!tiny && <TableCell align="right"><PlpNearCell n={r.plpNear} /></TableCell>}
-                  <TableCell align="right"><UtilCell r={r} /></TableCell>
-                  <TableCell align="right"><EmptySeatsCell value={r.emptySeats} /></TableCell>
-                  {!ultraCompact && <TableCell align="right"><StationsCell total={r.capacity} permanent={r.permanentCapacity} /></TableCell>}
+                  {!tiny && <TableCell className="tbl-td--num"><PlpNearCell n={r.plpNear} /></TableCell>}
+                  <TableCell className="tbl-td--num"><UtilCell r={r} /></TableCell>
+                  <TableCell className="tbl-td--num"><EmptySeatsCell value={r.emptySeats} /></TableCell>
+                  {!ultraCompact && <TableCell className="tbl-td--num"><StationsCell total={r.capacity} permanent={r.permanentCapacity} /></TableCell>}
                   {!ultraCompact && (
-                    <TableCell align="right">
+                    <TableCell className="tbl-td--num">
                       <span className="tbl-num">{r.enrollment != null ? r.enrollment.toLocaleString("en-US") : <span className="tbl-na">n/a</span>}</span>
                     </TableCell>
                   )}
-                  {!compact && <TableCell align="right"><FrlCell rate={r.frl} /></TableCell>}
-                  {!compact && <TableCell align="right"><IncomeCell delta={r.incomeDelta} nearby={r.incomeNearby} /></TableCell>}
+                  {!compact && <TableCell className="tbl-td--num"><FrlCell rate={r.frl} /></TableCell>}
+                  {!compact && <TableCell className="tbl-td--num"><IncomeCell delta={r.incomeDelta} nearby={r.incomeNearby} /></TableCell>}
                   {!compact && <TableCell><TitleICell value={r.titleI} /></TableCell>}
-                  {/* On phone the actions stack and use a 44px touch target (Fluent
-                      minimum); on desktop they stay compact inline icons. */}
-                  <TableCell align="right" sx={{ whiteSpace: "nowrap", verticalAlign: phone ? "top" : undefined, py: phone ? 1.25 : undefined }}>
-                    <Stack direction={phone ? "column" : "row"} spacing={phone ? 0.5 : 0} alignItems="center" sx={{ float: phone ? "right" : undefined }}>
-                      <Tooltip title="Show on map" placement="top">
-                        <IconButton size={phone ? "medium" : "small"} onClick={(e) => showOnMap(e, r)} aria-label={`Show ${r.name} on the map`} sx={{ p: phone ? "14px" : undefined }}>
-                          <MyLocationIcon size={16} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={pinned ? "Remove from shortlist" : comparePinned.length >= MAX_COMPARE ? `Shortlist is full (max ${MAX_COMPARE})` : "Add to shortlist"} placement="top">
-                        <span>
-                          <IconButton
-                            size={phone ? "medium" : "small"}
-                            onClick={(e) => { e.stopPropagation(); toggleComparePin(r.msid); }}
-                            disabled={!pinned && comparePinned.length >= MAX_COMPARE}
-                            aria-label={pinned ? `Remove ${r.name} from your shortlist` : `Add ${r.name} to your shortlist`}
-                            aria-pressed={pinned}
-                            sx={{ p: phone ? "14px" : undefined, color: pinned ? ACCENT_TEXT : undefined }}
-                          >
-                            {pinned ? <BookmarkFilledIcon size={16} /> : <BookmarkIcon size={16} />}
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Stack>
+                  <TableCell className="tbl-td--num tbl-td--actions">
+                    <div className="tbl-actions">{rowActions(r, pinned, false)}</div>
                   </TableCell>
                   </>
                   )}
                 </TableRow>
               );
             })}
-            {schools != null && sorted.length > 0 && rowVirtualizer.getVirtualItems().length > 0 && (
-              <TableRow aria-hidden style={{ height: rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end }}>
-                <TableCell colSpan={columns.length} sx={{ p: 0, border: 0 }} />
-              </TableRow>
+            {schools != null && sorted.length > 0 && virtualItems.length > 0 && (
+              <tr aria-hidden className="tbl-spacer" style={{ height: rowVirtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end }}>
+                <td colSpan={columns.length} />
+              </tr>
             )}
             {schools != null && sorted.length === 0 && (
               <TableRow>
-                <TableCell colSpan={columns.length} sx={{ textAlign: "center", py: 8 }}>
-                  <Stack alignItems="center" spacing={1.5}>
-                    <Box sx={{ width: 44, height: 44, borderRadius: "50%", bgcolor: "action.hover", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <SearchIcon size={20} style={{ color: "var(--text-secondary)" }} />
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                <TableCell colSpan={columns.length} className="tbl-empty-cell">
+                  <div className="tbl-empty">
+                    <div className="tbl-empty__icon">
+                      <SearchIcon size={20} />
+                    </div>
+                    <div>
+                      <div className="tbl-empty__title">
                         {query.trim() ? `No schools match "${query.trim()}"` : "No schools match the current filters"}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                      </div>
+                      <div className="tbl-caption">
                         {query.trim() ? "Try a different name or MSID, or clear the search." : "Try clearing a filter or widening the county scope."}
-                      </Typography>
-                    </Box>
-                    <Button
-                      size="small"
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="tbl-textbtn"
                       onClick={() => (query.trim() ? setQuery("") : useStore.getState().clearAllFilters())}
-                      sx={{ textTransform: "none", fontWeight: 600 }}
                     >
                       {query.trim() ? "Clear search" : "Clear all filters"}
-                    </Button>
-                  </Stack>
+                    </button>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </TableContainer>
-    </Box>
+      </div>
+    </div>
   );
 }
 

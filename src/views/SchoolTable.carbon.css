@@ -8,9 +8,9 @@
 
 /* The virtualized row's single full-width cell: no table chrome, just breathing
    room around the card so cards read as separated objects, not table stripes. */
-.school-card-cell {
-  padding: 6px 12px !important;
-  border-bottom: none !important;
+.tbl.cds--data-table td.school-card-cell {
+  padding: 6px 12px;
+  border-bottom: none;
 }
 
 .school-card {
@@ -109,6 +109,13 @@
   gap: 2px;
   margin: -8px -8px 0 0;
 }
+/* 44px touch targets on the card actions. */
+.school-card__actions .cds--btn.cds--btn--icon-only {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 14px;
+}
 
 /* Facts: a labelled key/value block, one idea per row, under a hairline so the
    identity header stays visually distinct from the data. */
@@ -139,25 +146,305 @@
 }
 
 /* =====================================================================
-   Desktop table, Nov 2026 (Carbon DataTable conventions on the MUI shell):
-   48px gray header (layer-accent) in 14px/600; 16px cell padding; text
-   columns left, number columns right, header aligned with its data; the
-   sort arrow is positioned outside the label so it never shifts it; every
-   number in tabular figures; one muted style for missing values.
+   List shell: the header (count, Filters / Shortlist, search), the applied
+   filter chips, and the phone sort row. White bars with a hairline under
+   each, over the Gray 10 canvas.
    ===================================================================== */
-.tbl .MuiTableCell-root { padding: 8px 16px; font-family: inherit; border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0); }
-.tbl .MuiTableCell-head.tbl-th {
-  height: 48px; padding-block: 0; background: var(--cds-layer-accent-01, #e0e0e0);
-  font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.16px;
-  color: var(--cds-text-primary, #161616); white-space: nowrap;
+.tbl-root {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--cds-background, #f4f4f4);
 }
-.tbl .tbl-th .MuiTableSortLabel-root { position: relative; color: inherit; max-width: 100%; }
-.tbl .tbl-th .MuiTableSortLabel-root:hover, .tbl .tbl-th .MuiTableSortLabel-root.Mui-active { color: inherit; }
-.tbl .tbl-th .MuiTableSortLabel-icon { position: absolute; margin: 0; width: 16px; height: 16px; color: var(--cds-icon-primary, #161616) !important; }
-.tbl .tbl-th:not(.tbl-th--num) .MuiTableSortLabel-icon { right: -18px; }
-.tbl .tbl-th--num .MuiTableSortLabel-root { flex-direction: row; }
-.tbl .tbl-th--num .MuiTableSortLabel-icon { left: -18px; }
-.tbl .MuiTableBody-root .MuiTableRow-root:hover { background: var(--cds-layer-hover-01, #e8e8e8); }
+.tbl-header {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: var(--cds-layer-01, #ffffff);
+}
+.tbl-header--dense { padding: 10px 16px; }
+.tbl-count {
+  font-size: 20px;
+  line-height: 1.6;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--cds-text-primary, #161616);
+}
+.tbl-count--dense { font-size: 14px; line-height: 1.57; }
+.tbl-count .tbl-count__skeleton { margin: 8px 0; }
+.tbl-caption {
+  font-size: 12px;
+  line-height: 1.66;
+  letter-spacing: 0.32px;
+  color: var(--cds-text-secondary, #525252);
+}
+.tbl-header__actions {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+/* Header buttons: a compact outlined button, filled navy when filters are on. */
+.tbl-btn {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--focus, #001e62) 50%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--focus, #001e62);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.75;
+  letter-spacing: 0.16px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms;
+}
+.tbl-btn:hover {
+  border-color: var(--focus, #001e62);
+  background: color-mix(in srgb, var(--focus, #001e62) 4%, transparent);
+}
+.tbl-btn--primary {
+  padding: 4px 10px;
+  border: 0;
+  background: var(--focus, #001e62);
+  color: #ffffff;
+}
+.tbl-btn--primary:hover { background: #001541; }
+.tbl-btn:focus-visible,
+.tbl-textbtn:focus-visible {
+  outline: 2px solid var(--cds-focus, #001e62);
+  outline-offset: 2px;
+}
+.tbl-btn__icon { flex: none; margin-left: -2px; }
+
+/* Quiet text button ("Clear all", empty-state actions). */
+.tbl-textbtn {
+  appearance: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.75;
+  letter-spacing: 0.16px;
+  color: var(--focus, #001e62);
+  cursor: pointer;
+}
+.tbl-textbtn:hover { background: color-mix(in srgb, var(--focus, #001e62) 4%, transparent); }
+
+/* Keyword search: Carbon Search on the white field. */
+.tbl-search.cds--search {
+  flex: 1 1 220px;
+  min-width: 160px;
+  max-width: 320px;
+}
+.tbl-search--dense.cds--search { max-width: 260px; }
+
+.tbl-chips {
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: var(--cds-layer-01, #ffffff);
+}
+.tbl-chips--dense { padding-inline: 16px; }
+.tbl-chips__clear { margin-left: 4px; }
+
+.tbl-phone-sort {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: var(--cds-layer-01, #ffffff);
+}
+.tbl-phone-sort__label {
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1.66;
+  font-weight: 700;
+  letter-spacing: 0.32px;
+  color: var(--cds-text-secondary, #525252);
+}
+.tbl-phone-sort__select { flex: 1; min-width: 0; }
+.tbl-phone-sort__select .cds--select-input { font-size: 13px; }
+
+/* =====================================================================
+   Desktop table, Nov 2026 (Carbon DataTable conventions on Carbon Table
+   primitives, virtualized): 48px gray header (layer-accent) in 14px/600 that
+   sticks to the top of the scroll area; 16px cell padding; text columns left,
+   number columns right, header aligned with its data; the sort arrow is
+   positioned outside the label so it never shifts it; every number in tabular
+   figures; one muted style for missing values.
+   ===================================================================== */
+.tbl-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--cds-layer-01, #ffffff);
+}
+/* Carbon wraps the table in a horizontal scroller; the virtualizer owns
+   scrolling here, and the sticky header needs a non-scrolling parent. */
+.tbl-scroll > .cds--data-table-content { overflow: visible; width: 100%; }
+.tbl.cds--data-table { table-layout: fixed; width: 100%; }
+
+.tbl.cds--data-table td,
+.tbl.cds--data-table tbody th {
+  height: auto;
+  padding: 8px 16px;
+  border-top: 0;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: transparent;
+  color: var(--cds-text-primary, #161616);
+  font-size: 14px;
+  line-height: 1.43;
+  letter-spacing: 0.16px;
+  vertical-align: middle;
+  text-align: left;
+}
+.tbl.cds--data-table td.tbl-td--num { text-align: right; }
+.tbl.cds--data-table td.tbl-td--actions { white-space: nowrap; }
+
+.tbl.cds--data-table thead th.tbl-th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+  background: var(--cds-layer-accent-01, #e0e0e0);
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: 0.16px;
+  color: var(--cds-text-primary, #161616);
+  white-space: nowrap;
+  text-align: left;
+  vertical-align: middle;
+}
+.tbl.cds--data-table thead th.tbl-th--num { text-align: right; }
+.tbl.cds--data-table thead th.tbl-th .cds--table-header-label { padding: 0; }
+/* Sortable headers: Carbon renders a full-cell button; keep it transparent on
+   the gray bar, with the label hugging its column edge. */
+.tbl.cds--data-table thead th.tbl-th.cds--table-sort__header { padding: 0; }
+.tbl .tbl-th .cds--table-sort {
+  height: 48px;
+  min-height: 48px;
+  width: 100%;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+.tbl .tbl-th--num .cds--table-sort { justify-content: flex-end; }
+.tbl .tbl-th .cds--table-sort:hover { background: var(--cds-layer-accent-hover-01, #d1d1d1); }
+.tbl .tbl-th .cds--table-sort:focus { outline: none; }
+.tbl .tbl-th .cds--table-sort:focus-visible { outline: 2px solid var(--cds-focus, #001e62); outline-offset: -2px; }
+.tbl .tbl-th .cds--table-sort__flex {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  max-width: 100%;
+  min-height: 0;
+  justify-content: flex-start;
+}
+/* Labels never truncate: a label a few px wider than its slot (Empty seats)
+   may run into the cell padding, as it always has. */
+.tbl .tbl-th .cds--table-sort__flex .cds--table-header-label {
+  overflow: visible;
+  white-space: nowrap;
+  text-align: inherit;
+}
+.tbl .tbl-th .cds--table-header-label--decorator-inner { display: none; }
+.tbl .tbl-th .cds--table-sort__icon,
+.tbl .tbl-th .cds--table-sort__icon-unsorted {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0;
+  fill: var(--cds-icon-primary, #161616);
+}
+.tbl .tbl-th:not(.tbl-th--num) .cds--table-sort__icon,
+.tbl .tbl-th:not(.tbl-th--num) .cds--table-sort__icon-unsorted { left: calc(100% + 2px); }
+.tbl .tbl-th--num .cds--table-sort__icon,
+.tbl .tbl-th--num .cds--table-sort__icon-unsorted { right: calc(100% + 2px); }
+/* Ascending points up, descending points down. */
+.tbl .tbl-th .cds--table-sort--active .cds--table-sort__icon { transform: none; }
+.tbl .tbl-th .cds--table-sort--active.cds--table-sort--descending .cds--table-sort__icon { transform: rotate(180deg); }
+
+/* Rows: white, a light hover, and a blue tint for the selected school. Card
+   rows on phone stay transparent (the card carries its own selected state). */
+.tbl.cds--data-table tbody tr.tbl-row { background: var(--cds-layer-01, #ffffff); cursor: pointer; }
+.tbl.cds--data-table tbody tr.tbl-row:not(.tbl-row--card):hover { background: var(--cds-layer-hover-01, #e8e8e8); }
+.tbl.cds--data-table tbody tr.tbl-row--selected:not(.tbl-row--card) { background: color-mix(in srgb, #2563eb 8%, transparent); }
+.tbl.cds--data-table tbody tr.tbl-row--selected:not(.tbl-row--card):hover { background: color-mix(in srgb, #2563eb 14%, transparent); }
+.tbl.cds--data-table tbody tr.tbl-row--card,
+.tbl.cds--data-table tbody tr.tbl-row--card:hover { background: transparent; }
+.tbl.cds--data-table tbody tr:hover td { background: transparent; border-top-color: transparent; color: var(--cds-text-primary, #161616); }
+
+/* Row actions: two compact ghost icon buttons. */
+.tbl-actions { display: inline-flex; align-items: center; }
+.tbl-action.cds--btn--ghost svg { fill: var(--cds-icon-secondary, #525252); }
+.tbl-action.tbl-action--on.cds--btn--ghost svg { fill: #001541; }
+.tbl-action.tbl-action--off.cds--btn--ghost { cursor: not-allowed; }
+.tbl-action.tbl-action--off.cds--btn--ghost svg { fill: var(--cds-icon-disabled, rgba(22, 22, 22, 0.25)); }
+.tbl-action.tbl-action--off.cds--btn--ghost:hover { background: transparent; }
+
+.tbl-skel { display: flex; }
+.tbl-skel .cds--skeleton__text { margin: 4px 0; }
+.tbl-skel--num { justify-content: flex-end; }
+
+.tbl-empty-cell.tbl-empty-cell { padding: 64px 16px; text-align: center; }
+.tbl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.tbl-empty__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.tbl-empty__icon svg { fill: currentColor; }
+.tbl-empty__title {
+  font-size: 14px;
+  line-height: 1.43;
+  font-weight: 600;
+  color: var(--cds-text-primary, #161616);
+}
 
 .tbl-school { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .tbl-grade {
@@ -187,7 +474,7 @@
 .tbl-util__tier--under { color: #0f766e; }
 .tbl-util__tier--full { color: #a2191f; }
 /* Virtualizer spacer rows: no padding or rule, or they read as a blank row. */
-.tbl tr[aria-hidden] > td.MuiTableCell-root { padding: 0; border: 0; }
+.tbl.cds--data-table tr.tbl-spacer > td { height: auto; padding: 0; border: 0; }
 /* Phone card facts: one left edge for labels, one for values; the
    utilization tier stacks under its number on the same left edge. */
 .school-card__fact { align-items: flex-start; gap: 16px; }

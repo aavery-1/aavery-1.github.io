@@ -1,0 +1,86 @@
+/* App shell layout (App.tsx): the full-height column, the rail overlay, the main
+   surface, the floating inspector wrapper, and the lazy-view fallback. Plain
+   elements with Carbon tokens. No em dashes in this file. */
+
+/* overflow: clip (not hidden) so the shell is not a scroll container at all. */
+.app-shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: clip;
+}
+
+/* Below the nav: rail overlay + main surface. From the phone breakpoint up, the
+   left padding reserves room for the collapsed 64px rail. */
+.app-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  position: relative;
+}
+@media (min-width: 600px) {
+  .app-body { padding-left: 64px; }
+}
+
+.app-main {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+
+/* Transparent click-catcher behind the expanded filter panel. */
+.app-rail-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+}
+.app-rail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 20;
+  display: flex;
+}
+.app-rail--open {
+  box-shadow: 8px 0 24px rgba(15, 23, 42, 0.10);
+}
+
+/* Floating desktop inspector: a companion card on the map, a full-height column
+   (over a dimming scrim) on the list. Shadows/animations are in styles.css. */
+.inspector-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: rgba(15, 23, 42, 0.32);
+  animation: scrimFade 180ms ease-out;
+}
+.insp-float--map {
+  position: absolute;
+  top: 12px;
+  right: 64px;
+  z-index: 31;
+  max-width: calc(100% - 76px);
+}
+.insp-float--list {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  z-index: 31;
+}
+
+/* Shown in a lazy view's place while its chunk downloads: a centered spinner on
+   the page canvas. */
+.view-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cds-background, #f4f4f4);
+}
+.view-fallback .cds--loading--small {
+  width: 28px;
+  height: 28px;
+}

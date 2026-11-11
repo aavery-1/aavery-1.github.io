@@ -29,8 +29,8 @@
 
   // KIPP brand: recolor Carbon's interactive/brand tokens from Blue 60 to KIPP
   // navy, so every Carbon component (buttons, links, focus rings, the brand pill)
-  // follows the brand. This is the Carbon half of the one brand color; the MUI
-  // half lives in muiTheme.ts (ACCENT) and plain CSS reads --focus from theme.ts.
+  // follows the brand. This is the Carbon half of the one brand color; the
+  // code half lives in ui/tokens.ts (ACCENT) and plain CSS reads --focus from theme.ts.
   // No em dashes in this file, per the prose style rule.
   --cds-background-brand: #001e62;
   --cds-interactive: #001e62;
