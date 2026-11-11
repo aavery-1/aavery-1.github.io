@@ -376,7 +376,9 @@ export const RANGE_QUANTILES: [number, number] = [0.1, 0.9];
 export const ESTIMATE_QUANTILES: [number, number] = [0, 1];
 const BOOTSTRAP_DRAWS = 400;
 
-export interface FitSample { lng: number; lat: number; valhalla: number | null; google: number | null }
+/** One home timed by both Valhalla and Google. `ring`: set for homes chosen near that ring's line by the edge check
+ * (scripts/qa_drive_edges.ts), which are part of the fit too. */
+export interface FitSample { lng: number; lat: number; valhalla: number | null; google: number | null; ring?: number }
 export interface Fit { a: number; b: number; n: number; rmse: number }
 /** Valhalla-minute cut-offs for one ring: a home is inside when its Valhalla time <= the cut-off. */
 export interface Cutoff { minutes: number; mid: number; low: number; high: number }
@@ -412,7 +414,8 @@ export interface DriveResult {
 }
 
 /** One Google measurement: the raw input every measured result is rebuilt from (data/drive_measurements.json). */
-export interface Measurement { key: string; lng: number; lat: number; window: DriveWindow; measuredOn: string; samples: FitSample[] }
+/** `edgeCheckedOn`: when homes near each line were added by the edge check */
+export interface Measurement { key: string; lng: number; lat: number; window: DriveWindow; measuredOn: string; edgeCheckedOn?: string; samples: FitSample[] }
 export interface MeasurementsFile { version: string; note: string; measurements: Measurement[] }
 
 export const siteKey = (lng: number, lat: number) => `${lng.toFixed(4)},${lat.toFixed(4)}`;

@@ -70,7 +70,7 @@ These are the only two times either tool offers.
 **How a home is counted.** Every populated 2020 block is timed to (or from) the campus on OpenStreetMap roads (Valhalla). It is inside a ring when its time is at or under that ring's *cut-off*: the Valhalla minutes that equal N Google minutes for that site and time of day.
 
 **Saved results, for every school and campus** (`scripts/drive_precompute.ts`, `data/drive/`). These are worked out ahead of time on our own routing server (`docs/runbooks/routing-server.md`): Valhalla 3.9.1 on Geofabrik extracts of Florida, New Jersey and Pennsylvania dated 2026-11-08, with the standard default-speeds table. So a school's numbers don't depend on the public server, and change only when we rebuild on purpose. Each result records the road data it used. A pin within 150 m of a saved site uses that site's result.
-- **Measured sites** (`scripts/drive_measure.ts`, raw times in `data/drive_measurements.json`). 30 homes where children live (five distance bands with equal numbers of children, six homes each, a seeded draw) are timed by Google with predicted traffic. The precompute re-times those homes on our server and fits Google = a + b x Valhalla for the site and time of day. The cut-off is (N - a) / b.
+- **Measured sites** (`scripts/drive_measure.ts`, raw times in `data/drive_measurements.json`). 30 homes where children live (five distance bands with equal numbers of children, six homes each, a seeded draw) are timed by Google with predicted traffic. At the KIPP campuses, Dandy and Carol City, the edge check adds 30 to 60 more homes chosen right at the 5, 10 and 15-minute lines (below). The precompute re-times all of them on our server and fits Google = a + b x Valhalla for the site and time of day. The cut-off is (N - a) / b.
 - **All other schools** (labeled "Estimate"). The cut-off is the median of the measured sites' cut-offs in the region (Florida; Newark and Paterson; Camden).
 - **A range on every count.** It is the same population figure counted under a low and a high cut-off. It covers the uncertainty in the drive time, not the census margin of error, which is shown separately.
   - Measured site: an 80% range, the 10th to 90th percentile of the cut-off over 400 seeded resamples of its 30 homes.
@@ -82,13 +82,23 @@ Measured 2026-11-10/11, both times of day:
 
 Fits ran from 0.7x to 1.5x our server's time by site, which is why one regional number can't be exact. Measuring a site costs 30 Google lookups. `drive_measure.ts` logs them by month in `data/google_usage.json` and stops before the month passes the cap (4,500 by default).
 
+**Edge check: each line within 2 minutes of Google** (`scripts/qa_drive_edges.ts`, 2026-11-11; `docs/qa/drive-edges-2026-11-11*.csv`; raw times in `data/drive_edge_checks.json`). It covers KIPP's 24 schools at their 16 campus locations, plus Dandy and Carol City, at both times of day: 108 lines.
+- *Method.* For each line, Google timed 10 homes where children live that our model put within 2 minutes of that line. The line's offset is the median gap between our time and Google's for those homes.
+- *Before.* 96 of 108 lines were within 2 minutes.
+- *Fix.* The edge homes were added to each site's fit. Lines with any offset over 1.5 minutes were rechecked on 10 new homes (15 lines), then the three that still missed on 20 more.
+- *After.* All 108 lines are within 2 minutes against every Google-timed home near them, for 1,290 homes in all. Scored with each line's own homes held out, it's 106 of 108. The weakest line is Carol City's 15-minute pickup: -1.5 minutes with its homes, -2.4 without, so that area may run about 2 minutes generous.
+- *Individual homes.* 75% of the homes near a line are within 2 minutes of Google. Google's own times vary by several minutes between homes our model rates the same, so a single home can't be held to 2 minutes.
+- *Counts.* A line within 2 minutes doesn't mean a count within 2%. In a dense area, one minute moves roughly 10-15% of the children inside a 10-minute line.
+- *Cost.* 1,290 Google lookups, logged in `data/google_usage.json`.
+
 **Accuracy** (`scripts/qa_drive_accuracy.ts`, 2026-11-11, `docs/qa/drive-accuracy-2026-11-11.csv`):
 - *Against Google, out of sample.* 600 homes were timed independently by Google on 2026-11-10 at 5 Florida sites (drop-off). None of them were used in the fits.
-  - Homes: 96% of sampled children live on the same side of each line as Google puts them.
-  - Counts: the measured count's range overlapped the sample's 95% interval in 14 of 15 site-and-ring checks.
-  - The miss was KIPP Miami North at 10 minutes: 2,759 (range 1,589-3,919) against Google's 5,550 (4,238-6,863). Few homes lie near its 10-minute line, and its 30 timed homes are all farther out. A count is most fragile where many children live right at the line.
-  - At 10 minutes, measured counts ran from 50% under to 14% over the sample's estimate (Dandy: 7,244 against 7,734).
-- *Estimates, leave one site out.* Each measured site was worked out as if it hadn't been measured. At 10 and 15 minutes the median miss was 35%, and 80% of sites were within 77% (10 minutes) and 63% (15 minutes). At 5 minutes the median miss was 57%. Treat an estimate as a rough guide and measure any site a decision rests on.
+  - Homes: 96.5% of sampled children live on the same side of each line as Google puts them.
+  - Counts: the measured count's range overlapped the sample's 95% interval in 13 of 15 site-and-ring checks.
+  - The two misses are at 5 and 10 minutes. KIPP Miami North at 10 minutes is 3,551 (range 3,294-3,915) against Google's 5,550 (4,238-6,863), even though its line is within 1 minute of Google at the edge homes.
+  - At 10 minutes, measured counts ran from 36% under to 14% over the sample's estimate. Dandy is 5,968 against 7,734 (5,556-9,913).
+  - The two Google checks disagree somewhat at Dandy and Miami North. The edge homes say the old lines were a little generous; the stratified sample says more children are inside. Folding that sample into those 3 sites' fits would use all the Google evidence, but would leave no independent check.
+- *Estimates, leave one site out.* Each measured site was worked out as if it hadn't been measured. At 10 and 15 minutes the median miss was 31%, and 80% of sites were within 60% (10 minutes) and 54% (15 minutes). At 5 minutes the median miss was 47%. Treat an estimate as a rough guide and measure any site a decision rests on.
 - *Routing setup.* Our server and the public one fit Google equally well out of sample: a typical miss of 2.15 minutes for one home on both, and 21 versus 19 of 600 homes on the wrong side of 10 minutes.
 
 **Live estimates** (pins more than 150 m from any saved site, such as a dropped pin). These are drawn on the public FOSSGIS server as outlines at the regional cut-offs (central, low and high), counted block by block. The public server's street speeds differ from ours, so its cut-offs come from the same measured sites fitted to the public server's own times, recorded when they were measured (`data/drive_time_calibration.json`). Both tools label these "Live estimate".
@@ -102,7 +112,7 @@ Run `scripts/qa_cross_tool.ts` after any change to the engine, the census file, 
 Every figure shown or exported names its source years ("ACS 2020-24, children as of July 2025"), the time of day ("Drop-off, 8am" or "Pickup, 4pm"), and whether the site was measured or estimated.
 
 ## Open items
-1. **Better samples at measured sites.** Choose the 30 Google homes near each ring's line rather than evenly by distance, or time more of them. Folding the 600 homes Google timed on 2026-11-10 into those 5 sites' fits costs nothing.
+1. **Edge-check the other measured sites.** Hialeah Gardens, Lauderdale Lakes and Memorial MS haven't had homes timed at their lines: 60 lookups each per time of day. Decide whether to fold the 600 Nov 10 homes into the fits for Miami North, Legacy and Dandy.
 2. **Measure more sites with Google.** 21 locations are measured (rule 8). Measuring every SOH school at drop-off takes about 35,000 lookups. Under the 4,500-a-month cap that is about 8 months of free allowance; start with the sites under active consideration.
 3. **Google's terms of use.** We keep Google's times indefinitely and use them to adjust another routing engine. This needs a legal review before wider use.
 4. **One school table with one coordinate per campus (rule 1).**

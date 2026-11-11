@@ -22,22 +22,22 @@
       "dropoff": {
         "5": {
           "contour": 4.324,
-          "contourLow": 3.636,
+          "contourLow": 3.751,
           "contourHigh": 5.652,
           "status": "measured-sites",
           "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 7.643,
-          "contourLow": 7.002,
-          "contourHigh": 10.043,
+          "contour": 9.084,
+          "contourLow": 7.487,
+          "contourHigh": 10.861,
           "status": "measured-sites",
           "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         },
         "15": {
-          "contour": 10.75,
-          "contourLow": 10.368,
-          "contourHigh": 14.434,
+          "contour": 13.267,
+          "contourLow": 10.65,
+          "contourHigh": 17.902,
           "status": "measured-sites",
           "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         }
@@ -45,22 +45,22 @@
       "pickup": {
         "5": {
           "contour": 4.342,
-          "contourLow": 2.765,
-          "contourHigh": 5.528,
+          "contourLow": 2.896,
+          "contourHigh": 5.232,
           "status": "measured-sites",
           "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 7.986,
+          "contour": 8.912,
           "contourLow": 6.155,
-          "contourHigh": 9.678,
+          "contourHigh": 10.883,
           "status": "measured-sites",
           "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         },
         "15": {
-          "contour": 11.484,
+          "contour": 13.036,
           "contourLow": 9.415,
-          "contourHigh": 14.175,
+          "contourHigh": 17.793,
           "status": "measured-sites",
           "basis": "median of 7 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         }
@@ -70,46 +70,46 @@
       "name": "Newark and Paterson",
       "dropoff": {
         "5": {
-          "contour": 2.622,
-          "contourLow": 1.827,
-          "contourHigh": 4.738,
+          "contour": 4.154,
+          "contourLow": 2.832,
+          "contourHigh": 5.306,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 6.514,
-          "contourLow": 5.397,
-          "contourHigh": 7.995,
+          "contour": 7.474,
+          "contourLow": 6.325,
+          "contourHigh": 9.033,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         },
         "15": {
-          "contour": 10.105,
-          "contourLow": 8.968,
-          "contourHigh": 11.948,
+          "contour": 11.211,
+          "contourLow": 9.561,
+          "contourHigh": 12.771,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         }
       },
       "pickup": {
         "5": {
-          "contour": 2.849,
-          "contourLow": 1.117,
-          "contourHigh": 5.033,
+          "contour": 3.945,
+          "contourLow": 1.956,
+          "contourHigh": 5.281,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 6.908,
-          "contourLow": 5.072,
-          "contourHigh": 8.34,
+          "contour": 7.789,
+          "contourLow": 6.814,
+          "contourHigh": 8.884,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         },
         "15": {
-          "contour": 11.228,
-          "contourLow": 9.028,
-          "contourHigh": 12.041,
+          "contour": 11.815,
+          "contourLow": 10.153,
+          "contourHigh": 12.589,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         }
@@ -119,46 +119,46 @@
       "name": "Camden",
       "dropoff": {
         "5": {
-          "contour": 4.23,
-          "contourLow": 3.431,
-          "contourHigh": 4.679,
+          "contour": 5.242,
+          "contourLow": 3.935,
+          "contourHigh": 6.106,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 7.785,
-          "contourLow": 6.868,
-          "contourHigh": 8.68,
+          "contour": 9.018,
+          "contourLow": 7.34,
+          "contourHigh": 10.192,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         },
         "15": {
-          "contour": 11.34,
-          "contourLow": 10.305,
-          "contourHigh": 12.68,
+          "contour": 12.795,
+          "contourLow": 10.746,
+          "contourHigh": 14.278,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         }
       },
       "pickup": {
         "5": {
-          "contour": 4.431,
-          "contourLow": 4.049,
-          "contourHigh": 4.639,
+          "contour": 5.051,
+          "contourLow": 4.474,
+          "contourHigh": 5.477,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 7.293,
-          "contourLow": 7.104,
-          "contourHigh": 7.918,
+          "contour": 8.091,
+          "contourLow": 7.422,
+          "contourHigh": 8.717,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         },
         "15": {
-          "contour": 10.362,
-          "contourLow": 9.745,
-          "contourHigh": 11.196,
+          "contour": 11.13,
+          "contourLow": 10.37,
+          "contourHigh": 11.956,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         }
