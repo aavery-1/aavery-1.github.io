@@ -283,7 +283,6 @@ thead .insp-demo__rowhead { border-bottom: 1px solid var(--cds-border-subtle-01,
 .insp-drive__key { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 0; }
 .insp-drive__key--5 { background: #20275d; }
 .insp-drive__key--10 { background: #4a6fb5; }
-.insp-drive__key--15 { background: #52c3ed; }
 .insp-drive__retry {
   background: none; border: 0; padding: 0; font: inherit; color: var(--cds-link-primary, #0f62fe);
   text-decoration: underline; cursor: pointer;

@@ -401,11 +401,12 @@ export function useDeckLayers(
       });
     }
 
-    // Drive times for the selected school: nested 15 / 10 / 5 minute areas,
-    // drawn outermost first so the inner (darker) bands sit on top. Colors match
-    // the inspector's column keys (KIPP navy to light blue).
+    // Drive times for the selected school: nested 10 / 5 minute areas, drawn
+    // outermost first so the inner (darker) band sits on top. Colors match the
+    // inspector's column keys. School day: the filled area is drop-off and the
+    // pickup outline is drawn over it (the figures average the two).
     if (has("drive_time_reach") && driveEntry?.status === "ready") {
-      const DRIVE_COLORS: Record<number, Rgb> = { 5: [32, 39, 93], 10: [74, 111, 181], 15: [82, 195, 237] };
+      const DRIVE_COLORS: Record<number, Rgb> = { 5: [32, 39, 93], 10: [74, 111, 181] };
       const contours = [...driveEntry.result.contours].sort((a, b) => b.minutes - a.minutes);
       built.push({
         z: 40,
@@ -413,11 +414,14 @@ export function useDeckLayers(
           id: "drive_time_reach",
           data: {
             type: "FeatureCollection",
-            features: contours.map((c) => ({ type: "Feature", geometry: c.geometry, properties: { minutes: c.minutes } })),
+            features: contours.flatMap((c) => [
+              { type: "Feature", geometry: c.geometry, properties: { minutes: c.minutes, outline: false } },
+              ...(c.geometry2 ? [{ type: "Feature", geometry: c.geometry2, properties: { minutes: c.minutes, outline: true } }] : []),
+            ]),
           } as GeoJSON.FeatureCollection,
           stroked: true,
           filled: true,
-          getFillColor: (f: GeoJSON.Feature) => [...(DRIVE_COLORS[(f.properties as { minutes: number }).minutes] ?? [32, 39, 93]), 34] as [number, number, number, number],
+          getFillColor: (f: GeoJSON.Feature) => [...(DRIVE_COLORS[(f.properties as { minutes: number }).minutes] ?? [32, 39, 93]), (f.properties as { outline: boolean }).outline ? 0 : 34] as [number, number, number, number],
           getLineColor: (f: GeoJSON.Feature) => [...(DRIVE_COLORS[(f.properties as { minutes: number }).minutes] ?? [32, 39, 93]), 230] as [number, number, number, number],
           getLineWidth: 1.5,
           lineWidthUnits: "pixels",

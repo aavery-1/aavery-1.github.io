@@ -630,7 +630,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
   // each collapsed heading carries, so a closed section still answers "anything
   // here worth opening?" at a glance.
   const driveK8 = driveEntry?.status === "ready"
-    ? driveEntry.result.contours.find((c) => c.minutes === 15)?.demographics?.k8_pop ?? null
+    ? driveEntry.result.contours.find((c) => c.minutes === 10)?.demographics?.k8_pop ?? null
     : null;
   const ring2 = demo?.rings.find((r) => r.r === 2) ?? null;
   const gradeYear = p.current_grade_year ? syShort(p.current_grade_year) : "";
@@ -919,7 +919,7 @@ export function SchoolInspector({ compact = false, overrideMsid }: { compact?: b
           {section(
             "drive",
             "Residents by drive time",
-            driveK8 != null ? `${driveK8.toLocaleString("en-US")} K-8 age within 15 min` : driveEntry?.status === "loading" ? "Computing..." : "Not computed",
+            driveK8 != null ? `${driveK8.toLocaleString("en-US")} K-8 age within 10 min` : driveEntry?.status === "loading" ? "Computing..." : "Not computed",
             <DriveTimeMarket msid={p.msid} lng={school.geometry.coordinates[0]} lat={school.geometry.coordinates[1]} open={openSections.has("drive")} />,
           )}
 

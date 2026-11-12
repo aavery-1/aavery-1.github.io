@@ -197,7 +197,7 @@ export function MapLegend() {
                     <span className="map-legend-swatch">
                       <span className="map-legend-area" style={{ display: "block", background: "linear-gradient(90deg, rgba(32,39,93,0.35), rgba(74,111,181,0.25), rgba(82,195,237,0.2))", border: "1.5px solid #20275d" }} />
                     </span>
-                    <span>Drive time 5 / 10 / 15 min (morning traffic)</span>
+                    <span>Drive time 5 / 10 min (school day)</span>
                   </li>
                 )}
               </ul>

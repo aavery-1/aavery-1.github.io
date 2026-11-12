@@ -1,5 +1,5 @@
-// Drive-time market: who lives within a 5, 10, and 15 minute drive of this
-// school at drop-off or pickup, the companion to the straight-line radius table
+// Drive-time market: who lives within a 5 and 10 minute drive of this school
+// for the school day (drop-off and pickup areas averaged), drop-off or pickup, the companion to the straight-line radius table
 // above it. Areas and counts come from geo/driveTime.ts (the shared engine, the
 // same figures Grove shows); population uses the same Census block method as the
 // rings, so the two tables are comparable. The table and the map layer
@@ -11,7 +11,8 @@ import { InlineLoading } from "@carbon/react";
 import { Car as CarIcon } from "@carbon/icons-react";
 import { useInspectorSections } from "./inspectorSections";
 import { DepartureControl } from "../tools/DepartureControl";
-import { windowLabel } from "../geo/driveTime";
+import { windowLabel, RANGE_MODEL } from "../geo/driveTime";
+import { countRange } from "../shared-geo/sharedGeo";
 import { useStore } from "../store";
 import { useDriveTimes, DRIVE_LAYER_ID, driveMethodNote, type DriveContour } from "../geo/driveTime";
 import type { AreaDemographics } from "../geo/populationPoints";
@@ -27,7 +28,7 @@ function Cell({ value, moe, range }: { value: React.ReactNode; moe?: string | nu
     <td className="insp-demo__cell">
       <span className="insp-demo__val">{value}</span>
       {moe ? <span className="insp-demo__moe">{moe}</span> : null}
-      {range ? <span className="insp-demo__range" title="Range from drive-time uncertainty">{range}</span> : null}
+      {range ? <span className="insp-demo__range" title="90% range: drive time and Census margin of error">{range}</span> : null}
     </td>
   );
 }
@@ -35,18 +36,19 @@ function Cell({ value, moe, range }: { value: React.ReactNode; moe?: string | nu
 type Row = {
   label: React.ReactNode;
   render: (d: AreaDemographics) => { value: React.ReactNode; moe?: string | null };
-  /** Counts carry the drive time's range */
+  /** Counts carry a 90% range (drive time and Census margin of error, shared countRange) instead of a bare margin */
   count?: (d: AreaDemographics) => number;
+  countMoe?: (d: AreaDemographics) => number;
 };
 const ROWS: Row[] = [
-  { label: "Population", render: (d) => ({ value: intFmt(d.total_pop), moe: d.total_pop > 0 ? moeFmt(d.total_pop_moe) : null }), count: (d) => d.total_pop },
-  { label: <>K-8 age <span className="insp-demo__hint">(5-13)</span></>, render: (d) => ({ value: intFmt(d.k8_pop), moe: d.k8_pop > 0 ? moeFmt(d.k8_pop_moe) : null }), count: (d) => d.k8_pop },
+  { label: "Population", render: (d) => ({ value: intFmt(d.total_pop) }), count: (d) => d.total_pop, countMoe: (d) => d.total_pop_moe },
+  { label: <>K-8 age <span className="insp-demo__hint">(5-13)</span></>, render: (d) => ({ value: intFmt(d.k8_pop) }), count: (d) => d.k8_pop, countMoe: (d) => d.k8_pop_moe },
   { label: "Median income", render: (d) => d.median_income == null ? { value: NA } : { value: `$${intFmt(d.median_income)}`, moe: d.median_income_moe != null ? moeFmt(d.median_income_moe) : null } },
   { label: <>% Black <span className="insp-demo__hint">(ages 5-14)</span></>, render: (d) => d.pct_black == null ? { value: NA } : { value: `${d.pct_black.toFixed(1)}%`, moe: d.pct_black_moe != null ? `±${d.pct_black_moe.toFixed(1)}` : null } },
   { label: <>% Hispanic <span className="insp-demo__hint">(ages 5-14)</span></>, render: (d) => d.pct_hispanic == null ? { value: NA } : { value: `${d.pct_hispanic.toFixed(1)}%`, moe: d.pct_hispanic_moe != null ? `±${d.pct_hispanic_moe.toFixed(1)}` : null } },
 ];
 
-function DriveTable({ contours }: { contours: DriveContour[] }) {
+function DriveTable({ contours, status, lat }: { contours: DriveContour[]; status: "measured" | "estimate"; lat: number }) {
   return (
     <div className="insp-demo__scroll">
       <table className="insp-demo__table">
@@ -68,11 +70,18 @@ function DriveTable({ contours }: { contours: DriveContour[] }) {
               {contours.map((c) => {
                 if (!c.demographics) return <Cell key={c.minutes} value={NA} />;
                 const { value, moe } = row.render(c.demographics);
-                const range = row.count && c.low && c.high ? `${intFmt(row.count(c.low))}-${intFmt(row.count(c.high))}` : null;
+                const r = row.count ? countRange({ mid: row.count(c.demographics), low: c.low ? row.count(c.low) : null, high: c.high ? row.count(c.high) : null, moe: row.countMoe?.(c.demographics) }, { status, minutes: c.minutes, lat }, RANGE_MODEL) : null;
+                const range = r ? `${intFmt(r.low)}-${intFmt(r.high)}` : null;
                 return <Cell key={c.minutes} value={value} moe={moe} range={range} />;
               })}
             </tr>
           ))}
+          <tr>
+            <th scope="row" className="insp-demo__rowhead">Children 5-17: change <span className="insp-demo__hint">(2025-2030, projected)</span></th>
+            {contours.map((c) => c.projection
+              ? <Cell key={c.minutes} value={`${c.projection.change >= 0 ? "+" : "\u2212"}${Math.abs(c.projection.change * 100).toFixed(1)}%`} moe={`typical miss \u00b1${c.projection.typicalMiss} pts`} range={`90%: \u00b1${c.projection.range90} pts`} />
+              : <Cell key={c.minutes} value={NA} />)}
+          </tr>
         </tbody>
       </table>
     </div>
@@ -94,7 +103,7 @@ export function DriveTimeToggle({ msid, lng, lat }: { msid: string; lng: number;
       type="button"
       className={`insp-feature${layerOn ? " insp-feature--on" : ""}`}
       aria-pressed={layerOn}
-      title={layerOn ? "Hide drive times" : "Show 5, 10, and 15 minute drive times in morning traffic"}
+      title={layerOn ? "Hide drive times" : "Show 5 and 10 minute drive times on a school day"}
       onClick={() => toggleLayer(DRIVE_LAYER_ID)}
     >
       <CarIcon size={20} aria-hidden="true" />
@@ -113,11 +122,11 @@ export function DriveTimeStatus({ msid }: { msid: string }) {
   if (!layerOn || !entry) return null;
   if (entry.status === "loading") return <InlineLoading className="insp-drive-status" description={entry.step} />;
   if (entry.status === "error") return <p className="insp-drive-status insp-drive-status--err">Drive times unavailable. {entry.message}</p>;
-  const k8 = entry.result.contours.find((c) => c.minutes === 15)?.demographics?.k8_pop ?? null;
+  const k8 = entry.result.contours.find((c) => c.minutes === 10)?.demographics?.k8_pop ?? null;
   return (
     <p className="insp-drive-status">
       <button type="button" className="insp-drive-status__link" onClick={() => reveal("drive")}>
-        {k8 != null ? `${k8.toLocaleString("en-US")} K-8 age within 15 min` : "See drive-time numbers"}
+        {k8 != null ? `${k8.toLocaleString("en-US")} K-8 age within 10 min` : "See drive-time numbers"}
       </button>
       <span className="insp-drive-status__when"> · {windowLabel(window).toLowerCase()}{entry.result.status === "estimate" ? " (estimate)" : ""}</span>
     </p>
@@ -154,21 +163,22 @@ export function DriveTimeMarket({ msid, lng, lat, open = true }: { msid: string;
 
       {ready && (
         <>
-          <DriveTable contours={ready.contours} />
+          <DriveTable contours={ready.contours} status={ready.status} lat={ready.origin[1]} />
           {demoMissing && (
             <p className="insp-demo__warn">Population figures could not load; the drive-time areas on the map are still accurate.</p>
           )}
-          <p className="insp-demo__foot">Under each count: its range from drive-time uncertainty. Same figures as Grove.</p>
+          <p className="insp-demo__foot">Under each count: its 90% range (drive time and Census margin of error). Same figures as Grove.</p>
+          {ready.window === "schoolday" && <p className="insp-demo__foot">School day: drop-off and pickup areas averaged. A home inside both counts fully, inside one counts half.</p>}
           {ready.status === "measured"
             ? <p className="insp-demo__foot" title={driveMethodNote(ready)}>
-                Measured for this school: homes timed by Google Maps on a school day (typical miss for one home {ready.fit ? `±${ready.fit.rmse.toFixed(1)}` : "n/a"} min). The range is an 80% range.
+                Measured for this school: homes timed by Google Maps on a school day{ready.fit ? ` (typical miss for one home ±${ready.fit.rmse.toFixed(1)} min)` : ""}.
               </p>
             : ready.source === "saved"
               ? <p className="insp-demo__warn" title={driveMethodNote(ready)}>
-                  Estimate: this school hasn't been timed by Google, so its homes are adjusted the way measured schools in the region are. The range spans those schools; estimates have been off by about a third at a typical school.
+                  Estimate: this school hasn't been timed by Google, so its homes are adjusted the way measured schools in the region are. That is why the range is wide.
                 </p>
               : <p className="insp-demo__warn" title={driveMethodNote(ready)}>
-                  Live estimate: no saved result for this point, so the areas are drawn now from the regional adjustment. Less exact than a saved result; the range spans the region's measured schools.
+                  Live estimate: no saved result for this point, so the areas are drawn now from the regional adjustment. Less exact than a saved result.
                 </p>}
         </>
       )}

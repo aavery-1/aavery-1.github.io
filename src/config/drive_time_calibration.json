@@ -3,6 +3,12 @@
   "engine": "Valhalla, auto costing, on the FOSSGIS public server. These settings are for live estimates only (pins with no saved result); saved results come from our routing server (data/drive/).",
   "benchmark": "Google Maps predicted school-day drive times (30 homes per measured site, data/drive_measurements.json), fit to the public server's times for the same homes. Each region's cut-off is the median of its measured sites; the range spans all of them.",
   "windows": {
+    "schoolday": {
+      "label": "School day",
+      "time": "8am & 4pm",
+      "direction": "drop-off and pickup areas averaged",
+      "reverse": null
+    },
     "dropoff": {
       "label": "Drop-off",
       "time": "8am",
@@ -21,46 +27,32 @@
       "name": "Miami",
       "dropoff": {
         "5": {
-          "contour": 4.393,
+          "contour": 4.546,
           "contourLow": 3.441,
           "contourHigh": 5.652,
           "status": "measured-sites",
           "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 7.756,
+          "contour": 8.132,
           "contourLow": 6.678,
           "contourHigh": 10.043,
-          "status": "measured-sites",
-          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
-        },
-        "15": {
-          "contour": 11.407,
-          "contourLow": 9.915,
-          "contourHigh": 14.434,
           "status": "measured-sites",
           "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         }
       },
       "pickup": {
         "5": {
-          "contour": 4.482,
+          "contour": 4.341,
           "contourLow": 2.896,
           "contourHigh": 5.514,
           "status": "measured-sites",
           "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         },
         "10": {
-          "contour": 8.107,
+          "contour": 8.011,
           "contourLow": 6.155,
           "contourHigh": 9.678,
-          "status": "measured-sites",
-          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
-        },
-        "15": {
-          "contour": 11.733,
-          "contourLow": 9.415,
-          "contourHigh": 14.175,
           "status": "measured-sites",
           "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
         }
@@ -82,13 +74,6 @@
           "contourHigh": 8.213,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
-        },
-        "15": {
-          "contour": 10.222,
-          "contourLow": 9.043,
-          "contourHigh": 12.06,
-          "status": "measured-sites",
-          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         }
       },
       "pickup": {
@@ -103,13 +88,6 @@
           "contour": 7.176,
           "contourLow": 6.27,
           "contourHigh": 8.221,
-          "status": "measured-sites",
-          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
-        },
-        "15": {
-          "contour": 11.254,
-          "contourLow": 9.698,
-          "contourHigh": 11.853,
           "status": "measured-sites",
           "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
         }
@@ -131,13 +109,6 @@
           "contourHigh": 9.232,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
-        },
-        "15": {
-          "contour": 11.556,
-          "contourLow": 10.11,
-          "contourHigh": 13.134,
-          "status": "measured-sites",
-          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         }
       },
       "pickup": {
@@ -154,15 +125,44 @@
           "contourHigh": 7.85,
           "status": "measured-sites",
           "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
-        },
-        "15": {
-          "contour": 10.302,
-          "contourLow": 9.554,
-          "contourHigh": 11.201,
-          "status": "measured-sites",
-          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
         }
       }
     }
+  },
+  "rangeModel": {
+    "level": 0.9,
+    "measured": {
+      "5": {
+        "bias": 0.221,
+        "tau": 0.221
+      },
+      "10": {
+        "bias": 0,
+        "tau": 0.1
+      }
+    },
+    "estimate": {
+      "florida": {
+        "5": [
+          -0.557,
+          2.293
+        ],
+        "10": [
+          -0.621,
+          0.92
+        ]
+      },
+      "newjersey": {
+        "5": [
+          -0.616,
+          2.069
+        ],
+        "10": [
+          -0.309,
+          0.59
+        ]
+      }
+    },
+    "basis": "scripts/qa_drive_accuracy.ts --write-range-model, 2026-11-12: measured from paired checks on the independent Google sample of 2026-11-10 (5 Florida sites, drop-off; DerSimonian-Laird), estimates from leave-one-site-out over 16 Florida and 28 New Jersey checks."
   }
 }

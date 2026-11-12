@@ -231,10 +231,9 @@ function DriveTimeBar() {
           <span className="drive-bar__school" title={school.properties.name}>{school.properties.name}</span>
           {ready && (
             <>
-              <span className="drive-bar__keys" aria-label="5, 10, and 15 minutes">
+              <span className="drive-bar__keys" aria-label="5 and 10 minutes">
                 <span className="drive-bar__key drive-bar__key--5" />5
-                <span className="drive-bar__key drive-bar__key--10" />10
-                <span className="drive-bar__key drive-bar__key--15" />15 min
+                <span className="drive-bar__key drive-bar__key--10" />10 min
               </span>
             </>
           )}
@@ -298,7 +297,7 @@ export function MapToolButtons() {
     <>
       <Tooltip label={driveOn ? "Hide drive times" : "Drive times"} align="left">
         <button type="button" className={`map-ctrl-btn${driveOn ? " map-ctrl-btn--active" : ""}`}
-          aria-label="Drive times: 5, 10, and 15 minute areas around a school in morning traffic" aria-pressed={driveOn}
+          aria-label="Drive times: 5 and 10 minute areas around a school on a school day" aria-pressed={driveOn}
           onClick={() => { if (activeTool !== "none") setTool("none"); toggleLayer(DRIVE_LAYER_ID); }}>
           <CarIcon size={18} />
         </button>

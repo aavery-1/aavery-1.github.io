@@ -13,7 +13,7 @@
 //   3. Census areas: tract figures spread over 2020 blocks by population; one aggregation for both tools.
 //   4. Drive times: timed homes under per-site or regional cut-offs, 80% ranges, saved per-site results, live estimate.
 
-export const SHARED_GEO_VERSION = '2026-11-11.1';
+export const SHARED_GEO_VERSION = '2026-11-11.2';
 
 // ---------------------------------------------------------------------------------------------------------------
 // 1. Geodesy
@@ -350,8 +350,17 @@ export function aggregate(figures: (geoid: string) => TractFigures | null | unde
 //   - Saved results are worked out ahead of time on our own routing server (pinned road data) and stored per site, so
 //     both tools read the same file. A pin with no saved result gets a live estimate on the public server: the regional
 //     cut-offs drawn as outlines, labeled as such.
-export const DRIVE_MINUTES = [5, 10, 15];
+/** 5 and 10 minutes only: the drive times that drive decisions, and the ones checked against Google (15 was dropped
+ * 2026-11-11). */
+export const DRIVE_MINUTES = [5, 10];
+/** A timed direction. */
 export type DriveWindow = 'dropoff' | 'pickup';
+/** What the screens show: one direction, or the school day (drop-off and pickup areas averaged; blendResults). */
+export type DriveView = DriveWindow | 'schoolday';
+export const DRIVE_VIEWS: DriveView[] = ['schoolday', 'dropoff', 'pickup'];
+export const DEFAULT_VIEW: DriveView = 'schoolday';
+export const isDriveView = (x: unknown): x is DriveView => x === 'schoolday' || x === 'dropoff' || x === 'pickup';
+export const VIEW_LABELS: Record<DriveView, string> = { schoolday: 'School day (8am and 4pm)', dropoff: 'Drop-off, 8am', pickup: 'Pickup, 4pm' };
 /** Drop-off: home to campus, leaving 8:00am on a Tuesday. Pickup: campus to home, leaving 4:00pm. */
 export const WINDOWS: Record<DriveWindow, { toCampus: boolean; minutes: number; label: string }> = {
   dropoff: { toCampus: true, minutes: 8 * 60, label: 'Drop-off, 8am' },
@@ -395,9 +404,11 @@ export interface DriveRing {
   high: AreaWeights | null;
   contourLow: number | null;
   contourHigh: number | null;
+  /** School day only: the pickup outline (`geometry` is the drop-off one) */
+  geometry2?: Geom | null;
 }
 export interface DriveResult {
-  key: string; lng: number; lat: number; window: DriveWindow;
+  key: string; lng: number; lat: number; window: DriveView;
   /** 'measured': this site's own Google fit; 'estimate': the regional cut-offs (site not timed by Google) */
   status: 'measured' | 'estimate';
   /** 'saved': worked out ahead of time on our routing server; 'live': drawn now on the public server */
@@ -651,12 +662,13 @@ export interface PackedResult { key: string; lng: number; lat: number; window: D
 export interface SavedSiteFile { key: string; lng: number; lat: number; results: PackedResult[] }
 
 export function packResult(r: DriveResult): PackedResult {
+  if (r.window === 'schoolday') throw new Error('Save drop-off and pickup; the school day is blended when read.');
   const ids = new Set<string>();
   for (const ring of r.rings) for (const a of [ring.area, ring.low, ring.high]) if (a) for (const g of Object.keys(a.weights)) ids.add(g);
   const tracts = [...ids].sort();
   const pack = (a: AreaWeights | null): PackedArea | null => (a ? { s: tracts.map((g) => Math.round((a.weights[g] ?? 0) * 1e6) / 1e6), c: a.coverage, n: a.blocks } : null);
   return {
-    key: r.key, lng: r.lng, lat: r.lat, window: r.window, status: r.status, measuredOn: r.measuredOn, fit: r.fit, samples: r.samples,
+    key: r.key, lng: r.lng, lat: r.lat, window: r.window as DriveWindow, status: r.status, measuredOn: r.measuredOn, fit: r.fit, samples: r.samples,
     basis: r.basis, routing: r.routing, version: r.version, tracts,
     rings: r.rings.map((x) => ({ minutes: x.minutes, contour: x.contour, contourLow: x.contourLow, contourHigh: x.contourHigh, geometry: x.geometry, mid: pack(x.area)!, low: pack(x.low), high: pack(x.high) })),
   };
@@ -733,23 +745,180 @@ export async function driveAreas(lng: number, lat: number, window: DriveWindow, 
   return estimateRings(lng, lat, window, settings, blocks, io, minutes);
 }
 
+/** The school day: the drop-off and pickup areas averaged. Each tract's share is the mean of its two shares, so a home
+ * inside both areas counts fully and a home inside one counts half; every figure (counts, medians, percentages) then
+ * aggregates from one set of shares, exactly as for a single direction. Ranges average the same way. */
+export function blendResults(d: DriveResult, p: DriveResult): DriveResult {
+  const avg = (a: AreaWeights | null, b: AreaWeights | null): AreaWeights | null => {
+    if (!a || !b) return null;
+    const weights: Record<string, number> = {};
+    for (const g of [...new Set([...Object.keys(a.weights), ...Object.keys(b.weights)])].sort()) {
+      const w = Math.round((((a.weights[g] ?? 0) + (b.weights[g] ?? 0)) / 2) * 1e9) / 1e9;
+      if (w > 0) weights[g] = w;
+    }
+    return { weights, coverage: Math.round(((a.coverage + b.coverage) / 2) * 1e6) / 1e6, blocks: Math.round((a.blocks + b.blocks) / 2) };
+  };
+  const rings: DriveRing[] = [];
+  for (const rd of d.rings) {
+    const rp = p.rings.find((x) => x.minutes === rd.minutes);
+    if (!rp) continue;
+    rings.push({
+      minutes: rd.minutes, contour: rd.contour, geometry: rd.geometry, geometry2: rp.geometry,
+      area: avg(rd.area, rp.area)!, low: avg(rd.low, rp.low), high: avg(rd.high, rp.high), contourLow: null, contourHigh: null,
+    });
+  }
+  const both = <T,>(a: T, b: T, same: T, other: T) => (a === same && b === same ? same : other);
+  return {
+    key: d.key, lng: d.lng, lat: d.lat, window: 'schoolday', status: both(d.status, p.status, 'measured', 'estimate'),
+    source: both(d.source, p.source, 'saved', 'live'), measuredOn: d.measuredOn ?? p.measuredOn, fit: null, samples: [], rings,
+    basis: d.basis ?? p.basis, routing: d.routing, version: SHARED_GEO_VERSION,
+  };
+}
+
+/** Areas for what the screen shows: one direction, or the school day (both directions blended). `settings` gives the
+ * regional settings for a direction (used only for a live estimate). */
+export async function driveView(lng: number, lat: number, view: DriveView, saved: SavedSource | null | undefined, settings: (w: DriveWindow) => Record<number, RingSetting>, blocks: BlockSet, io: Pick<DriveIO, 'isochrones'>, minutes: number[] = DRIVE_MINUTES): Promise<DriveResult> {
+  if (view !== 'schoolday') return driveAreas(lng, lat, view, saved, settings(view), blocks, io, minutes);
+  const d = await driveAreas(lng, lat, 'dropoff', saved, settings('dropoff'), blocks, io, minutes);
+  const p = await driveAreas(lng, lat, 'pickup', saved, settings('pickup'), blocks, io, minutes);
+  return blendResults(d, p);
+}
+
 export interface RingDemographics { mid: AreaDemographics; low: AreaDemographics | null; high: AreaDemographics | null }
-/** A ring's figures with its 80% range (the low and high areas aggregated the same way). */
+/** A ring's figures, plus the same figures over its low and high areas (the drive-time spread countRange starts from). */
 export function ringDemographics(figures: (geoid: string) => TractFigures | null | undefined, ring: Pick<DriveRing, 'area' | 'low' | 'high'>): RingDemographics {
   return { mid: aggregate(figures, ring.area), low: ring.low ? aggregate(figures, ring.low) : null, high: ring.high ? aggregate(figures, ring.high) : null };
 }
 
+// ---------------------------------------------------------------------------------------------------------------
+// 90% ranges for counts (docs/methods/geo-ruleset.md rule 8). One function, so both tools show the same range.
+// ---------------------------------------------------------------------------------------------------------------
+/** What each count's 90% range rests on (data/drive_time_calibration.json `rangeModel`, written by
+ * scripts/qa_drive_accuracy.ts --write-range-model from Google checks that the fits never saw):
+ *   measured[N]: `bias` = how far measured counts ran from Google's, on average (share; + = ours low), and `tau` = the
+ *     spread of that error between sites beyond sampling noise (log scale), both from a random-effects meta-analysis
+ *     (DerSimonian-Laird) of the paired checks on the independent sample of 2026-11-10.
+ *   estimate[region][N]: the 5th and 95th percentiles of (estimate / measured count - 1) when each measured site is
+ *     worked out as if it hadn't been measured (leave one site out). */
+export interface RangeModel {
+  level: number;
+  measured: Record<string, { bias: number; tau: number }>;
+  estimate: Record<'florida' | 'newjersey', Record<string, [number, number]>>;
+  basis: string;
+}
+const Z80 = 1.2815515655446004, Z90 = 1.6448536269514722;
+export const rangeRegion = (lat: number): 'florida' | 'newjersey' => (lat < 31 ? 'florida' : 'newjersey');
+
+/** A count's 90% range: the drive-time uncertainty for the site's status and ring, combined with the Census margin of
+ * error (90%, ACS), as independent errors on the log scale. Measured: the fit's resampling spread (`low`/`high`, an 80%
+ * range) plus the model error `tau`, centered on the measured bias. Estimate: the leave-one-site-out error range. */
+export function countRange(x: { mid: number; low?: number | null; high?: number | null; moe?: number | null }, ctx: { status: 'measured' | 'estimate'; minutes: number; lat: number }, model: RangeModel | null | undefined): { low: number; high: number } | null {
+  if (!model || !(x.mid > 0)) return null;
+  let m = 0, hl = 0, hu = 0;
+  if (ctx.status === 'measured') {
+    const e = model.measured[String(ctx.minutes)];
+    if (!e) return null;
+    const sl = x.low != null && x.low > 0 && x.low < x.mid ? Math.log(x.mid / x.low) / Z80 : 0;
+    const su = x.high != null && x.high > x.mid ? Math.log(x.high / x.mid) / Z80 : 0;
+    m = Math.log(1 + e.bias);
+    hl = Z90 * Math.sqrt(sl * sl + e.tau * e.tau);
+    hu = Z90 * Math.sqrt(su * su + e.tau * e.tau);
+  } else {
+    const q = model.estimate[rangeRegion(ctx.lat)]?.[String(ctx.minutes)];
+    if (!q) return null;
+    // truth = estimate / (1 + error): the error's 95th percentile gives the low end
+    const L = -Math.log(1 + q[1]), U = -Math.log(1 + q[0]);
+    m = (L + U) / 2; hl = m - L; hu = U - m;
+  }
+  const c = x.moe != null && x.moe > 0 ? Math.log(1 + x.moe / x.mid) : 0;
+  return { low: Math.round(x.mid * Math.exp(m - Math.sqrt(hl * hl + c * c))), high: Math.round(x.mid * Math.exp(m + Math.sqrt(hu * hu + c * c))) };
+}
+
 /** One line on how the areas were made, for reports and exports in both tools. */
 export function driveNote(r: Pick<DriveResult, 'status' | 'source' | 'window' | 'fit' | 'measuredOn' | 'basis'>): string {
+  const range = 'Ranges are 90% ranges covering the drive time and the Census margin of error.';
+  if (r.window === 'schoolday') {
+    const how = r.status === 'measured' ? `Both directions measured for this site with Google Maps (${r.measuredOn ?? 'date on file'}).`
+      : r.source === 'saved' ? 'Estimate: this site hasn\'t been timed by Google; both directions use the regional adjustment.'
+        : 'Live estimate: no saved result for this point; both directions drawn now from the regional adjustment.';
+    return `School day: the drop-off (8am, home to campus) and pickup (4pm, campus to home) areas averaged, so a home inside both counts fully and a home inside one counts half. ${how} ${range}`;
+  }
   const w = WINDOWS[r.window];
   const head = `${w.label} (${w.toCampus ? 'home to campus' : 'campus to home'}, school day).`;
   if (r.status === 'measured' && r.fit) {
-    return `${head} Measured for this site on ${r.measuredOn}: ${r.fit.n} homes timed by Google Maps, every nearby home timed on OpenStreetMap roads and adjusted to Google's time (typical miss for one home ${r.fit.rmse.toFixed(1)} min). Ranges are 80% ranges.`;
+    return `${head} Measured for this site on ${r.measuredOn}: ${r.fit.n} homes timed by Google Maps, every nearby home timed on OpenStreetMap roads and adjusted to Google's time (typical miss for one home ${r.fit.rmse.toFixed(1)} min). ${range}`;
   }
   const basis = r.basis ? ` (${r.basis})` : '';
-  const spread = 'The range spans the measured sites; estimates have been off by about a third at a typical site.';
   if (r.source === 'saved') {
-    return `${head} Estimate: this site hasn't been timed by Google, so every home is timed on OpenStreetMap roads and adjusted the way measured sites in the region are${basis}. ${spread} Measure it with scripts/drive_measure.ts.`;
+    return `${head} Estimate: this site hasn't been timed by Google, so every home is timed on OpenStreetMap roads and adjusted the way measured sites in the region are${basis}. ${range}`;
   }
-  return `${head} Live estimate: no saved result for this point, so the areas are drawn now from the regional adjustment${basis}. Less exact than a saved result. ${spread}`;
+  return `${head} Live estimate: no saved result for this point, so the areas are drawn now from the regional adjustment${basis}. Less exact than a saved result. ${range}`;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// 5. Children 5-17, five years on (the same projection Grove's site report and map make; lib/model/ages.ts)
+// ---------------------------------------------------------------------------------------------------------------
+// Hamilton-Perry cohort-change ratios by single year of age from each county's July 2020 -> 2025 Census estimates
+// (gains from moves halved, by backtest), applied to each tract's children on the July 2025 base. For an area, each
+// tract's additive parts (scripts/build_projection_parts.ts, data/projection_parts.json) are summed by its share, then:
+//   - age mix: each cohort part is w x (the area's own) + (1 - w) x (the same children split like the county's),
+//     w = children 0-17 / (children 0-17 + STRUCTURE_SHRINK)
+//   - local trend: each part times 1 + (a / e - 1) x p / (p + TREND_SHRINK_CHILDREN), from the area's own ACS cohort
+//     change (a = children five years older now, p = the span in the earlier release, e = p x the county's ratio)
+//   - "if no one moved": survival alone, on the same age mix
+// Grove's lib/data/sources.test.ts checks map = site report, and lib/shared-geo/projection.test.ts checks this = both.
+export const STRUCTURE_SHRINK = 50000;
+export const TREND_SHRINK_CHILDREN = 5000;
+/** Per-tract additive parts, in this order, in data/projection_parts.json */
+export const PROJECTION_FIELDS = [
+  'base_5_17', 'jump_0_17', 'proj_5_17', 'proj_5_17_closed', 'proj_cty_5_17_closed',
+  'proj_part_r0_4', 'proj_part_r5_9', 'proj_part_r10_12', 'proj_cty_part_r0_4', 'proj_cty_part_r5_9', 'proj_cty_part_r10_12',
+  'trend_now_r0_4', 'trend_now_r5_9', 'trend_now_r10_12', 'trend_prior_r0_4', 'trend_prior_r5_9', 'trend_prior_r10_12',
+  'trend_exp_r0_4', 'trend_exp_r5_9', 'trend_exp_r10_12',
+] as const;
+/** Half of past projections for areas this size (children 5-17) missed by more than this many percentage points
+ * (scripts/qa_projection_backtest.py, 2015->2020 and 2020->2025 one period back, ~5,500 areas). Largest first. */
+export const TYPICAL_MISS_PTS: [number, number][] = [[50000, 3], [15000, 5], [5000, 7.5], [1500, 11], [0, 18]];
+export const typicalMissPts = (children: number) => TYPICAL_MISS_PTS.find(([n]) => children >= n)![1];
+/** 90% band in percentage points: 1.645 x the backtest's root-mean-square miss for areas this size, both periods
+ * averaged (docs/qa/age-structure-shrink-backtest.csv, adopted setting). The "truth" there is itself a Census survey, so
+ * the band is a little wide. Largest first. */
+export const RANGE90_PTS: [number, number][] = [[50000, 7], [15000, 12.5], [5000, 19], [1500, 29.5], [0, 49.5]];
+export const range90Pts = (children: number) => RANGE90_PTS.find(([n]) => children >= n)![1];
+
+export interface ChildProjection {
+  /** Children 5-17 now (July 2025 base) and projected five years on */
+  children: number; projected: number;
+  /** Change as a share, and the part from the children already here growing up (no one moving) */
+  change: number; aging: number | null;
+  /** Typical miss in percentage points for an area this size; 'unclear' when the change is within it */
+  typicalMiss: number; verdict: 'growing' | 'declining' | 'unclear';
+  /** 90% of past projections for areas this size landed within this many points */
+  range90: number;
+}
+
+/** The projection for an area from its tracts' parts and shares. Null when the area has no parts. */
+export function projectChildren(parts: (geoid: string) => ArrayLike<number> | null | undefined, area: AreaWeights): ChildProjection | null {
+  const s = PROJECTION_FIELDS.map(() => 0);
+  let any = false;
+  for (const g of Object.keys(area.weights).sort()) {
+    const p = parts(g), w = area.weights[g];
+    if (!p) continue;
+    any = true;
+    for (let k = 0; k < s.length; k++) s[k] += p[k] * w;
+  }
+  const at = (f: (typeof PROJECTION_FIELDS)[number]) => s[PROJECTION_FIELDS.indexOf(f)];
+  const base = at('base_5_17');
+  if (!any || !(base > 0)) return null;
+  const w = at('jump_0_17') > 0 ? at('jump_0_17') / (at('jump_0_17') + STRUCTURE_SHRINK) : 1;
+  let projected = 0;
+  for (const span of ['r0_4', 'r5_9', 'r10_12'] as const) {
+    const own = at(`proj_part_${span}`), cty = at(`proj_cty_part_${span}`);
+    const a = at(`trend_now_${span}`), p = at(`trend_prior_${span}`), e = at(`trend_exp_${span}`);
+    projected += (w * own + (1 - w) * cty) * (p > 0 && a > 0 && e > 0 ? 1 + (a / e - 1) * (p / (p + TREND_SHRINK_CHILDREN)) : 1);
+  }
+  const closed = w * at('proj_5_17_closed') + (1 - w) * at('proj_cty_5_17_closed');
+  const change = projected / base - 1, aging = closed > 0 ? closed / base - 1 : null;
+  const miss = typicalMissPts(base);
+  return { children: base, projected, change, aging, typicalMiss: miss, range90: range90Pts(base), verdict: change >= miss / 100 ? 'growing' : change <= -miss / 100 ? 'declining' : 'unclear' };
 }

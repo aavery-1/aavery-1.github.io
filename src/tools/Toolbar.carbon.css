@@ -236,7 +236,6 @@
 .drive-bar__key { display: inline-block; width: 12px; height: 12px; margin-left: 6px; }
 .drive-bar__key--5 { background: #20275d; margin-left: 0; }
 .drive-bar__key--10 { background: #4a6fb5; }
-.drive-bar__key--15 { background: #52c3ed; }
 .drive-bar__ctx {
   flex: none; font-size: 12px; line-height: 16px; letter-spacing: 0.32px;
   color: var(--cds-text-secondary, #525252); white-space: nowrap; cursor: help;
