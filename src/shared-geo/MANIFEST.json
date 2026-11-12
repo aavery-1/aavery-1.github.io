@@ -1,18 +1,18 @@
 {
   "master": "Grove platform/ (scripts/sync-shared-geo.mjs)",
-  "syncedAt": "2026-11-12T00:12:42.933Z",
+  "syncedAt": "2026-11-12T01:04:14.654Z",
   "files": {
     "src/shared-geo/sharedGeo.ts": {
       "from": "lib/shared-geo/sharedGeo.ts",
-      "sha256": "f3292d0969a3fa10b368881a9858b0d997f4408545bff4f0b8b7f28e02534a9e"
+      "sha256": "69c3e4f868335dcdf4c3641d89842ffa0d25d4028d1189b95516771da2409b84"
     },
     "public/data/drive/": {
       "from": "data/drive/",
-      "tree_sha256": "4306e8249661163f662e1a59cc18e02d7b38f685b051991a385e55ca136e2765"
+      "tree_sha256": "7d18aa136d55d0fe5a6d3fd91407f3c718fddf5abf34c6ed9312a997d3920e0e"
     },
     "src/config/drive_time_calibration.json": {
       "from": "data/drive_time_calibration.json",
-      "sha256": "1297dba5179959df71afdd50474bd238d7eb0e383725399a2d4b07d336a4cedd"
+      "sha256": "fc317fdf76e130f10669edaf961faf5ce39c88c08fa5fd1f1894a8ac9795bdfc"
     },
     "public/data/projection_parts.json": {
       "from": "data/projection_parts.json",
@@ -20,7 +20,7 @@
     },
     "GEO_RULESET.md": {
       "from": "docs/methods/geo-ruleset.md",
-      "sha256": "365ca61f43683145d4f298f8cdfed800e2d23528e63258a1b3be00482e037dde"
+      "sha256": "d67e887cb30a3f72519720c7d3b545aee3284d48733d54e0e25a6a3b88e4f625"
     }
   }
 }

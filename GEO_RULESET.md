@@ -75,24 +75,28 @@ Measured 2026-11-10/11, both directions: Florida: KIPP Miami North, KIPP Legacy,
 - Lauderdale Lakes MS (2026-11-11): all four 5 and 10-minute lines within 0.8 minutes, also held out.
 - 75-90% of single homes near a line are within 2 minutes; Google's own times vary by a few minutes between homes our model rates the same.
 
-**Counts against Google** (`scripts/qa_drive_accuracy.ts`). The independent sample of 2026-11-10 (600 homes, 5 Florida sites, drop-off, none used in any fit) is scored *paired*: our line and Google's on the same homes, so the sample's own noise cancels. A random-effects meta-analysis (DerSimonian-Laird) separates real model error from sampling noise:
+**Counts against Google** (`scripts/qa_drive_accuracy.ts`). Independent samples, never used in any fit: Florida, 2026-11-10 (600 homes, 5 sites, drop-off, 24 per distance band); New Jersey, 2026-11-11 (`scripts/drive_independent_sample.ts`, `docs/qa/independent-samples.json`: KIPP SPARK, Rise, TEAM, Paterson Prep, Lanning Square and Hatch, both directions, 12 homes per band, 720 homes). Each is scored *paired*: the site's own fitted line (before any calibration, so a calibration never checks itself) and Google on the same homes, so the sample's noise cancels. A band where every sampled home agreed still carries the variance of half a disagreeing home when a home is within 3 minutes of the line. A random-effects meta-analysis (DerSimonian-Laird) by state:
 
-| Ring | Mean difference (Google vs ours) | Model error between sites (tau) |
-|---|---|---|
-| 5 min | +22% (SE 11%): our 5-minute counts run low | 22% |
-| 10 min | +5% (SE 5%, not significant) | 8% |
+| State, ring | Google's count / ours | Between-site spread | Applied |
+|---|---|---|---|
+| Florida, 5 min | +9% (SE 10%) | none detected | no (not significant) |
+| Florida, 10 min | +6% (SE 6%) | none detected | no |
+| New Jersey, 5 min | **+22% (SE 8%)** | none detected | yes: lines hold 22% more children |
+| New Jersey, 10 min | **+18% (SE 7%)** | none detected | yes: 18% more |
 
-The 5-minute bias is the expected effect of a sharp line on a noisy time: more children live just outside a line than just inside, so Google's scatter puts more in than out. KIPP Miami North's 10-minute line sat within a minute of Google's yet its count ran low by about 40%, which is why the ranges below are set from counts, not from line offsets.
+Our counts run low because a sharp line on a noisy time misses more children than it adds: more live just outside a line than just inside, and Google's scatter puts more in than out. It is strongest in dense Newark and Camden. Where the shortfall is significant at 90%, the precompute moves each New Jersey ring's cut-off (central, low and high) until the area holds that many more K-8 children (`countScale` in `data/drive_time_calibration.json`; `timedRings`), measured and estimate schools alike, so the map, the counts and every other figure stay one area. The lines move a fraction of a minute; the edge check's 2-minute standard still holds. Live estimates are not calibrated.
+
+After the rebuild, New Jersey's shown counts sit -1% from Google's (SE 7% at 10 minutes, 8% at 5). Fitting the correction on five campuses and testing it on the sixth, in turn: the shown count's 90% range held Google's count at 12 of 12 checks at 10 minutes and 11 of 12 at 5.
 
 Evaluated and not adopted (2026-11-11):
 - *A probabilistic catchment* (each home counted by its chance of being inside, from the site's residual spread; `scripts/qa_drive_smooth.ts`): fixed the 5-minute bias at Miami North and Dandy but moved others the wrong way; it needs more Google data per site to fit the spread.
 - *A count survey per site* (stratified PPS sample of homes by predicted time, design-based estimator; `lib/drive/survey.ts`, `scripts/qa_drive_survey_sim.ts`): at 90 homes per site and direction it pins the 10-minute count only to +-20-30% and under-covers, so it can't beat the range below without far more lookups.
 
 **90% ranges** (`countRange`, one shared function; model in `data/drive_time_calibration.json` `rangeModel`, written by `scripts/qa_drive_accuracy.ts --write-range-model`). Each population and K-8 count shows a 90% range that combines, as independent errors on the log scale:
-- *Measured site*: the fit's resampling spread (400 seeded resamples), the model error tau (floored at 10% because only five independent sites check it), centered on the measured bias (5 minutes: +22%; 10 minutes: none).
+- *Measured site*: the fit's resampling spread (400 seeded resamples) and the model error for its state: the between-site spread (floored at 10%) combined with the uncertainty of the calibration itself, plus any shortfall not applied (Florida 5 min 17%, 10 min 13%; New Jersey 5 min 13%, 10 min 12%).
 - *Estimate*: the 5th-95th percentile of leave-one-site-out errors for its state (10 minutes: Florida -62% to +92%, New Jersey -31% to +59%).
 - *Census*: the count's ACS 90% margin of error (tract margins times shares, root-sum-of-squares).
-Holding out each of the five independent sites in turn, the measured-site interval agreed with Google at 9 of 10 checks. Percentages and medians keep their Census margins.
+Percentages and medians keep their Census margins.
 
 **Live estimates** (pins more than 150 m from any saved site): drawn on the public FOSSGIS server at the regional cut-offs, fitted to each Google-timed home's public-server time (`public` in `data/drive_measurements.json`, `scripts/drive_public_times.ts`). Labeled "Live estimate".
 

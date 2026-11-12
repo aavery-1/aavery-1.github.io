@@ -13,7 +13,7 @@
 //   3. Census areas: tract figures spread over 2020 blocks by population; one aggregation for both tools.
 //   4. Drive times: timed homes under per-site or regional cut-offs, 80% ranges, saved per-site results, live estimate.
 
-export const SHARED_GEO_VERSION = '2026-11-11.2';
+export const SHARED_GEO_VERSION = '2026-11-11.3';
 
 // ---------------------------------------------------------------------------------------------------------------
 // 1. Geodesy
@@ -593,17 +593,40 @@ async function timeHomes(blocks: BlockSet, idx: number[], site: LngLat, toCampus
   return times;
 }
 
-/** Rings from cut-offs: time every home within Valhalla's area at the largest cut-off plus 2 minutes; a home is in a
- * ring when its time is at or under the cut-off. Outlines (display only) are drawn at the central cut-offs. */
-export async function timedRings(lng: number, lat: number, window: DriveWindow, cutoffs: Cutoff[], blocks: BlockSet, io: Pick<DriveIO, 'isochrones' | 'matrix' | 'matrixChunk' | 'progress'>): Promise<DriveRing[]> {
+/** Count calibration for a region and ring (data/drive_time_calibration.json `countScale`): Google's count of children
+ * within N minutes divided by our line's, from independent samples (scripts/qa_drive_accuracy.ts). The cut-off moves
+ * until the area holds that many more children, so the map, the count and every other figure stay one area. */
+export interface CountScale { scale: Record<string, number>; children: (i: number) => number }
+
+/** Rings from cut-offs: time every home within Valhalla's area beyond the largest cut-off; a home is in a ring when its
+ * time is at or under the cut-off. With `calib`, each cut-off (central, low, high) moves to the time at which the area
+ * holds `scale` times the children it held. Outlines (display only) are drawn at the final central cut-offs. */
+export async function timedRings(lng: number, lat: number, window: DriveWindow, cutoffs: Cutoff[], blocks: BlockSet, io: Pick<DriveIO, 'isochrones' | 'matrix' | 'matrixChunk' | 'progress'>, calib?: CountScale | null): Promise<DriveRing[]> {
   const toCampus = WINDOWS[window].toCampus, site: LngLat = [lng, lat];
-  const reachMin = Math.min(40, Math.max(...cutoffs.map((c) => c.high)) + 2);
+  const top = Math.max(...cutoffs.map((c) => c.high));
+  const reachMin = Math.min(40, (calib ? top * 1.4 : top) + 2);
   const [reach] = await io.isochrones(lng, lat, [reachMin], toCampus);
-  const outlines = await io.isochrones(lng, lat, cutoffs.map((c) => c.mid), toCampus, OUTLINE_GENERALIZE_M);
   const cand = blocksIn(blocks, reach);
   const times = await timeHomes(blocks, cand, site, toCampus, io);
+  let cs = cutoffs;
+  if (calib) {
+    // blocks by time, with running children
+    const rows = cand.map((i) => ({ t: times.get(i), c: calib.children(i) })).filter((r): r is { t: number; c: number } => r.t != null && r.c > 0).sort((a, b) => a.t - b.t);
+    const cum: number[] = [];
+    rows.reduce((a, r) => { cum.push(a + r.c); return a + r.c; }, 0);
+    const countAt = (x: number) => { let lo = 0, hi = rows.length; while (lo < hi) { const m = (lo + hi) >> 1; if (rows[m].t <= x) lo = m + 1; else hi = m; } return lo ? cum[lo - 1] : 0; };
+    const timeFor = (target: number) => { let lo = 0, hi = rows.length - 1; if (!rows.length) return 0; if (target > cum[hi]) return rows[hi].t; while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] >= target) hi = m; else lo = m + 1; } return rows[lo].t; };
+    cs = cutoffs.map((c) => {
+      const k = calib.scale[String(c.minutes)] ?? 1;
+      if (k === 1) return c;
+      const move = (x: number) => cut(timeFor(countAt(x) * k));
+      const mid = move(c.mid);
+      return { minutes: c.minutes, mid, low: Math.min(mid, move(c.low)), high: Math.max(mid, move(c.high)) };
+    });
+  }
+  const outlines = await io.isochrones(lng, lat, cs.map((c) => c.mid), toCampus, OUTLINE_GENERALIZE_M);
   const within = (limit: number) => weightsFromBlocks(blocks, cand.filter((i) => { const t = times.get(i); return t != null && t <= limit; }));
-  return cutoffs.map((c, r) => ({
+  return cs.map((c, r) => ({
     minutes: c.minutes, contour: c.mid, geometry: roundGeom(outlines[r], 4), area: within(c.mid),
     low: within(c.low), high: within(c.high), contourLow: c.low, contourHigh: c.high,
   }));
@@ -627,21 +650,27 @@ export async function measureSite(lng: number, lat: number, window: DriveWindow,
 
 /** A measured site's saved result: re-time its sample homes on our routing server, fit to the saved Google times,
  * and count every home. No Google lookups. */
-export async function deriveMeasured(m: Measurement, blocks: BlockSet, io: Pick<DriveIO, 'isochrones' | 'matrix' | 'matrixChunk' | 'progress'>, routing: string): Promise<DriveResult> {
+export async function deriveMeasured(m: Measurement, blocks: BlockSet, io: Pick<DriveIO, 'isochrones' | 'matrix' | 'matrixChunk' | 'progress'>, routing: string, calib?: CountScale | null): Promise<DriveResult> {
   const toCampus = WINDOWS[m.window].toCampus;
   const v = await io.matrix(m.samples.map((s) => [s.lng, s.lat] as LngLat), [m.lng, m.lat], toCampus);
   const samples = m.samples.map((s, i) => ({ ...s, valhalla: v[i] }));
   const c = siteCutoffs(samples, `${m.key}|${m.window}`);
   if (!c) throw new Error(`Too few homes could be timed to fit ${m.key} ${m.window}.`);
-  const rings = await timedRings(m.lng, m.lat, m.window, c.cutoffs, blocks, io);
-  return { key: m.key, lng: m.lng, lat: m.lat, window: m.window, status: 'measured', source: 'saved', measuredOn: m.measuredOn, fit: c.fit, samples, rings, basis: null, routing, version: SHARED_GEO_VERSION };
+  const rings = await timedRings(m.lng, m.lat, m.window, c.cutoffs, blocks, io, calib);
+  return { key: m.key, lng: m.lng, lat: m.lat, window: m.window, status: 'measured', source: 'saved', measuredOn: m.measuredOn, fit: c.fit, samples, rings, basis: calibNote(calib), routing, version: SHARED_GEO_VERSION };
 }
 
 /** An unmeasured site's saved result: every home timed on our routing server, counted under the regional cut-offs. */
-export async function deriveEstimate(lng: number, lat: number, window: DriveWindow, cutoffs: Cutoff[], basis: string, blocks: BlockSet, io: Pick<DriveIO, 'isochrones' | 'matrix' | 'matrixChunk' | 'progress'>, routing: string): Promise<DriveResult> {
-  const rings = await timedRings(lng, lat, window, cutoffs, blocks, io);
-  return { key: siteKey(lng, lat), lng, lat, window, status: 'estimate', source: 'saved', measuredOn: null, fit: null, samples: [], rings, basis, routing, version: SHARED_GEO_VERSION };
+export async function deriveEstimate(lng: number, lat: number, window: DriveWindow, cutoffs: Cutoff[], basis: string, blocks: BlockSet, io: Pick<DriveIO, 'isochrones' | 'matrix' | 'matrixChunk' | 'progress'>, routing: string, calib?: CountScale | null): Promise<DriveResult> {
+  const rings = await timedRings(lng, lat, window, cutoffs, blocks, io, calib);
+  const note = calibNote(calib);
+  return { key: siteKey(lng, lat), lng, lat, window, status: 'estimate', source: 'saved', measuredOn: null, fit: null, samples: [], rings, basis: note ? `${basis}; ${note}` : basis, routing, version: SHARED_GEO_VERSION };
 }
+
+const calibNote = (c?: CountScale | null) => {
+  const parts = c ? Object.entries(c.scale).filter(([, k]) => k !== 1).map(([m, k]) => `${m} min ${k > 1 ? '+' : ''}${Math.round((k - 1) * 100)}%`) : [];
+  return parts.length ? `counts calibrated to independent Google samples (${parts.join(', ')})` : null;
+};
 
 /** Coordinates to `digits` decimals (5 = about 1 m) for saved outlines. */
 export function roundGeom(g: Geom, digits = 5): Geom {
@@ -803,6 +832,8 @@ export function ringDemographics(figures: (geoid: string) => TractFigures | null
 export interface RangeModel {
   level: number;
   measured: Record<string, { bias: number; tau: number }>;
+  /** By state when the independent checks support it; used before `measured` */
+  measuredByRegion?: Partial<Record<'florida' | 'newjersey', Record<string, { bias: number; tau: number }>>>;
   estimate: Record<'florida' | 'newjersey', Record<string, [number, number]>>;
   basis: string;
 }
@@ -816,7 +847,7 @@ export function countRange(x: { mid: number; low?: number | null; high?: number 
   if (!model || !(x.mid > 0)) return null;
   let m = 0, hl = 0, hu = 0;
   if (ctx.status === 'measured') {
-    const e = model.measured[String(ctx.minutes)];
+    const e = model.measuredByRegion?.[rangeRegion(ctx.lat)]?.[String(ctx.minutes)] ?? model.measured[String(ctx.minutes)];
     if (!e) return null;
     const sl = x.low != null && x.low > 0 && x.low < x.mid ? Math.log(x.mid / x.low) / Z80 : 0;
     const su = x.high != null && x.high > x.mid ? Math.log(x.high / x.mid) / Z80 : 0;
@@ -846,7 +877,8 @@ export function driveNote(r: Pick<DriveResult, 'status' | 'source' | 'window' | 
   const w = WINDOWS[r.window];
   const head = `${w.label} (${w.toCampus ? 'home to campus' : 'campus to home'}, school day).`;
   if (r.status === 'measured' && r.fit) {
-    return `${head} Measured for this site on ${r.measuredOn}: ${r.fit.n} homes timed by Google Maps, every nearby home timed on OpenStreetMap roads and adjusted to Google's time (typical miss for one home ${r.fit.rmse.toFixed(1)} min). ${range}`;
+    const cal = r.basis ? ` ${r.basis[0].toUpperCase()}${r.basis.slice(1)}.` : '';
+    return `${head} Measured for this site on ${r.measuredOn}: ${r.fit.n} homes timed by Google Maps, every nearby home timed on OpenStreetMap roads and adjusted to Google's time (typical miss for one home ${r.fit.rmse.toFixed(1)} min).${cal} ${range}`;
   }
   const basis = r.basis ? ` (${r.basis})` : '';
   if (r.source === 'saved') {

@@ -31,14 +31,14 @@
           "contourLow": 3.441,
           "contourHigh": 5.652,
           "status": "measured-sites",
-          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-12)"
         },
         "10": {
           "contour": 8.132,
           "contourLow": 6.678,
           "contourHigh": 10.043,
           "status": "measured-sites",
-          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-12)"
         }
       },
       "pickup": {
@@ -47,14 +47,14 @@
           "contourLow": 2.896,
           "contourHigh": 5.514,
           "status": "measured-sites",
-          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-12)"
         },
         "10": {
           "contour": 8.011,
           "contourLow": 6.155,
           "contourHigh": 9.678,
           "status": "measured-sites",
-          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 8 measured Florida sites (public-server times); range = all of them (2026-11-12)"
         }
       }
     },
@@ -66,14 +66,14 @@
           "contourLow": 2.08,
           "contourHigh": 4.775,
           "status": "measured-sites",
-          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-12)"
         },
         "10": {
           "contour": 6.626,
           "contourLow": 5.695,
           "contourHigh": 8.213,
           "status": "measured-sites",
-          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-12)"
         }
       },
       "pickup": {
@@ -82,14 +82,14 @@
           "contourLow": 1.484,
           "contourHigh": 4.793,
           "status": "measured-sites",
-          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-12)"
         },
         "10": {
           "contour": 7.176,
           "contourLow": 6.27,
           "contourHigh": 8.221,
           "status": "measured-sites",
-          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 10 measured Newark and Paterson sites (public-server times); range = all of them (2026-11-12)"
         }
       }
     },
@@ -101,14 +101,14 @@
           "contourLow": 2.955,
           "contourHigh": 5.331,
           "status": "measured-sites",
-          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-12)"
         },
         "10": {
           "contour": 7.901,
           "contourLow": 6.532,
           "contourHigh": 9.232,
           "status": "measured-sites",
-          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-12)"
         }
       },
       "pickup": {
@@ -117,14 +117,14 @@
           "contourLow": 3.866,
           "contourHigh": 4.499,
           "status": "measured-sites",
-          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-12)"
         },
         "10": {
           "contour": 7.173,
           "contourLow": 6.71,
           "contourHigh": 7.85,
           "status": "measured-sites",
-          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-11)"
+          "basis": "median of 4 measured Camden sites (public-server times); range = all of them (2026-11-12)"
         }
       }
     }
@@ -133,12 +133,12 @@
     "level": 0.9,
     "measured": {
       "5": {
-        "bias": 0.221,
-        "tau": 0.221
+        "bias": 0,
+        "tau": 0.19251541798209082
       },
       "10": {
         "bias": 0,
-        "tau": 0.1
+        "tau": 0.1535022719977611
       }
     },
     "estimate": {
@@ -154,15 +154,48 @@
       },
       "newjersey": {
         "5": [
-          -0.616,
-          2.069
+          -0.619,
+          2.185
         ],
         "10": [
-          -0.309,
-          0.59
+          -0.303,
+          0.592
         ]
       }
     },
-    "basis": "scripts/qa_drive_accuracy.ts --write-range-model, 2026-11-12: measured from paired checks on the independent Google sample of 2026-11-10 (5 Florida sites, drop-off; DerSimonian-Laird), estimates from leave-one-site-out over 16 Florida and 28 New Jersey checks."
+    "basis": "scripts/qa_drive_accuracy.ts --write-range-model, 2026-11-12: measured from paired checks on independent Google samples (Florida 2026-11-10, 5 sites, drop-off; New Jersey 2026-11-11, 6 campuses, both directions), estimates from leave-one-site-out.",
+    "measuredByRegion": {
+      "florida": {
+        "5": {
+          "bias": 0,
+          "tau": 0.166
+        },
+        "10": {
+          "bias": 0,
+          "tau": 0.133
+        }
+      },
+      "newjersey": {
+        "5": {
+          "bias": 0,
+          "tau": 0.131
+        },
+        "10": {
+          "bias": 0,
+          "tau": 0.122
+        }
+      }
+    }
+  },
+  "countScale": {
+    "basis": "scripts/qa_drive_accuracy.ts, 2026-11-12: Google's count over our fitted line's, on independent samples (paired, DerSimonian-Laird), applied where it differs from 1 at 90%.",
+    "florida": {
+      "5": 1,
+      "10": 1
+    },
+    "newjersey": {
+      "5": 1.22,
+      "10": 1.18
+    }
   }
 }
